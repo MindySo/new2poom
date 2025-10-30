@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { ArchiveCard } from "../components/archive/ArchiveCard";
 import type { MissingPerson } from "../types/archive";
-import "./ListPage.css";
+import styles from "./ListPage.module.css";
 import bannerImg from "../assets/ListPageBanner.png";
 const ListPage = () => {
   // 임시 데이터: hoursSinceMissing 으로 24시간 기준 필터링
@@ -52,16 +52,16 @@ const ListPage = () => {
   }, [activeTab, people]);
 
   return (
-    <div className="list-page">
+    <div className={styles['list-page']}>
       {/* 히어로 배너 (배경 이미지 + 검색영역) */}
       <div
-        className="list-hero"
+        className={styles['list-hero']}
         style={{ backgroundImage: `url(${bannerImg})` }}
       >
-        <div className="list-hero__overlay" />
-        <header className="list-header">
+        <div className={styles['list-hero__overlay']} />
+        <header className={styles['list-header']}>
           <h2>실종자 목록</h2>
-          <div className="search-bar">
+          <div className={styles['search-bar']}>
             <input placeholder="실종자를 검색해보세요" />
             <button>🔍</button>
           </div>
@@ -69,7 +69,7 @@ const ListPage = () => {
       </div>
 
       {/* 필터 탭 */}
-      <div className="list-tabs">
+      <div className={styles['list-tabs']}>
         <button
           className={activeTab === "all" ? "active" : undefined}
           onClick={() => setActiveTab("all")}
@@ -91,7 +91,7 @@ const ListPage = () => {
       </div>
 
       {/* 카드 리스트 영역 */}
-      <div className="list-grid">
+      <div className={styles['list-grid']}>
         {filteredPeople.map((p) => (
           <ArchiveCard key={p.id} person={p} />
         ))}

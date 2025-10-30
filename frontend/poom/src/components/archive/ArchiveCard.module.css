@@ -4,7 +4,7 @@
   border: 1px solid #eef0f3;
   box-shadow: 0 4px 12px rgba(0,0,0,0.06);
   padding: 20px 24px; /* outer padding */
-  width: 100%;
+  width: 400px; /* fixed card width */
   overflow: hidden; /* keep everything within the frame */
 }
 
@@ -37,14 +37,13 @@
 
 .archive-card__right { display: flex; flex-direction: column; height: 213px; justify-content: space-between; }
 .archive-card__right { min-width: 0; } /* allow content to shrink and wrap in grid */
-.archive-card__main { flex: 1; display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow: hidden; }
+.archive-card__main { flex: 1; display: flex; flex-direction: column; gap: 7px; min-height: 0; overflow: hidden; }
 .archive-card__actions { margin-top: auto; display: flex; gap: 12px; align-items: center; }
 
 .archive-card__header {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 3px;
 }
 
 .archive-card__elapsed {
@@ -87,7 +86,7 @@
 .archive-card__info {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 5px; /* line spacing */
+  gap: 3px; /* line spacing */
 }
 
 .archive-card__label {
@@ -126,3 +125,5 @@
   height: 44px !important;
   padding: 0 !important;
 }
+
+
