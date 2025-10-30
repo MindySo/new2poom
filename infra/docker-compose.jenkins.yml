@@ -24,7 +24,7 @@ services:
     environment:
       - TZ=Asia/Seoul
     volumes:
-      - jenkins_home:/var/jenkins_home
+      - jenkins-home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
       - /etc/letsencrypt:/etc/letsencrypt:ro  # EC2 호스트의 SSL 디렉토리를 Jenkins 컨테이너에 마운트
     networks:
