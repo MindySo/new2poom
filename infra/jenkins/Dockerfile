@@ -22,7 +22,7 @@ RUN mkdir -p /usr/local/lib/docker/cli-plugins && \
 # Symbolic link 생성
 RUN ln -s /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose
 
-# Java 환경변수 : 백에 몇 쓰는지 물어보기
+# Java 환경변수
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
 # Jenkins 사용자로 전환 (보안)

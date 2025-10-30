@@ -1,6 +1,6 @@
 /*
  * Jenkins Declarative Pipeline for S13P31A706
- *  ├─ Build & push Spring / FastAPI / Nginx images
+ *  ├─ Build & push Spring / Nginx images
  *  └─ Pull + docker-compose up  (same EC2 host)
  */
 pipeline {
@@ -12,7 +12,7 @@ pipeline {
         DOCKER_ID    = 'mindyso'
         COMPOSE_FILE = 'docker-compose.yml'
         ENV_FILE     = '.env'
-        SPRING_RES   = 'backend/spring-business/topoom/src/main/resources'
+        SPRING_RES   = 'backend/src/main/resources'
     }
 
     options {
@@ -28,7 +28,7 @@ pipeline {
             steps {
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: '*/be-develop']],
+                    branches: [[name: '*/dev-be']],
                     userRemoteConfigs: [[
                         url: 'https://lab.ssafy.com/s13-final/S13P31A706',
                         credentialsId: 'gitlab-jenkins-token'
@@ -44,8 +44,8 @@ pipeline {
                     file(credentialsId: 'env',  variable: 'ENV_TMP'),
                 ]) {
                     sh '''
-                        # .env → docker/.env
-                        cp "$ENV_TMP" "docker/$ENV_FILE"
+                        # .env → infra/.env
+                        cp "$ENV_TMP" "infra/$ENV_FILE"
                     '''
                 }
             }
@@ -68,7 +68,7 @@ pipeline {
         stage('Build & Push - Spring') {
             steps {
                 sh '''
-                    cd backend/spring-business/topoom
+                    cd backend
                     ./gradlew clean build -x test
                     docker build -t $DOCKER_ID/topoom-spring:latest .
                     docker push    $DOCKER_ID/topoom-spring:latest
@@ -77,21 +77,10 @@ pipeline {
         }
 
         /* -------------------------------------------------- */
-        stage('Build & Push - FastAPI') {
-            steps {
-                sh '''
-                    cd backend/fastapi-ai
-                    docker build -t $DOCKER_ID/topoom-ai:latest .
-                    docker push    $DOCKER_ID/topoom-ai:latest
-                '''
-            }
-        }
-
-        /* -------------------------------------------------- */
         stage('Build & Push - Nginx') {
             steps {
                 sh '''
-                    cd docker/nginx
+                    cd infra/nginx
                     docker build -t $DOCKER_ID/topoom-nginx:latest .
                     docker push    $DOCKER_ID/topoom-nginx:latest
                 '''
@@ -103,13 +92,13 @@ pipeline {
             steps {
                 sh '''
                     docker compose \
-                      --env-file docker/$ENV_FILE \
-                      -f docker/$COMPOSE_FILE      \
+                      --env-file infra/$ENV_FILE \
+                      -f infra/$COMPOSE_FILE      \
                       pull
 
                     docker compose \
-                      --env-file docker/$ENV_FILE \
-                      -f docker/$COMPOSE_FILE      \
+                      --env-file infra/$ENV_FILE \
+                      -f infra/$COMPOSE_FILE      \
                       up -d
                 '''
             }
