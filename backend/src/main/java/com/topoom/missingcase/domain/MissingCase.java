@@ -2,9 +2,7 @@ package com.topoom.missingcase.domain;
 
 import com.topoom.common.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -12,6 +10,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "missing_case")
 @Getter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MissingCase extends BaseTimeEntity {
 
@@ -80,6 +80,6 @@ public class MissingCase extends BaseTimeEntity {
     @Column(length = 20, nullable = false)
     private String progressStatus;
 
-    @Column(columnDefinition = "JSON")
+    @Column(columnDefinition = "TEXT")
     private String etcFeatures;
 }

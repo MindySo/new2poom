@@ -6,4 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MissingCaseRepository extends JpaRepository<MissingCase, Long> {
+
+    // URL로 중복 체크
+    boolean existsBySourceUrl(String sourceUrl);
 }
