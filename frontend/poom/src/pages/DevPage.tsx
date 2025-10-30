@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Button from '../components/common/atoms/Button';
 import Badge from '../components/common/atoms/Badge';
 import Text from '../components/common/atoms/Text';
+import TopBar from '../components/common/molecules/TopBar';
 import { theme } from '../theme';
 
 const DevPage: React.FC = () => {
@@ -105,6 +106,30 @@ const DevPage: React.FC = () => {
           현재 3개의 주요 페이지가 개발 중입니다.<br/>
           각 페이지를 클릭하여 개발 상황을 확인해보세요.
         </p>
+      </div>
+
+      {/* Molecules 컴포넌트 테스트 섹션 */}
+      <div style={{ maxWidth: '1200px', margin: '60px auto 0' }}>
+        <h2 style={{ color: '#333', marginBottom: '30px', textAlign: 'center' }}>
+          🧩 Molecules 컴포넌트 테스트
+        </h2>
+
+        {/* TopBar 컴포넌트 */}
+        <div style={{
+          backgroundColor: 'white',
+          padding: '30px',
+          borderRadius: '10px',
+          marginBottom: '30px',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+          <h3 style={{ marginBottom: '20px', color: '#333' }}>TopBar</h3>
+          <p style={{ marginBottom: '15px', color: '#666', fontSize: '14px' }}>
+            현재 페이지 경로에 따라 네비게이션 버튼이 활성화됩니다.
+          </p>
+          <div style={{ border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden' }}>
+            <TopBar />
+          </div>
+        </div>
       </div>
 
       {/* Atoms 컴포넌트 테스트 섹션 */}

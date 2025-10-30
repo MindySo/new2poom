@@ -1,0 +1,60 @@
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 40px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 로고 영역 */
+.logoContainer {
+  display: flex;
+  align-items: center;
+}
+
+.logoBox {
+  padding: 12px 24px;
+  border-radius: 8px;
+}
+
+.logoText {
+  font-family: 'Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif';
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* 네비게이션 영역 */
+.navbar {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.navButton {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 16px;
+  font-family: 'Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif';
+  font-size: 16px;
+  transition: color 0.2s ease;
+  outline: none;
+}
+
+/* 활성화 인디케이터 (뒤쪽 왼쪽 위 상자) */
+.activeIndicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  z-index: -1;
+}
+
+.navLabel {
+  position: relative;
+  z-index: 1;
+}
