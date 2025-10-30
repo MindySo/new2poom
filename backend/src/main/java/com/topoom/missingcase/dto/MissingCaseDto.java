@@ -26,7 +26,7 @@ public class MissingCaseDto {
         private Long id;
         private String personName;
         private String gender;
-        private Integer currentAge;
+        private Short currentAge;
         private String occurredLocation;
         private LocalDateTime occurredAt;
         private String progressStatus;

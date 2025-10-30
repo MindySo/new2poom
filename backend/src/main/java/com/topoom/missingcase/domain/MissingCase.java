@@ -77,7 +77,7 @@ public class MissingCase extends BaseTimeEntity {
     @Column(length = 200)
     private String clothingDesc;
 
-    @Column(length = 20, nullable = false)
+    @Column(length = 20)
     private String progressStatus;
 
     @Column(columnDefinition = "JSON")

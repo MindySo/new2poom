@@ -17,18 +17,30 @@ public class MissingCaseService {
     private final MissingCaseRepository missingCaseRepository;
 
     public List<MissingCaseDto.Response> getAllCases() {
-        // TODO: 실종 사건 목록 조회 로직 구현
-        return List.of();
+        return missingCaseRepository.findAll().stream()
+                .map(caseEntity -> new MissingCaseDto.Response(
+                        caseEntity.getId(),
+                        caseEntity.getPersonName(),
+                        caseEntity.getOccurredLocation(),
+                        caseEntity.getOccurredAt(),
+                        caseEntity.getProgressStatus()
+                ))
+                .toList();
     }
 
     public MissingCaseDto.DetailResponse getCaseById(Long id) {
-        // TODO: 실종 사건 상세 조회 로직 구현
-        return null;
-    }
+        MissingCase caseEntity = missingCaseRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 실종 사례가 없습니다."));
 
-    @Transactional
-    public Long createCase(MissingCase missingCase) {
-        // TODO: 실종 사건 생성 로직 구현
-        return null;
+        return new MissingCaseDto.DetailResponse(
+                caseEntity.getId(),
+                caseEntity.getPersonName(),
+                caseEntity.getGender(),
+                caseEntity.getCurrentAge(),
+                caseEntity.getOccurredLocation(),
+                caseEntity.getOccurredAt(),
+                caseEntity.getProgressStatus(),
+                caseEntity.getClothingDesc()
+        );
     }
 }

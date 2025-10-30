@@ -1,6 +1,7 @@
 package com.topoom.missingcase.controller;
 
 import com.topoom.common.ApiResponse;
+import com.topoom.external.openapi.Safe182Client;
 import com.topoom.missingcase.dto.MissingCaseDto;
 import com.topoom.missingcase.service.MissingCaseService;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MissingCaseController {
 
+    private final Safe182Client safe182Client;
     private final MissingCaseService missingCaseService;
 
     @GetMapping
