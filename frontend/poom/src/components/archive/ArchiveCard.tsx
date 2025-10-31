@@ -8,6 +8,7 @@ import Button from '../common/atoms/Button';
 
 export interface ArchiveCardProps {
   person: MissingPerson;
+  onClick?: () => void;
 }
 
 function formatElapsed(iso: string): string {
@@ -23,18 +24,22 @@ function formatElapsed(iso: string): string {
     : `${hours}시간 ${minutes}분 경과`;
 }
 
-const ArchiveCard: React.FC<ArchiveCardProps> = ({ person }) => {
+const ArchiveCard: React.FC<ArchiveCardProps> = ({ person, onClick }) => {
   const {
     personName,
     ageAtTime,
     gender,
-    occuredAt,
-    occuredLocation,
+    occurredAt,
+    occurredLocation,
     classificationCode,
   } = person;
 
   return (
-    <div className={styles['archive-card']}>
+    <div 
+      className={styles['archive-card']} 
+      onClick={onClick}
+      style={{ cursor: onClick ? 'pointer' : 'default' }}
+    >
       <div className={styles['archive-card__content']}>
         <div className={styles['archive-card__imageWrap']}>
           <img src={tempImg} alt="임시 이미지" className={styles['archive-card__image']} />
@@ -42,7 +47,7 @@ const ArchiveCard: React.FC<ArchiveCardProps> = ({ person }) => {
         <div className={styles['archive-card__right']}>
           <div className={styles['archive-card__main']}>
             <div className={styles['archive-card__header']}>
-              <Badge variant="time" size="small">{formatElapsed(occuredAt)}</Badge>
+              <Badge variant="time" size="small">{formatElapsed(occurredAt)}</Badge>
               {classificationCode && (
                 <Badge variant="feature" size="small">{classificationCode}</Badge>
               )}
@@ -55,18 +60,37 @@ const ArchiveCard: React.FC<ArchiveCardProps> = ({ person }) => {
             <div className={styles['archive-card__info']}>
               <div>
                 <Text as="div" size="xs" color="gray" className={styles['archive-card__label']}>발생일</Text>
-                <Text as="div" size="sm" className={styles['archive-card__value']}>{new Date(occuredAt).toISOString().slice(0, 10)}</Text>
+                <Text as="div" size="sm" className={styles['archive-card__value']}>{new Date(occurredAt).toISOString().slice(0, 10)}</Text>
               </div>
               <div>
                 <Text as="div" size="xs" color="gray" className={styles['archive-card__label']}>발생장소</Text>
-                <Text as="div" size="sm" className={styles['archive-card__value']}>{occuredLocation}</Text>
+                <Text as="div" size="sm" className={styles['archive-card__value']}>{occurredLocation}</Text>
               </div>
             </div>
           </div>
 
           <div className={styles['archive-card__actions']}>
-            <Button variant="primary" size="medium" className={styles['archive-card__primaryBtn']}>제보하기</Button>
-            <Button variant="secondary" size="medium" className={styles['archive-card__iconBtn']} aria-label="공유">↗</Button>
+            <Button 
+              variant="primary" 
+              size="medium" 
+              className={styles['archive-card__primaryBtn']}
+              onClick={() => {
+                // 제보하기 로직
+              }}
+            >
+              제보하기
+            </Button>
+            <Button 
+              variant="secondary" 
+              size="medium" 
+              className={styles['archive-card__iconBtn']} 
+              aria-label="공유"
+              onClick={() => {
+                // 공유 로직
+              }}
+            >
+              ↗
+            </Button>
           </div>
         </div>
       </div>

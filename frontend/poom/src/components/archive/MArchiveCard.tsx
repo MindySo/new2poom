@@ -30,8 +30,8 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ person }) => {
     personName,
     ageAtTime,
     gender,
-    occuredAt,
-    occuredLocation,
+    occurredAt,
+    occurredLocation,
     classificationCode,
   } = person;
 
@@ -44,7 +44,7 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ person }) => {
         <div className={styles['m-archive-card__right']}>
           <div className={styles['m-archive-card__main']}>
             <div className={styles['m-archive-card__header']}>
-              <Badge variant="time" size="small">{formatElapsed(occuredAt)}</Badge>
+              <Badge variant="time" size="small">{formatElapsed(occurredAt)}</Badge>
               {classificationCode && (
                 <Badge variant="feature" size="small">{classificationCode}</Badge>
               )}
@@ -57,11 +57,11 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ person }) => {
             <div className={styles['m-archive-card__info']}>
               <div>
                 <Text as="div" size="xs" color="gray" className={styles['m-archive-card__label']}>발생일</Text>
-                <Text as="div" size="xs" className={styles['m-archive-card__value']}>{new Date(occuredAt).toISOString().slice(0, 10)}</Text>
+                <Text as="div" size="xs" className={styles['m-archive-card__value']}>{new Date(occurredAt).toISOString().slice(0, 10)}</Text>
               </div>
               <div>
                 <Text as="div" size="xs" color="gray" className={styles['m-archive-card__label']}>발생장소</Text>
-                <Text as="div" size="xs" className={styles['m-archive-card__value']}>{occuredLocation}</Text>
+                <Text as="div" size="xs" className={styles['m-archive-card__value']}>{occurredLocation}</Text>
               </div>
             </div>
           </div>
