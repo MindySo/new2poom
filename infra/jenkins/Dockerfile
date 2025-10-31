@@ -7,7 +7,6 @@ RUN apt-get update && apt-get install -y \
     docker.io \
     git \
     curl \
-    openjdk-17-jdk \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # 모든 디렉토리 허용
