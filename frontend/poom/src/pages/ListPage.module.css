@@ -162,9 +162,10 @@
 /* 모바일 그리드 */
 .mobile-grid {
   max-width: 100%;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
   gap: 16px;
   margin: 16px auto 0;
+  justify-content: center; /* 2열 기본, 공간 부족 시 자동 1열 */
 }
 
 /* 모바일 검색바 - 탭 바로 아래, 캡슐 모양 */
