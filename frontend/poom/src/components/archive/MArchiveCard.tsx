@@ -33,7 +33,20 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ person }) => {
     occurredAt,
     occurredLocation,
     classificationCode,
+    heightCm,
+    weightKg,
+    bodyType,
+    faceShape,
+    hairColor,
+    hairStyle,
+    clothingDesc,
+    inputImages,
+    outputImages,
   } = person;
+  
+  // 이미지 URL 가져오기
+  const thumbnailImages = inputImages?.slice(0, 4) || [];
+  const aiImageUrl = outputImages && outputImages.length > 0 ? outputImages[0].url : tempImg;
 
   return (
     <div className={styles['m-archive-card']}>
@@ -76,9 +89,55 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ person }) => {
       {/* 아코디언 확장 영역 */}
       <div className={`${styles['m-archive-card__expandable']} ${isExpanded ? styles['m-archive-card__expandable--open'] : ''}`}>
         <div className={styles['m-archive-card__expandedContent']}>
-          {/* 추가 정보 영역 - 나중에 정보가 더 들어올 예정 */}
-          <div className={styles['m-archive-card__additionalInfo']}>
-            <Text as="div" size="xs" color="gray">추가 정보가 여기에 표시됩니다</Text>
+          {/* 추가 사진 - 한 줄로 작게 */}
+          {thumbnailImages.length > 0 && (
+            <div className={styles['m-archive-card__thumbnailRow']}>
+              {thumbnailImages.map((img, index) => (
+                <div key={img.fileId || index} className={styles['m-archive-card__thumbnail']}>
+                  <img src={img.url || tempImg} alt={`추가 사진 ${index + 1}`} />
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {/* 상세정보와 AI 이미지 - 좌우로 나뉨 */}
+          <div className={styles['m-archive-card__detailSection']}>
+            {/* 왼편: 상세정보 */}
+            <div className={styles['m-archive-card__detailInfo']}>
+              <Text as="div" size="xs" weight="bold" className={styles['m-archive-card__detailTitle']}>상세정보</Text>
+              <div className={styles['m-archive-card__detailList']}>
+                <div className={styles['m-archive-card__detailItem']}>
+                  <Text as="div" size="xs" color="gray">신체정보</Text>
+                  <Text as="div" size="xs">{heightCm ? `${heightCm}cm` : '-'} / {weightKg ? `${weightKg}kg` : '-'}</Text>
+                </div>
+                <div className={styles['m-archive-card__detailItem']}>
+                  <Text as="div" size="xs" color="gray">체형</Text>
+                  <Text as="div" size="xs">{bodyType || '-'}</Text>
+                </div>
+                <div className={styles['m-archive-card__detailItem']}>
+                  <Text as="div" size="xs" color="gray">얼굴형</Text>
+                  <Text as="div" size="xs">{faceShape || '-'}</Text>
+                </div>
+                <div className={styles['m-archive-card__detailItem']}>
+                  <Text as="div" size="xs" color="gray">두발 형태</Text>
+                  <Text as="div" size="xs">{hairColor || '-'} / {hairStyle || '-'}</Text>
+                </div>
+                <div className={styles['m-archive-card__detailItem']}>
+                  <Text as="div" size="xs" color="gray">복장</Text>
+                  <Text as="div" size="xs">{clothingDesc || '-'}</Text>
+                </div>
+              </div>
+            </div>
+            
+            {/* 오른편: AI 이미지 */}
+            <div className={styles['m-archive-card__aiImage']}>
+              <Text as="div" size="xs" weight="bold" className={styles['m-archive-card__detailTitle']}>AI 서포트</Text>
+              <div className={styles['m-archive-card__aiImageWrapperOuter']}>
+                <div className={styles['m-archive-card__aiImageWrapper']}>
+                  <img src={aiImageUrl} alt="AI 생성 이미지" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

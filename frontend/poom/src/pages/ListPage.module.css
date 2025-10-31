@@ -166,6 +166,7 @@
   gap: 16px;
   margin: 16px auto 0;
   justify-content: center; /* 2열 기본, 공간 부족 시 자동 1열 */
+  align-items: start; /* 카드가 독립적으로 높이를 가지도록 */
 }
 
 /* 모바일 검색바 - 탭 바로 아래, 캡슐 모양 */
