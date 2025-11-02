@@ -1,4 +1,4 @@
-package com.topoom.external.blog;
+package com.topoom.external.blog.service;
 
 import com.topoom.external.blog.dto.BlogPostInfo;
 import io.github.bonigarcia.wdm.WebDriverManager;

@@ -1,4 +1,4 @@
-package com.topoom.external.blog;
+package com.topoom.external.blog.service;
 
 import com.topoom.external.blog.dto.ExtractedImageInfo;
 import io.github.bonigarcia.wdm.WebDriverManager;
@@ -82,11 +82,14 @@ public class BlogImageExtractorService {
                     String imageUrl = imgTag.getAttribute("src");
                     String alt = imgTag.getAttribute("alt");
                     
-                    if (imageUrl != null && !imageUrl.isEmpty() && isValidImageUrl(imageUrl)) {
-                        log.info("이미지 발견: {}", imageUrl);
+                    // 원본 크기 이미지 URL로 변환
+                    String fullSizeImageUrl = convertToFullSizeUrl(imageUrl);
+                    
+                    if (fullSizeImageUrl != null && !fullSizeImageUrl.isEmpty() && isValidImageUrl(fullSizeImageUrl)) {
+                        log.info("이미지 발견 (원본): {}", fullSizeImageUrl);
                         
                         ExtractedImageInfo imageInfo = ExtractedImageInfo.builder()
-                                .imageUrl(imageUrl)
+                                .imageUrl(fullSizeImageUrl)
                                 .altText(alt)
                                 .sourcePostUrl(postUrl)
                                 .extractedAt(LocalDateTime.now())
@@ -109,12 +112,15 @@ public class BlogImageExtractorService {
                         String imageUrl = imgElement.getAttribute("src");
                         String alt = imgElement.getAttribute("alt");
                         
-                        if (imageUrl != null && !imageUrl.isEmpty() && isValidImageUrl(imageUrl)) {
-                            if (imageUrl.contains("postfiles.pstatic.net")) {
-                                log.info("postfiles 이미지 발견: {}", imageUrl);
+                        // 원본 크기 이미지 URL로 변환
+                        String fullSizeImageUrl = convertToFullSizeUrl(imageUrl);
+                        
+                        if (fullSizeImageUrl != null && !fullSizeImageUrl.isEmpty() && isValidImageUrl(fullSizeImageUrl)) {
+                            if (fullSizeImageUrl.contains("postfiles.pstatic.net")) {
+                                log.info("postfiles 이미지 발견 (원본): {}", fullSizeImageUrl);
                                 
                                 ExtractedImageInfo imageInfo = ExtractedImageInfo.builder()
-                                        .imageUrl(imageUrl)
+                                        .imageUrl(fullSizeImageUrl)
                                         .altText(alt)
                                         .sourcePostUrl(postUrl)
                                         .extractedAt(LocalDateTime.now())
@@ -147,5 +153,26 @@ public class BlogImageExtractorService {
                lowerUrl.contains(".png") || lowerUrl.contains(".gif") ||
                lowerUrl.contains(".webp") || lowerUrl.contains(".bmp") ||
                lowerUrl.contains("postfiles.pstatic.net");
+    }
+    
+    /**
+     * 썸네일 이미지 URL을 원본 크기 이미지 URL로 변환
+     * ?type=w80_blur 같은 파라미터를 ?type=w966 또는 제거하여 원본 크기로 변환
+     */
+    private String convertToFullSizeUrl(String imageUrl) {
+        if (imageUrl == null || imageUrl.isEmpty()) {
+            return imageUrl;
+        }
+        
+        // Naver postfiles 이미지 URL 처리
+        if (imageUrl.contains("postfiles.pstatic.net")) {
+            // type 파라미터가 있는 경우 w966 (큰 크기)로 변경하거나 제거
+            if (imageUrl.contains("?type=")) {
+                // type=w966은 일반적으로 큰 크기, 없으면 원본
+                imageUrl = imageUrl.replaceAll("\\?type=w\\d+(_blur)?", "?type=w966");
+            }
+        }
+        
+        return imageUrl;
     }
 }

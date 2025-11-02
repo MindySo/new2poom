@@ -23,11 +23,8 @@ public class BlogPost {
     @Column(name = "title", nullable = false, length = 500)
     private String title;
     
-    @Column(name = "post_url", columnDefinition = "TEXT")
-    private String postUrl;
-    
-    @Column(name = "log_no", length = 50)
-    private String logNo;
+    @Column(name = "source_url", nullable = false, columnDefinition = "TEXT")
+    private String sourceUrl;
     
     @Column(name = "crawled_at", nullable = false)
     private LocalDateTime crawledAt;

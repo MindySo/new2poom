@@ -1,4 +1,4 @@
-package com.topoom.external.blog;
+package com.topoom.external.blog.service;
 
 import com.topoom.missingcase.domain.CaseFile;
 import com.topoom.missingcase.repository.CaseFileRepository;
@@ -62,9 +62,10 @@ public class S3ImageUploadService {
                     bucketName, s3Key, imageData.length);
             
             CaseFile caseFile = CaseFile.builder()
-                    .ioRole("INPUT")
-                    .purpose("BEFORE")
-                    .contentKind("IMAGE")
+                    .caseId(caseId)
+                    .ioRole(CaseFile.IoRole.INPUT)
+                    .purpose(CaseFile.Purpose.BEFORE)
+                    .contentKind(CaseFile.ContentKind.IMAGE)
                     .s3Key(s3Key)
                     .s3Bucket(bucketName)
                     .contentType(contentType)
@@ -76,7 +77,12 @@ public class S3ImageUploadService {
                     .crawledAt(LocalDateTime.now())
                     .build();
             
-            return caseFileRepository.save(caseFile);
+            // caseId는 null일 수 있음 (크롤링 단계에서는 사건과 연결되지 않은 상태)
+            
+            CaseFile saved = caseFileRepository.save(caseFile);
+            log.info("CaseFile 저장 OK -> id={}, bucket={}, key={}", 
+                    saved.getId(), saved.getS3Bucket(), saved.getS3Key());
+            return saved;
                     
         } catch (Exception e) {
             log.error("이미지 다운로드 및 S3 업로드 실패: {}", imageUrl, e);
@@ -87,7 +93,16 @@ public class S3ImageUploadService {
     private byte[] downloadImageFromUrl(String imageUrl) {
         try {
             URL url = new URL(imageUrl);
-            return url.openStream().readAllBytes();
+            var connection = url.openConnection();
+            connection.setRequestProperty("User-Agent", 
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+            connection.setRequestProperty("Referer", "https://blog.naver.com/");
+            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(30000);
+            
+            byte[] data = connection.getInputStream().readAllBytes();
+            log.info("이미지 다운로드 성공: {} bytes from {}", data.length, imageUrl);
+            return data;
         } catch (Exception e) {
             log.error("이미지 다운로드 실패: {}", imageUrl, e);
             return null;
@@ -141,9 +156,16 @@ public class S3ImageUploadService {
     
     private String generateS3Key(Long caseId, String extension) {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
-        String randomSuffix = String.valueOf(System.nanoTime()).substring(10);
-        return String.format("missing-cases/%d/images/%s-%s.%s", 
-                caseId, timestamp, randomSuffix, extension);
+        String suffix = java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        
+        if (caseId != null) {
+            return String.format("input/missing-person-%d/%s-%s.%s", 
+                    caseId, timestamp, suffix, extension);
+        } else {
+            // caseId가 null인 경우 임시 폴더에 저장
+            return String.format("input/crawled-unassigned/%s-%s.%s", 
+                    timestamp, suffix, extension);
+        }
     }
     
     private String calculateSHA256(byte[] data) {

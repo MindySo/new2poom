@@ -18,39 +18,49 @@ public class CaseFile extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "case_id", nullable = false)
-    private MissingCase missingCase;
+    @Column(name = "case_id", nullable = true)
+    private Long caseId;
 
-    @Column(length = 20, nullable = false)
-    private String ioRole;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "io_role", length = 20, nullable = false)
+    private IoRole ioRole;
 
-    @Column(length = 20, nullable = false)
-    private String purpose;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "purpose", length = 20, nullable = false)
+    private Purpose purpose;
 
-    @Column(length = 20, nullable = false)
-    private String contentKind;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "content_kind", length = 20, nullable = false)
+    private ContentKind contentKind;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(name = "s3_key", columnDefinition = "TEXT", nullable = false)
     private String s3Key;
 
-    @Column(length = 128)
+    @Column(name = "s3_bucket", length = 128)
     private String s3Bucket;
 
-    @Column(length = 64)
+    @Column(name = "content_type", length = 64)
     private String contentType;
 
+    @Column(name = "size_bytes")
     private Long sizeBytes;
 
+    @Column(name = "width_px")
     private Integer widthPx;
 
+    @Column(name = "height_px")
     private Integer heightPx;
 
-    @Column(length = 64)
+    @Column(name = "checksum_sha256", length = 64)
     private String checksumSha256;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "source_url", columnDefinition = "TEXT")
     private String sourceUrl;
 
+    @Column(name = "crawled_at")
     private LocalDateTime crawledAt;
+
+    public enum IoRole { INPUT, OUTPUT }
+    public enum Purpose { BEFORE, APPEARANCE, FACE, FULL_BODY, UNUSABLE, TEXT, ENHANCED, ANALYSIS }
+    public enum ContentKind { IMAGE, JSON }
 }

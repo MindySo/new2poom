@@ -17,9 +17,19 @@ public interface BlogPostRepository extends JpaRepository<BlogPost, Long> {
     Optional<BlogPost> findByTitle(String title);
     
     /**
+     * URL로 게시글 찾기 (중복 체크용)
+     */
+    Optional<BlogPost> findBySourceUrl(String sourceUrl);
+    
+    /**
      * 제목이 존재하는지 확인
      */
     boolean existsByTitle(String title);
+    
+    /**
+     * URL이 존재하는지 확인 (새 게시물 판별용)
+     */
+    boolean existsBySourceUrl(String sourceUrl);
     
     /**
      * 최근 크롤링된 게시글 목록 조회
