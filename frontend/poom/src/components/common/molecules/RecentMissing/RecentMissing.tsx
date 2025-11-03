@@ -1,5 +1,4 @@
 import React from 'react';
-import { theme } from '../../../../theme';
 import Text from '../../atoms/Text';
 import Badge from '../../atoms/Badge';
 import styles from './RecentMissing.module.css';
