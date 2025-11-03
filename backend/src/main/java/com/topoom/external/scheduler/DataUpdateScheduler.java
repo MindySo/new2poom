@@ -19,7 +19,6 @@ public class DataUpdateScheduler {
 
         try {
             int rowSize = 100;  // 한 번에 가져올 데이터 수
-            int page = 1;
 
             missingCaseSyncService.syncMissing(rowSize);
 

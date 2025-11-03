@@ -24,55 +24,52 @@ public class Safe182Response {
     @Getter
     @NoArgsConstructor
     public static class MissingItem {
-        @JsonProperty("id")
+        @JsonProperty("msspsnIdntfccd")
         private String id;
 
-        @JsonProperty("name")
+        @JsonProperty("nm")
         private String name;
 
-        @JsonProperty("targetType")
+        @JsonProperty("writingTrgetDscd")
         private String targetType;
 
-        @JsonProperty("gender")
+        @JsonProperty("sexdstnDscd")
         private String gender;
 
-        @JsonProperty("ageAtTime")
+        @JsonProperty("age")
         private Integer ageAtTime;
 
-        @JsonProperty("currentAge")
+        @JsonProperty("ageNow")
         private Integer currentAge;
 
-        @JsonProperty("nationality")
+        @JsonProperty("nltyDscd")
         private String nationality;
 
-        @JsonProperty("occurredAt")
+        @JsonProperty("occrde")
         private String occurredAt; // ISO 8601 문자열
 
-        @JsonProperty("occurredLocation")
+        @JsonProperty("occrAdres")
         private String occurredLocation;
 
-        @JsonProperty("heightCm")
+        @JsonProperty("height")
         private Integer heightCm;
 
-        @JsonProperty("weightKg")
+        @JsonProperty("bdwgh")
         private Integer weightKg;
 
-        @JsonProperty("bodyType")
+        @JsonProperty("frmDscd")
         private String bodyType;
 
-        @JsonProperty("faceShape")
+        @JsonProperty("faceshpeDscd")
         private String faceShape;
 
-        @JsonProperty("hairColor")
+        @JsonProperty("haircolrDscd")
         private String hairColor;
 
-        @JsonProperty("hairStyle")
+        @JsonProperty("hairshpeDscd")
         private String hairStyle;
 
-        @JsonProperty("clothingDesc")
+        @JsonProperty("alldressingDscd")
         private String clothingDesc;
-
-        @JsonProperty("progressStatus")
-        private String progressStatus;
     }
 }

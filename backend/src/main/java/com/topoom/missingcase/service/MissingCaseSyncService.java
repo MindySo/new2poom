@@ -5,12 +5,15 @@ import com.topoom.missingcase.domain.MissingCase;
 import com.topoom.missingcase.dto.Safe182Response;
 import com.topoom.missingcase.repository.MissingCaseRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -33,13 +36,21 @@ public class MissingCaseSyncService {
             MissingCase missingCase = new MissingCase();
             missingCase.setPersonName(item.getName());
             missingCase.setGender(item.getGender());
-            missingCase.setOccurredAt(LocalDateTime.parse(item.getOccurredAt(), formatter));
             missingCase.setOccurredLocation(item.getOccurredLocation());
+            missingCase.setNationality(item.getNationality());
             missingCase.setCrawledAt(LocalDateTime.now());
             missingCase.setDeleted(false);
 
+            try {
+                if (item.getOccurredAt() != null && !item.getOccurredAt().isEmpty()) {
+                    LocalDate date = LocalDate.parse(item.getOccurredAt(), DateTimeFormatter.ISO_DATE);
+                    missingCase.setOccurredAt(date.atStartOfDay());
+                }
+            } catch (Exception e) {
+                log.warn("⚠️ 날짜 파싱 실패 [{}]: {}", item.getOccurredAt(), e.getMessage());
+            }
+
             missingCaseRepository.save(missingCase);
         }
-
     }
 }

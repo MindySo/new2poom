@@ -66,7 +66,6 @@ public class MissingCaseService {
         MissingCase mc = missingCaseRepository.findDetailById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사건입니다."));
 
-        // 대표 이미지
         MissingCaseDetailResponse.MainImage mainImage = null;
         if (mc.getMainFile() != null) {
             mainImage = MissingCaseDetailResponse.MainImage.builder()
@@ -75,21 +74,18 @@ public class MissingCaseService {
                     .build();
         }
 
-        // 입력 이미지들
         List<MissingCaseDetailResponse.ImageItem> inputImages = caseFileRepository
                 .findByMissingCaseIdAndIoRole(mc.getId(), CaseFile.IoRole.INPUT)
                 .stream()
                 .map(this::toImageItem)
                 .collect(Collectors.toList());
 
-        // 출력 이미지들
         List<MissingCaseDetailResponse.ImageItem> outputImages = caseFileRepository
                 .findByMissingCaseIdAndIoRole(mc.getId(), CaseFile.IoRole.OUTPUT)
                 .stream()
                 .map(this::toImageItem)
                 .collect(Collectors.toList());
-
-        // AI 정보
+        
         MissingCaseDetailResponse.AiSupport aiSupport = null;
         if (mc.getAiSupport() != null) {
             aiSupport = MissingCaseDetailResponse.AiSupport.builder()

@@ -31,17 +31,6 @@ public class Safe182Client {
     public Safe182Response getMissing(int rowSize) {
         try {
             log.info("Safe182 API 호출 시작, url={}", apiUrl);
-            log.info(webClient.post()
-                    .uri(apiUrl)
-                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                    .body(BodyInserters
-                            .fromFormData("esntlId", esntlId)
-                            .with("authKey", authKey)
-                            .with("rowSize", String.valueOf(rowSize))
-                    )
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block());
             return webClient.post()
                     .uri(apiUrl)
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED)
