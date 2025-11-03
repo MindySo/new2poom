@@ -1,7 +1,9 @@
 import axios from 'axios';
 
-// BaseURL 설정 (환경변수 또는 기본값)
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
+const BASE_URL = import.meta.env.DEV 
+  ? '/' // 개발 환경: 프록시 사용 (상대 경로)
+  : import.meta.env.VITE_API_BASE_URL; // 프로덕션 환경: 환경 변수 사용
 
 // Axios 인스턴스 생성
 const apiClient = axios.create({
@@ -41,8 +43,11 @@ apiClient.interceptors.response.use(
           console.error('에러가 발생했습니다:', error.response.data);
       }
     } else if (error.request) {
-      // 요청은 보냈지만 응답을 받지 못함
+      
       console.error('서버로부터 응답을 받지 못했습니다.');
+      if (error.message?.includes('CORS') || error.code === 'ERR_FAILED') {
+        console.error('CORS 오류: 백엔드에서 CORS 헤더 설정이 필요합니다.');
+      }
     } else {
       // 요청 설정 중 에러
       console.error('요청 설정 중 에러가 발생했습니다:', error.message);
