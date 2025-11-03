@@ -27,30 +27,76 @@ public class MissingCaseSyncService {
     public void syncMissing(int rowSize) {
         Safe182Response response = safe182Client.getMissing(rowSize);
 
-        if (response == null || response.getBody() == null) return;
+        if (response == null || response.getList() == null) return;
 
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
 
-        for (Safe182Response.MissingItem item : response.getBody().getItems()) {
-            // DB 저장 전, 중복 체크 가능
-            MissingCase missingCase = new MissingCase();
-            missingCase.setPersonName(item.getName());
-            missingCase.setGender(item.getGender());
-            missingCase.setOccurredLocation(item.getOccurredLocation());
-            missingCase.setNationality(item.getNationality());
-            missingCase.setCrawledAt(LocalDateTime.now());
-            missingCase.setDeleted(false);
-
+        for (Safe182Response.Safe182Item item : response.getList()) {
             try {
-                if (item.getOccurredAt() != null && !item.getOccurredAt().isEmpty()) {
-                    LocalDate date = LocalDate.parse(item.getOccurredAt(), DateTimeFormatter.ISO_DATE);
-                    missingCase.setOccurredAt(date.atStartOfDay());
+                MissingCase missingCase = new MissingCase();
+                missingCase.setPersonName(item.getNm());
+                missingCase.setGender(item.getSexdstnDscd());
+                missingCase.setNationality(item.getNltyDscd());
+                if (item.getAge() != null) {
+                    missingCase.setAgeAtTime(item.getAge().shortValue());
                 }
-            } catch (Exception e) {
-                log.warn("⚠️ 날짜 파싱 실패 [{}]: {}", item.getOccurredAt(), e.getMessage());
-            }
+                if (item.getAgeNow() != null) {
+                    missingCase.setCurrentAge(item.getAgeNow().shortValue());
+                }
+                missingCase.setOccurredLocation(item.getOccrAdres());
 
-            missingCaseRepository.save(missingCase);
+                // 날짜 변환 (occrde는 yyyyMMdd 형식)
+                if (item.getOccrde() != null && item.getOccrde().matches("\\d{8}")) {
+                    LocalDate date = LocalDate.parse(item.getOccrde(), dateFormatter);
+                    missingCase.setOccurredAt(date.atStartOfDay());
+                } else {
+                    missingCase.setOccurredAt(null);
+                }
+                if (item.getHeight() != null) {
+                    missingCase.setHeightCm(item.getHeight().shortValue());
+                }
+                if (item.getBdwgh() != null) {
+                    missingCase.setWeightKg(item.getBdwgh().shortValue());
+                }
+                missingCase.setHairColor(item.getHaircolrDscd());
+                missingCase.setFaceShape(item.getFaceshpeDscd());
+                missingCase.setBodyType(item.getFrmDscd());
+                missingCase.setHairStyle(item.getHairshpeDscd());
+                missingCase.setClothingDesc(item.getAlldressingDscd());
+
+                missingCase.setCrawledAt(LocalDateTime.now());
+                missingCase.setDeleted(false);
+
+                missingCase.setSourceTitle("실종경보 Open Api");
+                missingCase.setSourceUrl("https://www.safe182.go.kr");
+
+
+                missingCase.setTargetType(mapTargetType(item.getWritingTrgetDscd()));
+
+                missingCaseRepository.save(missingCase);
+
+            } catch (Exception e) {
+                log.error("실종자 정보 저장 중 오류 발생: {}", e.getMessage(), e);
+            }
+        }
+
+    }
+
+    private String mapTargetType(String writingTrgetDscd) {
+        if (writingTrgetDscd == null) {
+            return "불상";
+        }
+        switch (writingTrgetDscd) {
+            case "010":
+                return "아동";
+            case "060":
+            case "061":
+            case "062":
+                return "장애";
+            case "070":
+                return "치매";
+            default:
+                return "기타";
         }
     }
 }

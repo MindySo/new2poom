@@ -38,11 +38,12 @@ public class Safe182Client {
                             .fromFormData("esntlId", esntlId)
                             .with("authKey", authKey)
                             .with("rowSize", String.valueOf(rowSize))
+                            .with("detailDate1", "1900-01-01")
+                            .with("detailDate2", "2021-05-22")
                     )
                     .retrieve()
                     .bodyToMono(Safe182Response.class)
                     .block();
-
 
         } catch (Exception e) {
             log.error("Safe182 API 호출 실패", e);

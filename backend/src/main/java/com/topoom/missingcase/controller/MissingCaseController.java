@@ -43,6 +43,7 @@ public class MissingCaseController {
 
     @GetMapping("/call")
     public ResponseEntity<ApiResponse<Safe182Response>> getApi() {
-        return ResponseEntity.ok(ApiResponse.success(safe182Client.getMissing(1)));
+        missingCaseSyncService.syncMissing(100);
+        return ResponseEntity.ok(ApiResponse.success(safe182Client.getMissing(100)));
     }
 }
