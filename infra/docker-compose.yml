@@ -11,6 +11,8 @@ volumes:
     name: topoom-mysql-data
   redis-data:
     name: topoom-redis-data
+  jenkins-home:
+    name: topoom-jenkins-home
 
 #############################
 #  SERVICES
@@ -75,6 +77,25 @@ services:
     networks:
       - topoom-network
 
+  # Jenkins
+  jenkins:
+    build:
+      context: ./jenkins
+      dockerfile: Dockerfile
+    container_name: topoom-jenkins
+    restart: always
+    environment:
+      - TZ=Asia/Seoul
+      - JENKINS_OPTS=--prefix=/jenkins
+    expose:
+      - "8080"
+    volumes:
+      - jenkins-home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    networks:
+      - topoom-network
+
   # nginx
   nginx:
     image: ${REGISTRY}/topoom-nginx:latest
@@ -84,6 +105,7 @@ services:
       - TZ=Asia/Seoul
     depends_on:
       - spring
+      - jenkins
     ports:
       - "80:80"
       - "443:443"
