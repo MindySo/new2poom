@@ -4,18 +4,6 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-mysql-data/
-redis-data/
-.env
-.env*
-.env.*
-*.env
-
-### certbot ###
-infra/certbot/conf/*
-infra/certbot/www/*
-!infra/certbot/conf/.gitkeep
-!infra/certbot/www/.gitkeep
 
 ### STS ###
 .apt_generated
@@ -47,4 +35,11 @@ out/
 
 ### VS Code ###
 .vscode/
-/.metadata/
+
+### Logs ###
+logs/
+*.log
+
+### OS ###
+.DS_Store
+Thumbs.db
