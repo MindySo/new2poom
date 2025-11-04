@@ -1,4 +1,4 @@
-package com.topoom.missingcase.domain;
+package com.topoom.missingcase.entity;
 
 import com.topoom.common.BaseTimeEntity;
 import jakarta.persistence.*;
@@ -23,22 +23,20 @@ public class CaseFile extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // FK
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "case_id", foreignKey = @ForeignKey(name = "fk_case_file_case"))
-    private MissingCase missingCase;
+    @Column(name = "case_id", nullable = true)
+    private Long caseId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "io_role", nullable = false)
+    @Column(name = "io_role", length = 20, nullable = false)
     private IoRole ioRole;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private FilePurpose purpose;
+    @Column(name = "purpose", length = 20, nullable = false)
+    private Purpose purpose;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
-    @Column(name = "content_kind", nullable = false)
+    @Column(name = "content_kind", length = 20, nullable = false)
     private ContentKind contentKind = ContentKind.IMAGE;
 
     @Column(name = "s3_key", columnDefinition = "TEXT", nullable = false)
@@ -63,10 +61,11 @@ public class CaseFile extends BaseTimeEntity {
     @Column(name = "is_last_image", nullable = false)
     private boolean isLastImage = false;
 
+    @Column(name = "crawled_at")
     private LocalDateTime crawledAt;
 
     public enum IoRole { INPUT, OUTPUT }
-    public enum FilePurpose {
+    public enum Purpose {
         BEFORE, APPEARANCE, FACE, FULL_BODY,
         UNUSABLE, TEXT, ENHANCED, ANALYSIS
     }

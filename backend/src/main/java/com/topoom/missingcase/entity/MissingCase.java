@@ -1,9 +1,8 @@
-package com.topoom.missingcase.domain;
+package com.topoom.missingcase.entity;
 
 import com.topoom.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.Builder.Default;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -105,12 +104,4 @@ public class MissingCase extends BaseTimeEntity {
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
 
-    @OneToMany(mappedBy = "missingCase", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CaseFile> files;
-
-    @OneToMany(mappedBy = "missingCase", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CaseContact> contacts;
-
-    @OneToOne(mappedBy = "missingCase", cascade = CascadeType.ALL, orphanRemoval = true)
-    private CaseAiSupport aiSupport;
 }

@@ -2,12 +2,11 @@ package com.topoom.missingcase.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.topoom.missingcase.domain.CaseFile;
-import com.topoom.missingcase.domain.MissingCase;
+import com.topoom.missingcase.entity.CaseFile;
+import com.topoom.missingcase.entity.MissingCase;
 import com.topoom.missingcase.dto.MissingCaseDetailResponse;
 import com.topoom.missingcase.dto.MissingCaseListResponse;
 import com.topoom.missingcase.dto.MissingCaseStatsResponse;
-import com.topoom.missingcase.repository.CaseContactRepository;
 import com.topoom.missingcase.repository.CaseFileRepository;
 import com.topoom.missingcase.repository.MissingCaseRepository;
 import lombok.RequiredArgsConstructor;

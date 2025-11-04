@@ -2,7 +2,6 @@ package com.topoom.missingcase.controller;
 
 import com.topoom.common.ApiResponse;
 import com.topoom.external.openapi.Safe182Client;
-import com.topoom.missingcase.domain.MissingCase;
 import com.topoom.missingcase.dto.MissingCaseDetailResponse;
 import com.topoom.missingcase.dto.MissingCaseListResponse;
 import com.topoom.missingcase.dto.MissingCaseStatsResponse;

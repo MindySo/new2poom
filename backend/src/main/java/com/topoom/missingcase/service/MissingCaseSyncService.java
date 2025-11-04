@@ -2,7 +2,7 @@ package com.topoom.missingcase.service;
 
 import com.topoom.external.openapi.KakaoClient;
 import com.topoom.external.openapi.Safe182Client;
-import com.topoom.missingcase.domain.MissingCase;
+import com.topoom.missingcase.entity.MissingCase;
 import com.topoom.missingcase.dto.Safe182Response;
 import com.topoom.missingcase.repository.MissingCaseRepository;
 import lombok.RequiredArgsConstructor;
