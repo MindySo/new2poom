@@ -43,7 +43,7 @@ const TopBar: React.FC<TopBarProps> = ({ className = '' }) => {
             backgroundColor: theme.colors.beige,
             boxShadow: `4px 4px 12px rgba(232, 154, 89, 0.3)`,
           }}
-          onClick={() => handleNavClick('/map')}
+          onClick={() => handleNavClick('/')}
         >
           <img
             src={logoFull}

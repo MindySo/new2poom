@@ -43,6 +43,7 @@ const MobileTopBar: React.FC<MobileTopBarProps> = ({ className = '' }) => {
           src={logo}
           alt="품으로 로고"
           className={styles.logo}
+          onClick={() => handleNavClick('/')}
         />
       </div>
 

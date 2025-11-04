@@ -1,8 +1,8 @@
 import React from 'react';
-import { theme } from '../../../../theme';
+import { theme } from '../../../theme';
 import styles from './Dashboard.module.css';
-import close from '../../../../assets/back_icon.png';
-import logo from '../../../../assets/poom_logo.png';
+import close from '../../../assets/back_icon.png';
+import logo from '../../../assets/poom_logo.png';
 
 export interface DashboardProps {
   isOpen: boolean;
