@@ -1,6 +1,7 @@
 package com.topoom.missingcase.repository;
 
-import com.topoom.missingcase.domain.MissingCase;
+import com.topoom.missingcase.dto.MissingCaseListResponse;
+import com.topoom.missingcase.entity.MissingCase;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,4 +29,8 @@ public interface MissingCaseRepository extends JpaRepository<MissingCase, Long> 
         WHERE mc.id = :id AND mc.isDeleted = false
     """)
     Optional<MissingCase> findDetailById(@Param("id") Long id);
+
+    Optional<MissingCase> findByMissingId(Integer missingId);
+
+    List<MissingCase> findTop5ByOrderByCrawledAtDesc();
 }
