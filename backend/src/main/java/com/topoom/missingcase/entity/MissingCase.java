@@ -104,4 +104,13 @@ public class MissingCase extends BaseTimeEntity {
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
 
+    @OneToMany(mappedBy = "missingCase", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CaseFile> files;
+
+    @OneToOne(mappedBy = "missingCase", cascade = CascadeType.ALL, orphanRemoval = true)
+    private CaseContact contact;
+
+    @OneToOne(mappedBy = "missingCase", cascade = CascadeType.ALL, orphanRemoval = true)
+    private CaseAiSupport aiSupport;
+
 }

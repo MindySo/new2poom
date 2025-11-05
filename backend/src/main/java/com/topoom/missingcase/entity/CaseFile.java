@@ -23,8 +23,9 @@ public class CaseFile extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "case_id", nullable = true)
-    private Long caseId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "case_id", foreignKey = @ForeignKey(name = "fk_case_file_case"))
+    private MissingCase missingCase;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "io_role", length = 20, nullable = false)

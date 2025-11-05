@@ -143,4 +143,11 @@ public class MissingCaseService {
     public MissingCaseStatsResponse getStats() {
         return null;
     }
+
+    public List<MissingCaseListResponse> getRecentCases() {
+        return missingCaseRepository.findTop5ByOrderByCrawledAtDesc()
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
 }

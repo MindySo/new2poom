@@ -1,7 +1,9 @@
 package com.topoom.external.blog.service;
 
 import com.topoom.missingcase.entity.CaseFile;
+import com.topoom.missingcase.entity.MissingCase;
 import com.topoom.missingcase.repository.CaseFileRepository;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +19,8 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -25,6 +29,7 @@ public class S3ImageUploadService {
 
     private final S3Client s3Client;
     private final CaseFileRepository caseFileRepository;
+    private final EntityManager entityManager;
 
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucketName;
@@ -60,8 +65,13 @@ public class S3ImageUploadService {
             log.info("이미지 S3 업로드 완료: bucket={}, key={}, size={}bytes",
                     bucketName, s3Key, imageData.length);
 
+            MissingCase missingCase = null;
+            if (caseId != null) {
+                missingCase = entityManager.getReference(MissingCase.class, caseId);
+            }
+
             CaseFile caseFile = CaseFile.builder()
-                    .caseId(caseId)
+                    .missingCase(missingCase)
                     .ioRole(CaseFile.IoRole.INPUT)
                     .purpose(CaseFile.Purpose.BEFORE)
                     .contentKind(CaseFile.ContentKind.IMAGE)
@@ -83,6 +93,69 @@ public class S3ImageUploadService {
         } catch (Exception e) {
             log.error("이미지 다운로드 및 S3 업로드 실패: {}", imageUrl, e);
             throw new RuntimeException("이미지 다운로드 및 S3 업로드 실패", e);
+        }
+    }
+
+    public CaseFile uploadBase64Image(String base64Data, Long caseId) {
+        try {
+
+            MissingCase mc = entityManager.getReference(MissingCase.class, caseId);
+
+            Optional<CaseFile> existing = caseFileRepository.findByMissingCase(mc);
+            if (existing.isPresent()) {
+                log.debug("이미 이미지가 존재하므로 업로드 생략: {}", caseId);
+                return existing.get();
+            }
+
+
+            log.info("Base64 이미지 업로드 시작 (caseId={})", caseId);
+
+            byte[] imageBytes = Base64.getDecoder().decode(base64Data);
+
+            String contentType = detectContentType(imageBytes);
+            String s3Key = generateS3Key(caseId, getFileExtension(contentType));
+
+            BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageBytes));
+            int width = image != null ? image.getWidth() : 0;
+            int height = image != null ? image.getHeight() : 0;
+
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(s3Key)
+                    .contentType(contentType)
+                    .contentLength((long) imageBytes.length)
+                    .build();
+
+            s3Client.putObject(putObjectRequest, RequestBody.fromBytes(imageBytes));
+
+            MissingCase missingCase = null;
+            if (caseId != null) {
+                missingCase = entityManager.getReference(MissingCase.class, caseId);
+            }
+
+            CaseFile caseFile = CaseFile.builder()
+                    .missingCase(missingCase)
+                    .ioRole(CaseFile.IoRole.INPUT)
+                    .purpose(CaseFile.Purpose.BEFORE)
+                    .contentKind(CaseFile.ContentKind.IMAGE)
+                    .s3Key(s3Key)
+                    .s3Bucket(bucketName)
+                    .contentType(contentType)
+                    .sizeBytes((long) imageBytes.length)
+                    .sourceUrl("https://www.safe182.go.kr")
+                    .sourceSeq(0)
+                    .crawledAt(LocalDateTime.now())
+                    .build();
+
+            CaseFile saved = caseFileRepository.save(caseFile);
+
+            log.info("Base64 이미지 업로드 완료: id={}, bucket={}, key={}, size={} bytes, {}x{}",
+                    saved.getId(), bucketName, s3Key, imageBytes.length, width, height);
+
+            return saved;
+        } catch (Exception e) {
+            log.error("Base64 이미지 업로드 실패", e);
+            throw new RuntimeException("Base64 이미지 업로드 실패", e);
         }
     }
 

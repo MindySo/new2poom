@@ -48,6 +48,7 @@ public class KakaoClient {
             double latitude = Double.parseDouble((String) first.get("y"));
             double longitude = Double.parseDouble((String) first.get("x"));
 
+            log.debug("Kakao API 응답 [{}]: {}", address, documents);
             return Optional.of(new double[]{latitude, longitude});
 
         } catch (Exception e) {

@@ -1,9 +1,12 @@
 package com.topoom.missingcase.service;
 
+import com.topoom.external.blog.service.S3ImageUploadService;
 import com.topoom.external.openapi.KakaoClient;
 import com.topoom.external.openapi.Safe182Client;
+import com.topoom.missingcase.entity.CaseFile;
 import com.topoom.missingcase.entity.MissingCase;
 import com.topoom.missingcase.dto.Safe182Response;
+import com.topoom.missingcase.repository.CaseFileRepository;
 import com.topoom.missingcase.repository.MissingCaseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +31,8 @@ public class MissingCaseSyncService {
     private final Safe182Client safe182Client;
     private final KakaoClient kakaoClient;
     private final MissingCaseRepository missingCaseRepository;
+    private final CaseFileRepository caseFileRepository;
+    private final S3ImageUploadService s3ImageUploadService;
 
     /**
      * Safe182 API 데이터를 DB로 동기화
@@ -96,17 +101,18 @@ public class MissingCaseSyncService {
                 missingCase.setCrawledAt(LocalDateTime.now());
                 missingCase.setDeleted(false);
 
-                missingCaseRepository.save(missingCase);
+                MissingCase savedCase = missingCaseRepository.save(missingCase);
 
-                String base64 = item.getTknphotoFile().replaceAll("\\s+", "");
-                byte[] imageBytes = Base64.getDecoder().decode(base64);
-                String filename = "decoded_image_" + item.getMsspsnIdntfccd() + ".jpg";
-                File file = new File("images/" + filename);
-                file.getParentFile().mkdirs(); // images 폴더 자동 생성
+                if (item.getTknphotoFile() != null && !item.getTknphotoFile().isEmpty()) {
+                    try {
+                        CaseFile file = s3ImageUploadService.uploadBase64Image(item.getTknphotoFile().replaceAll("\\s+", ""), savedCase.getId());
 
-                try (OutputStream out = new FileOutputStream(file)) {
-                    out.write(imageBytes);
-                    log.info("이미지 저장: {}", file.getAbsolutePath());
+                        caseFileRepository.save(file);
+
+                        log.info("S3 업로드 완료: {}", savedCase.getId());
+                    } catch (Exception e) {
+                        log.error("이미지 업로드 실패 (missingId={}): {}", savedCase.getMissingId(), e.getMessage());
+                    }
                 }
 
             } catch (Exception e) {

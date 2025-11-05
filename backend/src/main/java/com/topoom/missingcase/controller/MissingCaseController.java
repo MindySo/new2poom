@@ -40,6 +40,12 @@ public class MissingCaseController {
         return ResponseEntity.ok(ApiResponse.success(stats));
     }
 
+    @GetMapping("/recent")
+    public ResponseEntity<ApiResponse<List<MissingCaseListResponse>>> getRecentCases() {
+        List<MissingCaseListResponse> cases = missingCaseService.getRecentCases();
+        return ResponseEntity.ok(ApiResponse.success(cases));
+    }
+
     @GetMapping("/call")
     public ResponseEntity<ApiResponse<Safe182Response>> getApi() {
         missingCaseSyncService.syncMissing(100);
