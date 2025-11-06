@@ -6,7 +6,7 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://k13a706.p.ssafy.io:3306/topoom-db?allowPublicKeyRetrieval=true&useSSL=false
+    url: ${DB_URL}
     username: ${MYSQL_USER}
     password: ${MYSQL_PASSWORD}
 
