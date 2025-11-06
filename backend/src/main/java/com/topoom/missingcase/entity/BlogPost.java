@@ -1,4 +1,4 @@
-package com.topoom.missingcase.domain;
+package com.topoom.missingcase.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

@@ -2,7 +2,6 @@ package com.topoom.missingcase.controller;
 
 import com.topoom.common.ApiResponse;
 import com.topoom.external.openapi.Safe182Client;
-import com.topoom.missingcase.domain.MissingCase;
 import com.topoom.missingcase.dto.MissingCaseDetailResponse;
 import com.topoom.missingcase.dto.MissingCaseListResponse;
 import com.topoom.missingcase.dto.MissingCaseStatsResponse;
@@ -41,8 +40,15 @@ public class MissingCaseController {
         return ResponseEntity.ok(ApiResponse.success(stats));
     }
 
+    @GetMapping("/recent/{hours}")
+    public ResponseEntity<ApiResponse<List<MissingCaseListResponse>>> getRecentCases(@PathVariable Integer hours) {
+        List<MissingCaseListResponse> cases = missingCaseService.getRecentCases(hours);
+        return ResponseEntity.ok(ApiResponse.success(cases));
+    }
+
     @GetMapping("/call")
     public ResponseEntity<ApiResponse<Safe182Response>> getApi() {
+        missingCaseSyncService.syncMissing(100);
         return ResponseEntity.ok(ApiResponse.success(safe182Client.getMissing(100)));
     }
 }

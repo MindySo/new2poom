@@ -1,4 +1,4 @@
-package com.topoom.missingcase.domain;
+package com.topoom.missingcase.entity;
 
 import com.topoom.common.BaseTimeEntity;
 import jakarta.persistence.*;
@@ -24,9 +24,8 @@ public class CaseContact extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // FK
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "case_id", foreignKey = @ForeignKey(name = "fk_case_contact_case"))
+    @JoinColumn(name = "case_id", foreignKey = @ForeignKey(name = "fk_case_file_case"))
     private MissingCase missingCase;
 
     private String organization;

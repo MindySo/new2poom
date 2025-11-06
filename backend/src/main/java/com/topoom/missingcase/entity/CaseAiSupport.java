@@ -1,4 +1,4 @@
-package com.topoom.missingcase.domain;
+package com.topoom.missingcase.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,9 +17,8 @@ public class CaseAiSupport {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // FK
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "case_id", nullable = false, foreignKey = @ForeignKey(name = "fk_ai_support_case"))
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "case_id", foreignKey = @ForeignKey(name = "fk_case_file_case"))
     private MissingCase missingCase;
 
     @Column(name = "top1_desc")
