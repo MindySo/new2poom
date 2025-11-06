@@ -6,7 +6,9 @@ import com.topoom.external.blog.entity.BlogPost;
 import com.topoom.external.blog.repository.BlogPostRepository;
 import com.topoom.missingcase.entity.CaseContact;
 import com.topoom.missingcase.entity.CaseFile;
+import com.topoom.missingcase.entity.MissingCase;
 import com.topoom.missingcase.repository.CaseContactRepository;
+import com.topoom.missingcase.repository.MissingCaseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
@@ -30,9 +32,10 @@ import java.util.regex.Pattern;
 public class IntegratedBlogCrawlingService {
 
     private final ObjectFactory<WebDriver> webDriverFactory; // ✅ prototype WebDriver
-    private final S3ImageUploadService s3ImageUploadService;
+    private final BlogS3ImageUploadService blogS3ImageUploadService;
     private final CaseContactRepository caseContactRepository;
     private final BlogPostRepository blogPostRepository;
+    private final MissingCaseRepository missingCaseRepository;
 
     private static final int WAIT_TIMEOUT_SECONDS = 10;
     private static final int MAX_PAGES = 50;
@@ -104,8 +107,8 @@ public class IntegratedBlogCrawlingService {
 
             for (ExtractedImageInfo img : extractedImages) {
                 try {
-                    CaseFile saved = s3ImageUploadService
-                            .downloadAndUploadImage(img.getImageUrl(), caseId);
+                    CaseFile saved = blogS3ImageUploadService
+                            .downloadAndUploadImage(img.getImageUrl(), postUrl, caseId);
                     uploadedFiles.add(saved);
                     imageSuccess++;
                 } catch (Exception e) {
@@ -136,6 +139,28 @@ public class IntegratedBlogCrawlingService {
         Map<String, Object> result = extractAndUploadImagesWithContacts(postUrl, caseId);
         //noinspection unchecked
         return (List<CaseFile>) result.get("images");
+    }
+    
+    /** 테스트용: MissingCase 생성 및 이미지 크롤링 */
+    public String testCreateMissingCaseAndCrawlImages(BlogPostInfo info) {
+        try {
+            log.info("🧪 테스트 시작: title={}, url={}", info.getTitle(), info.getPostUrl());
+            
+            // 1. MissingCase 생성
+            Long caseId = createMissingCaseFromBlogPost(info);
+            log.info("✅ MissingCase 생성 완료: caseId={}", caseId);
+            
+            // 2. 이미지 크롤링
+            crawlImagesForNewPost(info.getPostUrl(), caseId);
+            log.info("✅ 이미지 크롤링 완료: caseId={}", caseId);
+            
+            return String.format("성공: MissingCase ID=%d 생성 및 이미지 크롤링 완료 (게시글: %s)", 
+                caseId, info.getTitle());
+                
+        } catch (Exception e) {
+            log.error("❌ 테스트 실패: title={}, url={}", info.getTitle(), info.getPostUrl(), e);
+            throw new RuntimeException("테스트 실패: " + e.getMessage(), e);
+        }
     }
 
     // ────────────────────────── Internal helpers ──────────────────────────
@@ -360,13 +385,14 @@ public class IntegratedBlogCrawlingService {
         return "알 수 없음";
     }
 
-    /** BlogPost 저장 (URL 기준 중복 방지) */
+    /** BlogPost 저장 (URL 기준 중복 방지) 및 새 게시글 처리 */
     private List<BlogPost> saveBlogPostsToDatabase(List<BlogPostInfo> infos) {
         List<BlogPost> saved = new ArrayList<>();
         for (BlogPostInfo info : infos) {
             try {
                 String urlHash = generateUrlHash(info.getPostUrl());
                 if (!blogPostRepository.existsByUrlHash(urlHash)) {
+                    // 1. BlogPost 저장
                     BlogPost entity = BlogPost.builder()
                             .sourceTitle(info.getTitle())
                             .sourceUrl(info.getPostUrl())
@@ -374,13 +400,122 @@ public class IntegratedBlogCrawlingService {
                             .lastSeenAt(info.getCrawledAt())
                             .createdAt(LocalDateTime.now())
                             .build();
-                    saved.add(blogPostRepository.save(entity));
+                    BlogPost savedPost = blogPostRepository.save(entity);
+                    saved.add(savedPost);
+                    
+                    // 2. 새 게시글 발견 -> MissingCase 생성 및 이미지 크롤링
+                    try {
+                        Long caseId = createMissingCaseFromBlogPost(info);
+                        crawlImagesForNewPost(info.getPostUrl(), caseId);
+                        log.info("새 게시글 처리 완료: title={}, caseId={}", info.getTitle(), caseId);
+                    } catch (Exception e) {
+                        log.error("새 게시글 처리 실패: title={}, url={}", info.getTitle(), info.getPostUrl(), e);
+                    }
                 }
             } catch (Exception e) {
                 log.error("BlogPost 저장 실패: title={}, url={}", info.getTitle(), info.getPostUrl(), e);
             }
         }
         return saved;
+    }
+
+    /** 새 게시글로부터 MissingCase 생성 (크롤링 정보만) */
+    private Long createMissingCaseFromBlogPost(BlogPostInfo info) {
+        try {
+            // 크롤링 정보만으로 MissingCase 생성 (나머지 필드는 null)
+            MissingCase missingCase = MissingCase.builder()
+                    // 크롤링 관련 필드만 설정
+                    .sourceUrl(info.getPostUrl())
+                    .sourceTitle(info.getTitle())
+                    .crawledAt(info.getCrawledAt())
+                    
+                    // 모든 필드를 null로 설정 (isDeleted만 false)
+                    .personName(null)
+                    .targetType(null)
+                    .ageAtTime(null)
+                    .currentAge(null)
+                    .gender(null)
+                    .occurredAt(null)
+                    .occurredLocation(null)
+                    .heightCm(null)
+                    .weightKg(null)
+                    .bodyType(null)
+                    .faceShape(null)
+                    .hairColor(null)
+                    .hairStyle(null)
+                    .isDeleted(false)
+                    .nationality(null)
+                    .latitude(null)
+                    .longitude(null)
+                    .clothingDesc(null)
+                    .progressStatus(null)
+                    .etcFeatures(null)
+                    .missingId(null)
+                    .mainFile(null)
+                    .build();
+            
+            MissingCase saved = missingCaseRepository.save(missingCase);
+            log.info("MissingCase 생성 완료: id={}, title={}", saved.getId(), info.getTitle());
+            return saved.getId();
+            
+        } catch (Exception e) {
+            log.error("MissingCase 생성 실패: title={}", info.getTitle(), e);
+            throw new RuntimeException("MissingCase 생성 실패", e);
+        }
+    }
+    
+    /** 새 게시글의 이미지 크롤링 및 저장 */
+    private void crawlImagesForNewPost(String postUrl, Long caseId) {
+        withDriver(driver -> {
+            try {
+                log.info("새 게시글 이미지 크롤링 시작: {}", postUrl);
+                driver.get(postUrl);
+                
+                try { 
+                    waitFor(driver, By.className("se-main-container")); 
+                } catch (Exception ignored) { 
+                    // fallback 가능 
+                }
+                
+                // 게시글 제목 추출
+                String sourceTitle = null;
+                try {
+                    WebElement titleElement = driver.findElement(By.cssSelector(".se-title-text, .pcol1"));
+                    sourceTitle = titleElement.getText().trim();
+                } catch (Exception e) {
+                    log.warn("게시글 제목 추출 실패, fallback 사용: {}", e.getMessage());
+                    sourceTitle = driver.getTitle();
+                }
+                
+                List<ExtractedImageInfo> extractedImages = extractImagesFromWebDriver(driver, postUrl);
+                int totalImages = extractedImages.size();
+                int imageSuccess = 0, imageFail = 0;
+                
+                for (int i = 0; i < extractedImages.size(); i++) {
+                    ExtractedImageInfo img = extractedImages.get(i);
+                    try {
+                        Integer sourceSeq = i + 1; // 1부터 시작하는 순서
+                        Boolean isLastImage = (i == totalImages - 1); // 마지막 이미지 여부
+                        
+                        CaseFile saved = blogS3ImageUploadService.downloadAndUploadImage(
+                            img.getImageUrl(), postUrl, caseId, sourceTitle, sourceSeq, isLastImage);
+                        imageSuccess++;
+                        log.debug("이미지 저장 성공: {} (seq: {}, isLast: {})", 
+                            img.getImageUrl(), sourceSeq, isLastImage);
+                    } catch (Exception e) {
+                        imageFail++;
+                        log.error("이미지 저장 실패: {} - {}", img.getImageUrl(), e.getMessage());
+                    }
+                }
+                
+                log.info("이미지 크롤링 완료: postUrl={}, caseId={}, success={}, fail={}, total={}", 
+                    postUrl, caseId, imageSuccess, imageFail, totalImages);
+                
+            } catch (Exception e) {
+                log.error("이미지 크롤링 실패: postUrl={}, caseId={}", postUrl, caseId, e);
+            }
+            return null;
+        });
     }
 
     private void sleep(long ms) {
