@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMissingDetail } from '../../../hooks/useMissingDetail';
 import { useShareMissingPerson } from '../../../hooks/useShareMissingPerson';
+import { useElapsedTime } from '../../../hooks/useElapsedTime';
 import type { MissingPerson } from '../../../types/missing';
 import styles from './MArchiveCard.module.css';
 import Badge from '../../common/atoms/Badge';
@@ -12,19 +13,6 @@ import Button from '../../common/atoms/Button';
 
 export interface MArchiveCardProps {
   personId: number;
-}
-
-function formatElapsed(iso: string): string {
-  const occured = new Date(iso).getTime();
-  const now = Date.now();
-  const ms = Math.max(0, now - occured);
-  const totalSeconds = Math.floor(ms / 1000);
-  const days = Math.floor(totalSeconds / 86400);
-  const hours = Math.floor((totalSeconds % 86400) / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  return days > 0
-    ? `${days}일 ${hours}시간 경과`
-    : `${hours}시간 ${minutes}분 경과`;
 }
 
 const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
@@ -53,7 +41,7 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
     personName,
     ageAtTime,
     gender,
-    occurredAt,
+    crawledAt,
     occurredLocation,
     classificationCode,
     mainImage,
@@ -67,6 +55,16 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
     inputImages,
     outputImages,
   } = displayData;
+  
+  const elapsedTime = useElapsedTime(crawledAt);
+  
+  // 발생일 포맷팅 (안전하게 처리)
+  const formatDate = (dateString: string | undefined): string => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '-';
+    return date.toISOString().slice(0, 10);
+  };
 
   // 이미지 URL 가져오기
   const thumbnailImages = inputImages?.slice(0, 4) || [];
@@ -87,7 +85,7 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
         <div className={styles['m-archive-card__right']}>
           <div className={styles['m-archive-card__main']}>
             <div className={styles['m-archive-card__header']}>
-              <Badge variant="time" size="xs">{formatElapsed(occurredAt)}</Badge>
+              <Badge variant="time" size="xs">{elapsedTime}</Badge>
               {classificationCode && (
                 <Badge variant="feature" size="xs">{classificationCode}</Badge>
               )}
@@ -100,7 +98,7 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
             <div className={styles['m-archive-card__info']}>
               <div>
                 <Text as="div" size="xs" color="gray" className={styles['m-archive-card__label']}>발생일</Text>
-                <Text as="div" size="xs" className={styles['m-archive-card__value']}>{new Date(occurredAt).toISOString().slice(0, 10)}</Text>
+                <Text as="div" size="xs" className={styles['m-archive-card__value']}>{formatDate(crawledAt)}</Text>
               </div>
               <div>
                 <Text as="div" size="xs" color="gray" className={styles['m-archive-card__label']}>발생장소</Text>

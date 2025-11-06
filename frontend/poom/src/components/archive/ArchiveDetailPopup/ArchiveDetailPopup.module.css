@@ -28,9 +28,6 @@
 }
 
 /* 헤더 */
-.popup-header {
-}
-
 .popup-header-left {
   display: flex;
   flex-direction: column;
