@@ -38,6 +38,10 @@ const Marker: React.FC<MarkerProps> = ({
     markerPointer.className = styles.markerPointer;
     markerPointer.style.borderTopColor = ringColor;
 
+    // 타원형 그림자
+    const markerShadow = document.createElement('div');
+    markerShadow.className = styles.markerShadow;
+
     // 마커 본체
     const markerBody = document.createElement('div');
     markerBody.className = styles.markerBody;
@@ -74,6 +78,7 @@ const Marker: React.FC<MarkerProps> = ({
     markerBody.appendChild(outerBorder);
     markerElement.appendChild(markerPointer);
     markerElement.appendChild(markerBody);
+    markerElement.appendChild(markerShadow);
 
     // 클릭 이벤트
     if (onClick) {

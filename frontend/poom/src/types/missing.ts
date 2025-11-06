@@ -23,6 +23,7 @@ export interface MissingPerson {
   ageAtTime: number;
   currentAge?: number;
   gender?: string;
+  speed?: number;
   nationality?: string;
   occurredAt: string; // ISO string (API에서 occurredAt 사용)
   occurredLocation: string;
