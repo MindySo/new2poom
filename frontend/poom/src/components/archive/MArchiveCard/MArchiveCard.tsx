@@ -94,7 +94,7 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
 
             <div className={styles['m-archive-card__row']}>
               <Text as="span" size="sm" weight="bold" className={styles['m-archive-card__name']}>{personName}</Text>
-              <Text as="span" size="xs" color="gray" className={styles['m-archive-card__meta']}>{gender ?? '성별 미상'} · {ageAtTime}세</Text>
+              <Text as="span" size="xs" color="gray" className={styles['m-archive-card__meta']}>{gender ?? '성별 미상'} / {ageAtTime}세</Text>
             </div>
             <div className={styles['m-archive-card__info']}>
               <div>

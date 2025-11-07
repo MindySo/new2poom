@@ -3,7 +3,7 @@ import { ArchiveCard } from "../../components/archive/ArchiveCard/ArchiveCard";
 import { MArchiveCard } from "../../components/archive/MArchiveCard/MArchiveCard";
 import { ArchiveDetailPopup } from "../../components/archive/ArchiveDetailPopup/ArchiveDetailPopup";
 import styles from "./ListPage.module.css";
-import bannerImg from "../../assets/ListPageBanner.png";
+import bannerImg from "../../assets/hero_section.png";
 import { useIsMobile } from "../../hooks/useMediaQuery";
 import { useMissingList } from "../../hooks/useMissingList";
 import { theme } from "../../theme";
