@@ -57,7 +57,7 @@ const ArchiveCard: React.FC<ArchiveCardProps> = ({ person, onClick }) => {
 
             <div className={styles['archive-card__row']}>
               <Text as="span" size="md" weight="bold" className={styles['archive-card__name']}>{personName}</Text>
-              <Text as="span" size="sm" color="gray" className={styles['archive-card__meta']}>{gender ?? '성별 미상'} · {ageAtTime}세</Text>
+              <Text as="span" size="sm" color="gray" className={styles['archive-card__meta']}>{gender ?? '성별 미상'} / {ageAtTime}세</Text>
             </div>
             <div className={styles['archive-card__info']}>
               <div>
