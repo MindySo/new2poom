@@ -85,10 +85,10 @@ public class MissingCase extends BaseTimeEntity {
     @JoinColumn(name = "main_file_id", foreignKey = @ForeignKey(name = "fk_missing_case_main_file"))
     private CaseFile mainFile;
 
-    @Column(name = "source_url", columnDefinition = "TEXT", nullable = false)
+    @Column(name = "source_url", columnDefinition = "TEXT")
     private String sourceUrl;
 
-    @Column(name = "source_title", length = 300, nullable = false)
+    @Column(name = "source_title", length = 300)
     private String sourceTitle;
 
     @Column(name = "crawled_at", nullable = false)
@@ -106,5 +106,8 @@ public class MissingCase extends BaseTimeEntity {
 
     @OneToOne(mappedBy = "missingCase", cascade = CascadeType.ALL, orphanRemoval = true)
     private CaseAiSupport aiSupport;
+
+    @OneToMany(mappedBy = "missingCase", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CaseReport> reports;
 
 }

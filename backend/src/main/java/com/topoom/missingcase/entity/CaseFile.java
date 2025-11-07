@@ -61,16 +61,15 @@ public class CaseFile extends BaseTimeEntity {
     @Column(name = "source_seq", nullable = false)
     private Integer sourceSeq;
 
-    @Builder.Default
-    @Column(name = "is_last_image", nullable = false)
-    private boolean isLastImage = false;
+    @Column(name = "is_last_image")
+    private Boolean isLastImage;
 
     @Column(name = "crawled_at")
     private LocalDateTime crawledAt;
 
     public enum IoRole { INPUT, OUTPUT }
     public enum Purpose {
-        SAFEDREAM, OCR, FACE, FULL_BODY, ENHANCED
+        SAFE, BEFORE, OCR, FACE, FULL_BODY, ENHANCED
     }
     public enum ContentKind { IMAGE, JSON }
 }
