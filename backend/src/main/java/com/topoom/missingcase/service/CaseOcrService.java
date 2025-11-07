@@ -28,12 +28,23 @@ public class CaseOcrService {
     private final MissingCaseRepository missingCaseRepository;
 
     // 정규식 패턴들
+    // 첫 줄 통합 패턴: "장애: 이우승(55세) 남자" 또는 "아동 김수아(14세) 여자" 형식
+    private static final Pattern FIRST_LINE_PATTERN = Pattern.compile("^\\s*([가-힣]+)[:：]?\\s+([가-힣]{2,4})\\s*\\(\\s*(\\d{1,3})\\s*세\\s*\\)\\s*(남|여|남자|여자|남성|여성)", Pattern.MULTILINE);
+
     private static final Pattern NAME_PATTERN = Pattern.compile("(?:성명|이름)\\s*[:：]?\\s*([가-힣]{2,4})");
-    private static final Pattern AGE_PATTERN = Pattern.compile("(?:나이|연령)\\s*[:：]?\\s*(\\d{1,3})");
+    private static final Pattern AGE_PATTERN = Pattern.compile("(?:나이|연령|당시나이|당시\\s*나이)\\s*[:：]?\\s*(\\d{1,3})");
     private static final Pattern GENDER_PATTERN = Pattern.compile("(?:성별)\\s*[:：]?\\s*(남|여|남성|여성)");
-    private static final Pattern LOCATION_PATTERN = Pattern.compile("(?:실종장소|장소)\\s*[:：]?\\s*([가-힣\\s]+)");
+    private static final Pattern OCCURRED_DATE_PATTERN = Pattern.compile("(?:발생일시|실종일시)\\s*[:：]?\\s*(\\d{4})년\\s*(\\d{1,2})월\\s*(\\d{1,2})일");
+    private static final Pattern LOCATION_PATTERN = Pattern.compile("(?:실종장소|발생장소|장소)\\s*[:：]?\\s*([^\\n]+?)(?=\\s*키|\\s*신장|\\s*$)");
     private static final Pattern HEIGHT_PATTERN = Pattern.compile("(?:신장|키)\\s*[:：]?\\s*(\\d{2,3})\\s*cm");
     private static final Pattern WEIGHT_PATTERN = Pattern.compile("(?:체중|몸무게)\\s*[:：]?\\s*(\\d{2,3})\\s*kg");
+    private static final Pattern BODY_TYPE_PATTERN = Pattern.compile("(?:체격|체형)\\s*[:：]?\\s*([가-힣()（）]+)");
+    private static final Pattern FACE_SHAPE_PATTERN = Pattern.compile("(?:얼굴형|얼굴)\\s*[:：]?\\s*([가-힣()（）]+)");
+    private static final Pattern HAIR_COLOR_PATTERN = Pattern.compile("(?:두발색상|머리색|머리카락색)\\s*[:：]?\\s*([가-힣()（）]+)");
+    private static final Pattern HAIR_STYLE_PATTERN = Pattern.compile("(?:두발형태|머리형태|헤어스타일)\\s*[:：]?\\s*([가-힣()（）]+)");
+    private static final Pattern CLOTHING_PATTERN = Pattern.compile("(?:착의의상|착의사항|착의|옷차림|의상)\\s*[:：]?\\s*([^\\n]+?)(?=\\s*(?:진행상태|특이사항|특징|기타특징)|\\s*$)");
+    private static final Pattern FEATURES_PATTERN = Pattern.compile("(?:특이사항|특징|기타특징)\\s*[:：]?\\s*([^\\n]+)");
+    private static final Pattern PROGRESS_STATUS_PATTERN = Pattern.compile("(?:진행상태|상태)\\s*[:：]?\\s*([가-힣]+)");
 
     /**
      * 마지막 이미지 OCR 처리 (비동기)
@@ -89,16 +100,77 @@ public class CaseOcrService {
     }
 
     /**
+     * 테스트용: 특정 케이스의 마지막 이미지에 대해 OCR을 수행하고 원본 결과 반환
+     */
+    public String testOcrForCase(Long caseId) {
+        try {
+            log.info("테스트 OCR 처리 시작: caseId={}", caseId);
+
+            // 1. is_last_image=true인 CaseFile 조회
+            CaseFile lastImage = caseFileRepository.findByMissingCaseIdAndIsLastImage(caseId, true)
+                    .orElseThrow(() -> new RuntimeException("마지막 이미지를 찾을 수 없습니다: caseId=" + caseId));
+
+            // 2. OCR API 호출
+            String ocrResult = callOcrApi(lastImage.getS3Key()).block();
+
+            log.info("테스트 OCR 처리 완료: caseId={}, 결과 길이={}", caseId, ocrResult != null ? ocrResult.length() : 0);
+
+            return ocrResult;
+
+        } catch (Exception e) {
+            log.error("테스트 OCR 처리 실패: caseId={}", caseId, e);
+            throw new RuntimeException("OCR 처리 실패: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * OCR 결과를 파싱하여 MissingCase 업데이트
      */
     private void updateMissingCaseFromOcrResult(Long caseId, String ocrText) {
         try {
+            log.info("OCR 원본 텍스트 (caseId={}): \n{}", caseId, ocrText);
+
             MissingCase missingCase = missingCaseRepository.findById(caseId)
                     .orElseThrow(() -> new RuntimeException("MissingCase를 찾을 수 없습니다: " + caseId));
-            
+
             boolean updated = false;
-            
-            // 이름 추출
+
+            // 첫 줄 통합 패턴 처리: "장애: 이우승(55세) 남자" 형식
+            Matcher firstLineMatcher = FIRST_LINE_PATTERN.matcher(ocrText);
+            if (firstLineMatcher.find()) {
+                // target_type 추출
+                if (isNullOrEmpty(missingCase.getTargetType())) {
+                    missingCase.setTargetType(firstLineMatcher.group(1));
+                    updated = true;
+                    log.info("target_type 업데이트: caseId={}, targetType={}", caseId, firstLineMatcher.group(1));
+                }
+
+                // person_name 추출
+                if (isNullOrEmpty(missingCase.getPersonName())) {
+                    missingCase.setPersonName(firstLineMatcher.group(2));
+                    updated = true;
+                    log.info("이름 업데이트 (첫 줄): caseId={}, name={}", caseId, firstLineMatcher.group(2));
+                }
+
+                // age 추출
+                if (missingCase.getCurrentAge() == null || missingCase.getCurrentAge() == 0) {
+                    short age = Short.parseShort(firstLineMatcher.group(3));
+                    missingCase.setCurrentAge(age);
+                    missingCase.setAgeAtTime(age);
+                    updated = true;
+                    log.info("나이 업데이트 (첫 줄): caseId={}, age={}", caseId, age);
+                }
+
+                // gender 추출
+                if (isNullOrEmpty(missingCase.getGender())) {
+                    String gender = normalizeGender(firstLineMatcher.group(4));
+                    missingCase.setGender(gender);
+                    updated = true;
+                    log.info("성별 업데이트 (첫 줄): caseId={}, gender={}", caseId, gender);
+                }
+            }
+
+            // 기존 이름 추출 (첫 줄 패턴에서 추출 실패 시 fallback)
             Matcher nameMatcher = NAME_PATTERN.matcher(ocrText);
             if (nameMatcher.find() && isNullOrEmpty(missingCase.getPersonName())) {
                 missingCase.setPersonName(nameMatcher.group(1));
@@ -125,6 +197,22 @@ public class CaseOcrService {
                 log.info("성별 업데이트: caseId={}, gender={}", caseId, gender);
             }
             
+            // 발생일시 추출
+            Matcher occurredDateMatcher = OCCURRED_DATE_PATTERN.matcher(ocrText);
+            if (occurredDateMatcher.find() && missingCase.getOccurredAt() == null) {
+                try {
+                    int year = Integer.parseInt(occurredDateMatcher.group(1));
+                    int month = Integer.parseInt(occurredDateMatcher.group(2));
+                    int day = Integer.parseInt(occurredDateMatcher.group(3));
+                    LocalDateTime occurredAt = LocalDateTime.of(year, month, day, 0, 0);
+                    missingCase.setOccurredAt(occurredAt);
+                    updated = true;
+                    log.info("발생일시 업데이트: caseId={}, occurredAt={}", caseId, occurredAt);
+                } catch (Exception e) {
+                    log.warn("발생일시 파싱 실패: caseId={}, text={}", caseId, occurredDateMatcher.group(0), e);
+                }
+            }
+
             // 실종장소 추출
             Matcher locationMatcher = LOCATION_PATTERN.matcher(ocrText);
             if (locationMatcher.find() && isNullOrEmpty(missingCase.getOccurredLocation())) {
@@ -132,7 +220,7 @@ public class CaseOcrService {
                 updated = true;
                 log.info("실종장소 업데이트: caseId={}, location={}", caseId, locationMatcher.group(1));
             }
-            
+
             // 신장 추출
             Matcher heightMatcher = HEIGHT_PATTERN.matcher(ocrText);
             if (heightMatcher.find() && (missingCase.getHeightCm() == null || missingCase.getHeightCm() == 0)) {
@@ -150,17 +238,84 @@ public class CaseOcrService {
                 updated = true;
                 log.info("체중 업데이트: caseId={}, weight={}kg", caseId, weight);
             }
-            
+
+            // 체격 추출
+            Matcher bodyTypeMatcher = BODY_TYPE_PATTERN.matcher(ocrText);
+            if (bodyTypeMatcher.find() && isNullOrEmpty(missingCase.getBodyType())) {
+                missingCase.setBodyType(bodyTypeMatcher.group(1).trim());
+                updated = true;
+                log.info("체격 업데이트: caseId={}, bodyType={}", caseId, bodyTypeMatcher.group(1));
+            }
+
+            // 얼굴형 추출
+            Matcher faceShapeMatcher = FACE_SHAPE_PATTERN.matcher(ocrText);
+            if (faceShapeMatcher.find() && isNullOrEmpty(missingCase.getFaceShape())) {
+                missingCase.setFaceShape(faceShapeMatcher.group(1).trim());
+                updated = true;
+                log.info("얼굴형 업데이트: caseId={}, faceShape={}", caseId, faceShapeMatcher.group(1));
+            }
+
+            // 두발색상 추출
+            Matcher hairColorMatcher = HAIR_COLOR_PATTERN.matcher(ocrText);
+            if (hairColorMatcher.find() && isNullOrEmpty(missingCase.getHairColor())) {
+                missingCase.setHairColor(hairColorMatcher.group(1).trim());
+                updated = true;
+                log.info("두발색상 업데이트: caseId={}, hairColor={}", caseId, hairColorMatcher.group(1));
+            }
+
+            // 두발형태 추출
+            Matcher hairStyleMatcher = HAIR_STYLE_PATTERN.matcher(ocrText);
+            if (hairStyleMatcher.find() && isNullOrEmpty(missingCase.getHairStyle())) {
+                missingCase.setHairStyle(hairStyleMatcher.group(1).trim());
+                updated = true;
+                log.info("두발형태 업데이트: caseId={}, hairStyle={}", caseId, hairStyleMatcher.group(1));
+            }
+
+            // 착의의상 추출
+            Matcher clothingMatcher = CLOTHING_PATTERN.matcher(ocrText);
+            if (clothingMatcher.find() && isNullOrEmpty(missingCase.getClothingDesc())) {
+                String clothing = clothingMatcher.group(1).trim();
+                // 빈 값이 아니고, 최소 2글자 이상이며, "진행상태", "의상", "착의" 같은 키워드만 있지 않은 경우만 저장
+                if (!clothing.isEmpty()
+                    && clothing.length() >= 2
+                    && !clothing.matches("^(착의|의상|착의의상|착의사항)$")
+                    && !clothing.matches(".*(?:진행상태|신고|수사중|접수|특이사항).*")) {
+                    missingCase.setClothingDesc(clothing);
+                    updated = true;
+                    log.info("착의의상 업데이트: caseId={}, clothing={}", caseId, clothing);
+                } else {
+                    log.info("착의의상이 비어있거나 유효하지 않음: caseId={}, value='{}', length={}", caseId, clothing, clothing.length());
+                }
+            }
+
+            // 특이사항 추출
+            Matcher featuresMatcher = FEATURES_PATTERN.matcher(ocrText);
+            if (featuresMatcher.find() && isNullOrEmpty(missingCase.getEtcFeatures())) {
+                missingCase.setEtcFeatures(featuresMatcher.group(1).trim());
+                updated = true;
+                log.info("특이사항 업데이트: caseId={}, features={}", caseId, featuresMatcher.group(1));
+            }
+
+            // 진행상태 추출
+            Matcher progressStatusMatcher = PROGRESS_STATUS_PATTERN.matcher(ocrText);
+            if (progressStatusMatcher.find() && isNullOrEmpty(missingCase.getProgressStatus())) {
+                missingCase.setProgressStatus(progressStatusMatcher.group(1).trim());
+                updated = true;
+                log.info("진행상태 업데이트: caseId={}, progressStatus={}", caseId, progressStatusMatcher.group(1));
+            }
+
             // 기타 기본값 설정 (null인 경우만)
             if (isNullOrEmpty(missingCase.getTargetType())) {
                 missingCase.setTargetType("실종자");
                 updated = true;
             }
-            
-            if (missingCase.getOccurredAt() == null) {
-                missingCase.setOccurredAt(LocalDateTime.now());
+
+            if (isNullOrEmpty(missingCase.getNationality())) {
+                missingCase.setNationality("내국인");
                 updated = true;
             }
+
+            // occurred_at은 OCR에서 추출하지 못하면 null로 유지 (기본값 설정 안 함)
             
             if (updated) {
                 missingCaseRepository.save(missingCase);

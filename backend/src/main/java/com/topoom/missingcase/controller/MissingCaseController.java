@@ -3,6 +3,7 @@ package com.topoom.missingcase.controller;
 import com.topoom.common.ApiResponse;
 import com.topoom.external.openapi.Safe182Client;
 import com.topoom.missingcase.dto.*;
+import com.topoom.missingcase.service.CaseOcrService;
 import com.topoom.missingcase.service.CaseReportService;
 import com.topoom.missingcase.service.MissingCaseService;
 import com.topoom.missingcase.service.MissingCaseSyncService;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/missing")
@@ -22,6 +24,7 @@ public class MissingCaseController {
     private final MissingCaseService missingCaseService;
     private final MissingCaseSyncService missingCaseSyncService;
     private final CaseReportService caseReportService;
+    private final CaseOcrService caseOcrService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<MissingCaseListResponse>>> getAllCases() {
@@ -60,5 +63,26 @@ public class MissingCaseController {
     @GetMapping("/report/{id}")
     public ResponseEntity<ApiResponse<List<CaseReportResponse>>> getReports(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(caseReportService.getReportsByCaseId(id)));
+    }
+
+    /**
+     * 테스트용: 특정 케이스의 OCR 원본 결과 확인
+     */
+    @GetMapping("/test-ocr/{caseId}")
+    public ResponseEntity<Map<String, String>> testOcrResult(@PathVariable Long caseId) {
+        try {
+            String ocrResult = caseOcrService.testOcrForCase(caseId);
+            return ResponseEntity.ok(Map.of(
+                    "success", "true",
+                    "caseId", String.valueOf(caseId),
+                    "ocrResult", ocrResult != null ? ocrResult : "OCR 결과가 없습니다."
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", "false",
+                    "caseId", String.valueOf(caseId),
+                    "error", e.getMessage()
+            ));
+        }
     }
 }

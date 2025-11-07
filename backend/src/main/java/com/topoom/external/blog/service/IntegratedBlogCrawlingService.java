@@ -450,7 +450,7 @@ public class IntegratedBlogCrawlingService {
                     .latitude(null)
                     .longitude(null)
                     .clothingDesc(null)
-                    .progressStatus(null)
+                    .progressStatus("신고")
                     .etcFeatures(null)
                     .missingId(null)
                     .mainFile(null)
