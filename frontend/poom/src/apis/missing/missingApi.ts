@@ -29,13 +29,9 @@ export const getMissingStats = async (): Promise<MissingStats> => {
   return response.data.data; // 응답 구조: {success, message, data: {...}}
 };
 
-// 최근 실종자 목록 조회
+// 최근 실종자 목록 조회(시간 단위)
 // GET /api/v1/missing/recent/{hours}
 export const getRecentMissing = async (hours: number): Promise<MissingPerson[]> => {
   const response = await apiClient.get<ApiResponse<MissingPerson[]>>(`/api/v1/missing/recent/${hours}`);
   return response.data.data; // 응답 구조: {success, message, data: [...]}
 };
-
-
-// 24시간 이내 실종자 목록 조회
-
