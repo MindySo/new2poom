@@ -22,7 +22,7 @@ spring:
         access-key: ${S3_ACCESS_KEY_ID}
         secret-key: ${S3_SECRET_ACCESS_KEY}
       s3:
-        bucket: topoom-s3-bucket
+        bucket: ${S3_BUCKET}
       region:
         static: ap-southeast-2
       stack:
@@ -66,6 +66,15 @@ kakao:
 
 server:
   port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
 
 logging:
   level:

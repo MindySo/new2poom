@@ -1,0 +1,66 @@
+#############################
+#  NETWORKS & VOLUMES
+#############################
+networks:
+  topoom-network:
+    driver: bridge
+    name: topoom-scheduling-network
+
+volumes:
+  redis-queue-data:
+    name: topoom-scheduling-redis-data
+
+#############################
+#  SERVICES
+#############################
+services:
+  # Redis Queue
+  redis:
+    image: redis:7.2
+    container_name: topoom-scheduling-redis
+    restart: always
+    environment:
+      - TZ=Asia/Seoul
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    volumes:
+      - redis-queue-data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: >
+      sh -c "redis-server /usr/local/etc/redis/redis.conf --requirepass $${REDIS_PASSWORD}"
+    ports:
+      - "6379:6379"
+    networks:
+      - topoom-scheduling-network
+
+  # Backend Scheduler (Spring Boot Scheduling Server)
+  # TODO: backend-scheduling 프로젝트 생성 후 활성화
+  # scheduler:
+  #   image: ${REGISTRY}/topoom-scheduler:latest
+  #   container_name: topoom-scheduling-scheduler
+  #   restart: always
+  #   environment:
+  #     - TZ=Asia/Seoul
+  #     - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - redis
+  #   networks:
+  #     - topoom-scheduling-network
+
+  # Backend OCR (OCR Processing Server)
+  ocr:
+    image: ${REGISTRY}/topoom-ocr:latest
+    container_name: topoom-ocr
+    restart: always
+    environment:
+      - TZ=Asia/Seoul
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    expose:
+      - "8081"
+    networks:
+      - topoom-scheduling-network
