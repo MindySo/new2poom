@@ -144,6 +144,7 @@ const ReportLocationInput: React.FC<ReportLocationInputProps> = React.memo(({ co
               placeholder="예: 서울시 강남구 테헤란로 123"
               className={`${styles.input} ${readOnly ? styles.readOnly : ''}`}
               readOnly={readOnly}
+              maxLength={50}
               onKeyPress={(e) => {
                 if (!readOnly && e.key === 'Enter' && location.trim()) {
                   handleSubmit();

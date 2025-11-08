@@ -68,6 +68,7 @@ const ReportDetailInput: React.FC<ReportDetailInputProps> = React.memo(({ contex
             rows={1}
             className={`${styles.textarea} ${readOnly ? styles.readOnly : ''}`}
             readOnly={readOnly}
+            maxLength={80}
           />
         </div>
       )}
