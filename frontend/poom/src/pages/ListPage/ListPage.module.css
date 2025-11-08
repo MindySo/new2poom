@@ -6,6 +6,14 @@
   padding: 0 0 48px; /* full-bleed hero, no side padding, 상단 padding 제거 */
 }
 
+/* 히어로 섹션 + 탭을 함께 감싸는 sticky wrapper */
+.sticky-wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #f7f7f8;
+}
+
 /* Hero banner containing the header and search */
 .list-hero {
   position: relative;
@@ -82,7 +90,7 @@
   background: #2f3846; /* dark strip behind tabs */
   color: #cfd6df;
   padding: 10px 0;
-  margin: 0 0 20px;
+  margin: 0;
 }
 
 .list-tabs button {
@@ -119,6 +127,7 @@
   grid-template-columns: repeat(auto-fit, 400px); /* fixed card columns */
   justify-content: center; /* center rows when not full */
   gap: 28px 36px;
+  padding-top: 20px;
 }
 
 /* 모바일 버전 스타일 (1024px 이하) */

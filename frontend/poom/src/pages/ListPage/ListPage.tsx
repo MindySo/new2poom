@@ -148,26 +148,28 @@ const ListPage = () => {
   // 데스크톱 버전 렌더링 (1024px 초과)
   return (
     <div className={`${styles['list-page']} ${styles['desktop']}`}>
-      {/* 히어로 배너 (배경 이미지 + 검색영역) */}
-      <div
-        className={styles['list-hero']}
-        style={{ backgroundImage: `url(${bannerImg})` }}
-      >
-        <div className={styles['list-hero__overlay']} />
-        <header className={styles['list-header']}>
-          <h2>실종자 목록</h2>
-          <div className={styles['search-bar']}>
-            <input 
-              placeholder="실종자를 검색해보세요" 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </header>
-      </div>
+      {/* 히어로 배너 + 탭을 sticky로 감싸는 wrapper */}
+      <div className={styles['sticky-wrapper']}>
+        {/* 히어로 배너 (배경 이미지 + 검색영역) */}
+        <div
+          className={styles['list-hero']}
+          style={{ backgroundImage: `url(${bannerImg})` }}
+        >
+          <div className={styles['list-hero__overlay']} />
+          <header className={styles['list-header']}>
+            <h2>실종자 목록</h2>
+            <div className={styles['search-bar']}>
+              <input 
+                placeholder="실종자를 검색해보세요" 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </header>
+        </div>
 
-      {/* 필터 탭 */}
-      <div className={styles['list-tabs']}>
+        {/* 필터 탭 */}
+        <div className={styles['list-tabs']}>
         <button
           className={activeTab === "all" ? "active" : undefined}
           onClick={() => setActiveTab("all")}
@@ -186,6 +188,7 @@ const ListPage = () => {
         >
           24시간 이상
         </button>
+      </div>
       </div>
 
       {/* 카드 리스트 영역 */}
