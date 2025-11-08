@@ -95,7 +95,7 @@ public class MissingCaseSyncService {
                 missingCase.setBodyType(item.getFrmDscd());
                 missingCase.setHairStyle(item.getHairshpeDscd());
                 missingCase.setClothingDesc(item.getAlldressingDscd());
-                missingCase.setTargetType(mapTargetType(item.getWritingTrgetDscd()));
+                missingCase.setTargetType(mapTargetType(item.getWritngTrgetDscd()));
 
                 missingCase.setSourceTitle("실종경보 Open Api");
                 missingCase.setSourceUrl("https://www.safe182.go.kr");
@@ -122,11 +122,11 @@ public class MissingCaseSyncService {
         }
     }
 
-    private String mapTargetType(String writingTrgetDscd) {
-        if (writingTrgetDscd == null) {
+    private String mapTargetType(String writngTrgetDscd) {
+        if (writngTrgetDscd == null) {
             return "불상";
         }
-        switch (writingTrgetDscd) {
+        switch (writngTrgetDscd) {
             case "010":
                 return "아동";
             case "060":
