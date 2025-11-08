@@ -60,6 +60,7 @@ public class MissingCaseService {
                 .latitude(mc.getLatitude())
                 .longitude(mc.getLongitude())
                 .crawledAt(mc.getCrawledAt().atZone(ZoneOffset.UTC))
+                .phoneNumber(mc.getContact() != null ? mc.getContact().getPhoneNumber() : "182")
                 .mainImage(mainImage)
                 .build();
     }
@@ -95,6 +96,11 @@ public class MissingCaseService {
             caseContact = MissingCaseDetailResponse.CaseContact.builder()
                     .organization(mc.getContact().getOrganization())
                     .phoneNumber(mc.getContact().getPhoneNumber())
+                    .build();
+        } else {
+            caseContact = MissingCaseDetailResponse.CaseContact.builder()
+                    .organization("실종아동찾기센터")
+                    .phoneNumber("182")
                     .build();
         }
 

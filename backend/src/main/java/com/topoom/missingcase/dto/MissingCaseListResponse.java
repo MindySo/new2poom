@@ -23,6 +23,7 @@ public class MissingCaseListResponse {
     private BigDecimal latitude;
     private BigDecimal longitude;
     private ZonedDateTime crawledAt;
+    private String phoneNumber;
 
     private MainImage mainImage;
 
