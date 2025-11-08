@@ -81,6 +81,7 @@ const ReportTimeInput: React.FC<ReportTimeInputProps> = React.memo(({ context, h
               placeholder="예: 2024년 1월 15일 오후 3시"
               className={`${styles.input} ${readOnly ? styles.readOnly : ''}`}
               readOnly={readOnly}
+              maxLength={20}
               onKeyPress={(e) => {
                 if (!readOnly && e.key === 'Enter' && time.trim()) {
                   handleSubmit();
