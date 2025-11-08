@@ -18,12 +18,17 @@ const ArchiveCard: React.FC<ArchiveCardProps> = ({ person, onClick }) => {
   const navigate = useNavigate();
   const { share, isSharing } = useShareMissingPerson();
   const {
+    id,
     personName,
     ageAtTime,
+    currentAge,
     gender,
     crawledAt,
     occurredLocation,
     classificationCode,
+    targetType,
+    mainImage,
+    phoneNumber,
   } = person;
   
   const elapsedTime = useElapsedTime(crawledAt);
@@ -36,6 +41,9 @@ const ArchiveCard: React.FC<ArchiveCardProps> = ({ person, onClick }) => {
     return date.toISOString().slice(0, 10);
   };
 
+  // 이미지 URL 가져오기
+  const displayMainImageUrl = mainImage?.url || tempImg;
+
   return (
     <div 
       className={styles['archive-card']} 
@@ -44,12 +52,15 @@ const ArchiveCard: React.FC<ArchiveCardProps> = ({ person, onClick }) => {
     >
       <div className={styles['archive-card__content']}>
         <div className={styles['archive-card__imageWrap']}>
-          <img src={tempImg} alt="임시 이미지" className={styles['archive-card__image']} />
+          <img src={displayMainImageUrl} alt={personName} className={styles['archive-card__image']} />
         </div>
         <div className={styles['archive-card__right']}>
           <div className={styles['archive-card__main']}>
             <div className={styles['archive-card__header']}>
               <Badge variant="time" size="small">{elapsedTime}</Badge>
+              {targetType && (
+                <Badge variant="feature" size="small">{targetType}</Badge>
+              )}
               {classificationCode && (
                 <Badge variant="feature" size="small">{classificationCode}</Badge>
               )}
@@ -57,16 +68,24 @@ const ArchiveCard: React.FC<ArchiveCardProps> = ({ person, onClick }) => {
 
             <div className={styles['archive-card__row']}>
               <Text as="span" size="md" weight="bold" className={styles['archive-card__name']}>{personName}</Text>
-              <Text as="span" size="sm" color="gray" className={styles['archive-card__meta']}>{gender ?? '성별 미상'} / {ageAtTime}세</Text>
+              <Text as="span" size="sm" color="gray" className={styles['archive-card__meta']}>
+                {gender ?? '성별 미상'}
+              </Text>
             </div>
             <div className={styles['archive-card__info']}>
               <div>
+                <Text as="div" size="xs" color="gray" className={styles['archive-card__label']}>나이</Text>
+                <Text as="div" size="xs" className={styles['archive-card__value']}>
+                  {ageAtTime}세{currentAge ? ` (현재 나이: ${currentAge}세)` : ''}
+                </Text>
+              </div>
+              <div>
                 <Text as="div" size="xs" color="gray" className={styles['archive-card__label']}>발생일</Text>
-                <Text as="div" size="sm" className={styles['archive-card__value']}>{formatDate(crawledAt)}</Text>
+                <Text as="div" size="xs" className={styles['archive-card__value']}>{formatDate(crawledAt)}</Text>
               </div>
               <div>
                 <Text as="div" size="xs" color="gray" className={styles['archive-card__label']}>발생장소</Text>
-                <Text as="div" size="sm" className={styles['archive-card__value']}>{occurredLocation}</Text>
+                <Text as="div" size="xs" className={styles['archive-card__value']}>{occurredLocation}</Text>
               </div>
             </div>
           </div>
@@ -74,18 +93,23 @@ const ArchiveCard: React.FC<ArchiveCardProps> = ({ person, onClick }) => {
           <div className={styles['archive-card__actions']}>
             <Button 
               variant="primary" 
-              size="medium" 
+              size="small" 
               className={styles['archive-card__primaryBtn']}
               onClick={(e) => {
                 e.stopPropagation(); // 카드 클릭 이벤트와 충돌 방지
-                navigate(`/report?name=${encodeURIComponent(personName)}`);
+                navigate(`/report?name=${encodeURIComponent(personName)}`, {
+                  state: {
+                    ...(id && { id }),
+                    ...(phoneNumber && { phoneNumber }),
+                  },
+                });
               }}
             >
               제보하기
             </Button>
             <Button 
               variant="secondary" 
-              size="medium" 
+              size="small" 
               className={styles['archive-card__iconBtn']} 
               aria-label="공유"
               onClick={(e) => {

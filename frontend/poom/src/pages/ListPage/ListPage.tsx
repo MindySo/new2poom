@@ -6,6 +6,7 @@ import styles from "./ListPage.module.css";
 import bannerImg from "../../assets/hero_section.png";
 import { useIsMobile } from "../../hooks/useMediaQuery";
 import { useMissingList } from "../../hooks/useMissingList";
+import { formatElapsed } from "../../utils/formatElapsed";
 import { theme } from "../../theme";
 
 // hoursSinceMissing 계산 헬퍼 함수
@@ -318,12 +319,17 @@ const ListPage = () => {
       </div>
 
       {/* 상세 정보 팝업 (데스크탑 크기일 때만) */}
-      {selectedPersonId !== null && !isMobile && (
-        <ArchiveDetailPopup 
-          personId={selectedPersonId} 
-          onClose={() => setSelectedPersonId(null)} 
-        />
-      )}
+      {selectedPersonId !== null && !isMobile && (() => {
+        const selectedPerson = people.find(p => p.id === selectedPersonId);
+        const initialElapsedTime = selectedPerson?.crawledAt ? formatElapsed(selectedPerson.crawledAt) : undefined;
+        return (
+          <ArchiveDetailPopup 
+            personId={selectedPersonId}
+            initialElapsedTime={initialElapsedTime}
+            onClose={() => setSelectedPersonId(null)} 
+          />
+        );
+      })()}
     </div>
   );
 };

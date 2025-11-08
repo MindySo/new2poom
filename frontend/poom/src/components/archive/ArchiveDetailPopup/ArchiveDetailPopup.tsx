@@ -11,18 +11,26 @@ import poomLogo from '../../../assets/poom_logo.png';
 
 export interface ArchiveDetailPopupProps {
   personId: number;
+  initialElapsedTime?: string; // 리스트에서 계산한 초기 경과 시간 (선택적)
   onClose: () => void;
 }
 
-const ArchiveDetailPopup: React.FC<ArchiveDetailPopupProps> = ({ personId, onClose }) => {
+const ArchiveDetailPopup: React.FC<ArchiveDetailPopupProps> = ({ personId, initialElapsedTime, onClose }) => {
   const navigate = useNavigate();
   const { data: person, isLoading, error } = useMissingDetail(personId);
   
-  const safeCrawledAt = person?.crawledAt || new Date().toISOString();
-  const elapsedTime = useElapsedTime(safeCrawledAt);
+  // API 데이터로 경과 시간 계산 (person.crawledAt이 있을 때만 유효한 값 계산)
+  const calculatedElapsedTime = useElapsedTime(person?.crawledAt || '');
+  
+  // initialElapsedTime이 있으면 우선 사용하고, person.crawledAt이 로드되어 calculatedElapsedTime이 유효한 값일 때만 전환
+  // 이렇게 하면 ListPage에서 계산한 값이 즉시 표시되어 "0시간 0분 0초" 문제 해결
+  const isCalculatedTimeValid = person?.crawledAt && calculatedElapsedTime && calculatedElapsedTime !== '0시간 0분 0초';
+  const elapsedTime = (initialElapsedTime && !isCalculatedTimeValid)
+    ? initialElapsedTime 
+    : calculatedElapsedTime;
 
-  // 로딩 상태
-  if (isLoading) {
+  // 로딩 상태 (초기 경과 시간이 없을 때만 로딩 표시)
+  if (isLoading && !initialElapsedTime) {
     return (
       <div className={styles['popup-overlay']} onClick={onClose}>
         <div className={styles['popup-content']} onClick={(e) => e.stopPropagation()}>
