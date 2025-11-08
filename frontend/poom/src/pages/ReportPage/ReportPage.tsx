@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { useFunnel } from '@use-funnel/react-router-dom';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import Text from '../../components/common/atoms/Text';
 import Button from '../../components/common/atoms/Button';
 import ReportQuestionStep from '../../components/report/ReportQuestionStep/ReportQuestionStep';
@@ -449,7 +449,12 @@ DetailStep.displayName = 'DetailStep';
 const ReportPage: React.FC = () => {
   // URL 쿼리 파라미터에서 실종자 이름 가져오기
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const personName = searchParams.get('name') || '실종자';
+  // state에서 id와 phoneNumber 가져오기 (URL에 노출되지 않음)
+  const reportState = (location.state as { id?: number; phoneNumber?: string }) || {};
+  const reportId = reportState.id;
+  const reportPhoneNumber = reportState.phoneNumber;
 
   // useFunnel을 사용하여 단계 관리 (URL과 동기화)
   const funnel = useFunnel<ReportStepContextMap>({

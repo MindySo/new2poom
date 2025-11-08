@@ -38,13 +38,17 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
   }
 
   const {
+    id,
     personName,
     ageAtTime,
+    currentAge,
     gender,
     crawledAt,
     occurredLocation,
     classificationCode,
+    targetType,
     mainImage,
+    phoneNumber,
     heightCm,
     weightKg,
     bodyType,
@@ -87,6 +91,9 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
           <div className={styles['m-archive-card__main']}>
             <div className={styles['m-archive-card__header']}>
               <Badge variant="time" size="xs">{elapsedTime}</Badge>
+              {targetType && (
+                <Badge variant="feature" size="xs">{targetType}</Badge>
+              )}
               {classificationCode && (
                 <Badge variant="feature" size="xs">{classificationCode}</Badge>
               )}
@@ -94,9 +101,17 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
 
             <div className={styles['m-archive-card__row']}>
               <Text as="span" size="sm" weight="bold" className={styles['m-archive-card__name']}>{personName}</Text>
-              <Text as="span" size="xs" color="gray" className={styles['m-archive-card__meta']}>{gender ?? '성별 미상'} / {ageAtTime}세</Text>
+              <Text as="span" size="xs" color="gray" className={styles['m-archive-card__meta']}>
+                {gender ?? '성별 미상'}
+              </Text>
             </div>
             <div className={styles['m-archive-card__info']}>
+              <div>
+                <Text as="div" size="xs" color="gray" className={styles['m-archive-card__label']}>나이</Text>
+                <Text as="div" size="xs" className={styles['m-archive-card__value']}>
+                  {ageAtTime}세{currentAge ? ` (현재 나이: ${currentAge}세)` : ''}
+                </Text>
+              </div>
               <div>
                 <Text as="div" size="xs" color="gray" className={styles['m-archive-card__label']}>발생일</Text>
                 <Text as="div" size="xs" className={styles['m-archive-card__value']}>{formatDate(crawledAt)}</Text>
@@ -113,7 +128,14 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
               variant="primary" 
               size="small" 
               className={styles['m-archive-card__primaryBtn']}
-              onClick={() => navigate(`/report?name=${encodeURIComponent(personName)}`)}
+              onClick={() => {
+                navigate(`/report?name=${encodeURIComponent(personName)}`, {
+                  state: {
+                    ...(id && { id }),
+                    ...(phoneNumber && { phoneNumber }),
+                  },
+                });
+              }}
             >
               제보하기
             </Button>

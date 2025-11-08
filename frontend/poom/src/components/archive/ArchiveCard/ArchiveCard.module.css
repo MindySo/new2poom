@@ -114,15 +114,16 @@
 }
 
 .archive-card__primaryBtn {
-  height: 44px !important; /* match icon button height */
-  padding: 0 18px !important;
+  height: 28px !important; /* match icon button height */
+  padding: 0 12px !important;
   display: inline-flex;
   align-items: center;
+  font-size: 12px !important;
 }
 
 .archive-card__iconBtn {
-  width: 44px !important;
-  height: 44px !important;
+  width: 28px !important;
+  height: 28px !important;
   padding: 0 !important;
 }
 

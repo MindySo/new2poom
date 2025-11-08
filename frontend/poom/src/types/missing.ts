@@ -34,6 +34,7 @@ export interface MissingPerson {
   occurredLocation: string;
   latitude?: number,
   longitude?: number,
+  phoneNumber?: string;
   heightCm?: number;
   weightKg?: number;
   bodyType?: string;

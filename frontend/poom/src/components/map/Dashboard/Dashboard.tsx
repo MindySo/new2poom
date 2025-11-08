@@ -20,9 +20,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose, missingId }) => 
   const [shouldRender, setShouldRender] = React.useState(false);
 
   // missingId가 있을 때만 API 호출
-  const { data: missingDetail, isLoading } = useMissingDetail(missingId ?? 0, {
-    enabled: !!missingId, // missingId가 있을 때만 활성화
-  });
+  const { data: missingDetail, isLoading } = useMissingDetail(missingId);
 
   // 현재 나이 계산 함수
   const calculateCurrentAge = (occurredAt: string, ageAtTime: number): number => {
