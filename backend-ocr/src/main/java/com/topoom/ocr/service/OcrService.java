@@ -33,7 +33,8 @@ public class OcrService {
      */
     public Mono<String> performOcrOnDirectS3Key(String s3Key) {
         return downloadImageFromS3(s3Key)
-                .flatMap(this::convertToBase64)  // 리사이징 단계 제거
+                .flatMap(this::resizeImage)
+                .flatMap(this::convertToBase64)
                 .flatMap(gmsApiClient::performOcr)
                 .doOnSuccess(result -> log.info("OCR 완료 - S3 Key: {}, 결과 길이: {}",
                         s3Key, result != null ? result.length() : 0))
