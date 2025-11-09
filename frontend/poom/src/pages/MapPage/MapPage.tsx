@@ -5,7 +5,9 @@ import Dashboard from '../../components/map/Dashboard/Dashboard';
 import { useIsMobile, useRecentMissing } from '../../hooks';
 import MyLocationButton from '../../components/map/MyLocationButton/MyLocationButton';
 import MyLocationMarker from '../../components/map/MyLocationMarker/MyLocationMarker';
+import MovementRadius from '../../components/map/MovementRadius/MovementRadius';
 import MobileStatusBoard from '../../components/map/MobileStatusBoard/MobileStatusBoard';
+import MobileModal from '../../components/map/MobileModal/MobileModal';
 import Marker from '../../components/map/Marker/Marker';
 import styles from './MapPage.module.css';
 
@@ -21,12 +23,49 @@ const MapPage: React.FC = () => {
   const [selectedMissingId, setSelectedMissingId] = useState<number | null>(null);
   const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
-
-  // 최근 72시간 내 실종자 데이터 가져오기 (SideBar용)
-  const { data: recentMissingList } = useRecentMissing(72);
+  const [selectedRadiusPosition, setSelectedRadiusPosition] = useState<{ lat: number; lng: number } | null>(null);
+  const [selectedRadiusValue, setSelectedRadiusValue] = useState<number>(0);
+  const [isTestModalOpen, setIsTestModalOpen] = useState(false);
 
   // 최근 24시간 내 실종자 데이터 가져오기 (Marker용)
-  const { data: markerMissingList } = useRecentMissing(24);
+  const { data: markerMissingList, isLoading: isMarkerLoading, isError: isMarkerError, error: markerError } = useRecentMissing(48);
+
+  // 디버깅: markerMissingList 확인
+  useEffect(() => {
+    console.log('=== 마커 데이터 디버깅 ===');
+    console.log('로딩 상태:', { isMarkerLoading, isMarkerError });
+    if (markerError) {
+      console.error('마커 에러:', markerError);
+    }
+    console.log('markerMissingList:', markerMissingList);
+    if (markerMissingList && markerMissingList.length > 0) {
+      console.log('데이터 개수:', markerMissingList.length);
+      console.log('첫 번째 데이터:', markerMissingList[0]);
+      console.log('첫 번째 데이터 상세:', {
+        id: markerMissingList[0].id,
+        personName: markerMissingList[0].personName,
+        latitude: markerMissingList[0].latitude,
+        longitude: markerMissingList[0].longitude,
+        occurredLocation: markerMissingList[0].occurredLocation,
+        mainImage: markerMissingList[0].mainImage,
+      });
+      const withCoords = markerMissingList.filter(p => p.latitude && p.longitude);
+      console.log('위치 정보가 있는 데이터:', withCoords.length, '개');
+      console.log('위치 정보 있는 데이터들:', withCoords.map(p => ({
+        id: p.id,
+        name: p.personName,
+        lat: p.latitude,
+        lng: p.longitude,
+      })));
+    } else {
+      console.log('데이터 없음');
+    }
+  }, [markerMissingList]);
+
+  // 디버깅: map 상태 확인
+  useEffect(() => {
+    console.log('map 상태:', { isLoaded, mapExists: !!map });
+  }, [isLoaded, map]);
 
   useEffect(() => {
     if (!isLoaded || !mapRef.current) return;
@@ -46,6 +85,8 @@ const MapPage: React.FC = () => {
     if (selectedMissingId === id && isDashboardOpen) {
       setIsDashboardOpen(false);
       setSelectedMissingId(null);
+      setSelectedRadiusPosition(null);
+      setSelectedRadiusValue(0);
     } else {
       // 다른 카드를 클릭하면 해당 ID로 Dashboard 열기
       setSelectedMissingId(id);
@@ -53,11 +94,14 @@ const MapPage: React.FC = () => {
 
       // 해당 실종자의 위치로 지도 이동
       if (map) {
-        // 24시간 리스트와 72시간 리스트에서 모두 찾기
-        const person = markerMissingList?.find((p) => p.id === id) || recentMissingList?.find((p) => p.id === id);
+        const person = markerMissingList?.find((p) => p.id === id);
         if (person && person.latitude && person.longitude) {
           // 실제 보이는 지도 영역의 중앙으로 이동
           moveMapToVisibleCenter(person.latitude, person.longitude);
+
+          // 반경 표시
+          setSelectedRadiusPosition({ lat: person.latitude, lng: person.longitude });
+          setSelectedRadiusValue(1000); // 임시값 1000m, 나중에 API에서 받아올 수 있음
         }
       }
     }
@@ -121,6 +165,8 @@ const MapPage: React.FC = () => {
   const handleCloseDashboard = () => {
     setIsDashboardOpen(false);
     setSelectedMissingId(null);
+    setSelectedRadiusPosition(null);
+    setSelectedRadiusValue(0);
   };
 
   const handleMyLocation = () => {
@@ -179,7 +225,7 @@ const MapPage: React.FC = () => {
         )}
 
         {/* 실종자 마커 */}
-        {map && recentMissingList && recentMissingList.map((person) => {
+        {map && markerMissingList && markerMissingList.map((person) => {
           // latitude와 longitude가 있는 경우만 마커 렌더링
           if (person.latitude && person.longitude) {
             return (
@@ -204,8 +250,27 @@ const MapPage: React.FC = () => {
           />
         )}
 
-        {/* 내 위치 버튼 */}
-        {map && (
+        {/* 선택된 마커의 이동 반경 표시 */}
+        {map && selectedRadiusPosition && selectedRadiusValue > 0 && (
+          <MovementRadius
+            map={map}
+            position={selectedRadiusPosition}
+            radius={selectedRadiusValue}
+          />
+        )}
+
+        {/* 내 위치 버튼 (MobileModal 위에 표시) */}
+        {map && isMobile && (
+          <div className={styles.myLocationButtonWrapper}>
+            <MyLocationButton
+              onClick={handleMyLocation}
+              disabled={isLoadingLocation}
+            />
+          </div>
+        )}
+
+        {/* 내 위치 버튼 (데스크톱) */}
+        {map && !isMobile && (
           <MyLocationButton
             onClick={handleMyLocation}
             disabled={isLoadingLocation}
@@ -213,11 +278,83 @@ const MapPage: React.FC = () => {
         )}
       </div>
 
-      <Dashboard
-        isOpen={isDashboardOpen}
-        onClose={handleCloseDashboard}
-        missingId={selectedMissingId}
-      />
+      {/* 데스크톱 대시보드 */}
+      {!isMobile && (
+        <Dashboard
+          isOpen={isDashboardOpen}
+          onClose={handleCloseDashboard}
+          missingId={selectedMissingId}
+        />
+      )}
+
+      {/* 모바일 모달 테스트 버튼 */}
+      {isMobile && (
+        <button
+          onClick={() => setIsTestModalOpen(!isTestModalOpen)}
+          style={{
+            position: 'fixed',
+            top: 100,
+            left: 16,
+            padding: '8px 16px',
+            backgroundColor: '#0B72E7',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            zIndex: 1002,
+            fontSize: '14px',
+          }}
+        >
+          모달 테스트
+        </button>
+      )}
+
+      {/* 모바일 모달 */}
+      {isMobile && (
+        <MobileModal
+          isOpen={isTestModalOpen}
+          onClose={() => setIsTestModalOpen(false)}
+        >
+          <div style={{ padding: '16px' }}>
+            <h2 style={{ marginTop: 0 }}>테스트 모달</h2>
+            <p>MobileModal이 잘 동작하는지 테스트합니다.</p>
+            <p>손잡이를 잡고 드래그하거나 손잡이를 클릭해서 크기를 조절할 수 있습니다.</p>
+            <p>손잡이를 잡고 드래그하거나 손잡이를 클릭해서 크기를 조절할 수 있습니다.</p>
+            <p>손잡이를 잡고 드래그하거나 손잡이를 클릭해서 크기를 조절할 수 있습니다.</p>
+            <p>손잡이를 잡고 드래그하거나 손잡이를 클릭해서 크기를 조절할 수 있습니다.</p>
+            <p>손잡이를 잡고 드래그하거나 손잡이를 클릭해서 크기를 조절할 수 있습니다.</p>
+            <p>손잡이를 잡고 드래그하거나 손잡이를 클릭해서 크기를 조절할 수 있습니다.</p>
+            <p>손잡이를 잡고 드래그하거나 손잡이를 클릭해서 크기를 조절할 수 있습니다.</p>
+            <p>손잡이를 잡고 드래그하거나 손잡이를 클릭해서 크기를 조절할 수 있습니다.</p>
+            <p>손잡이를 잡고 드래그하거나 손잡이를 클릭해서 크기를 조절할 수 있습니다.</p>
+            <p>손잡이를 잡고 드래그하거나 손잡이를 클릭해서 크기를 조절할 수 있습니다.</p>
+            <p>손잡이를 잡고 드래그하거나 손잡이를 클릭해서 크기를 조절할 수 있습니다.</p>
+            <p>손잡이를 잡고 드래그하거나 손잡이를 클릭해서 크기를 조절할 수 있습니다.</p>
+            <p>손잡이를 잡고 드래그하거나 손잡이를 클릭해서 크기를 조절할 수 있습니다.</p>
+            <p>손잡이를 잡고 드래그하거나 손잡이를 클릭해서 크기를 조절할 수 있습니다.</p>
+            <p>손잡이를 잡고 드래그하거나 손잡이를 클릭해서 크기를 조절할 수 있습니다.</p>
+            <p>손잡이를 잡고 드래그하거나 손잡이를 클릭해서 크기를 조절할 수 있습니다.</p>
+            <p>손잡이를 잡고 드래그하거나 손잡이를 클릭해서 크기를 조절할 수 있습니다.</p>
+            <p>손잡이를 잡고 드래그하거나 손잡이를 클릭해서 크기를 조절할 수 있습니다.</p>
+            <p>손잡이를 잡고 드래그하거나 손잡이를 클릭해서 크기를 조절할 수 있습니다.</p>
+            <button
+              onClick={() => setIsTestModalOpen(false)}
+              style={{
+                width: '100%',
+                padding: '12px',
+                backgroundColor: '#0B72E7',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '16px',
+              }}
+            >
+              모달 닫기
+            </button>
+          </div>
+        </MobileModal>
+      )}
     </>
   );
 };
