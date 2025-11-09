@@ -56,7 +56,7 @@ public class OcrService {
                         outputStream.write(buffer, 0, length);
                     }
 
-                    log.info("S3에서 이미지 다운로드 완료 - Key: {}, 크기: {} bytes", s3Key, outputStream.size());
+                    log.info("S3에서 원본 이미지 다운로드 완료 (리사이징 없음) - Key: {}, 크기: {} bytes", s3Key, outputStream.size());
                     return outputStream.toByteArray();
                 }
             } catch (Exception e) {
@@ -92,7 +92,7 @@ public class OcrService {
     private Mono<String> convertToBase64(byte[] imageBytes) {
         return Mono.fromCallable(() -> {
             String base64 = Base64.getEncoder().encodeToString(imageBytes);
-            log.debug("이미지를 Base64로 변환 완료 - 크기: {} characters", base64.length());
+            log.debug("원본 이미지를 Base64로 변환 완료 - 크기: {} characters", base64.length());
             return base64;
         });
     }

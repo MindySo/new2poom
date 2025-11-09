@@ -10,7 +10,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.web.reactive.function.client.WebClient;
+import com.topoom.missingcase.event.LastImageOcrEvent;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -48,6 +52,15 @@ public class CaseOcrService {
     private static final Pattern CLOTHING_PATTERN = Pattern.compile("(?:착의의상|착의사항|착의|옷차림|의상)\\s*[:：]?\\s*([^\\n]+?)(?=\\s*(?:진행상태|특이사항|특징|기타특징)|\\s*$)");
     private static final Pattern FEATURES_PATTERN = Pattern.compile("(?:특이사항|특징|기타특징)\\s*[:：]?\\s*([^\\n]+)");
     private static final Pattern PROGRESS_STATUS_PATTERN = Pattern.compile("(?:진행상태|상태)\\s*[:：]?\\s*([가-힣]+)");
+
+    /**
+     * 마지막 이미지 OCR 처리 이벤트 리스너 (트랜잭션 커밋 후 실행)
+     */
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Async
+    public void handleLastImageOcrEvent(LastImageOcrEvent event) {
+        processLastImage(event.getCaseId());
+    }
 
     /**
      * 마지막 이미지 OCR 처리 (비동기)
@@ -105,6 +118,7 @@ public class CaseOcrService {
     /**
      * OCR 결과를 파싱하여 MissingCase 업데이트
      */
+    @Transactional
     private void updateMissingCaseFromOcrResult(Long caseId, String ocrText) {
         try {
             log.info("OCR 원본 텍스트 (caseId={}): \n{}", caseId, ocrText);

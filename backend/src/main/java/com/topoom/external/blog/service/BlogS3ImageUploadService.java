@@ -2,11 +2,13 @@ package com.topoom.external.blog.service;
 
 import com.topoom.missingcase.entity.CaseFile;
 import com.topoom.missingcase.entity.MissingCase;
+import com.topoom.missingcase.event.LastImageOcrEvent;
 import com.topoom.missingcase.repository.CaseFileRepository;
 import com.topoom.missingcase.repository.MissingCaseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -29,6 +31,8 @@ public class BlogS3ImageUploadService {
     private final S3Client s3Client;
     private final CaseFileRepository caseFileRepository;
     private final MissingCaseRepository missingCaseRepository;
+    private final ApplicationEventPublisher eventPublisher;
+    private final com.topoom.missingcase.service.CaseOcrService caseOcrService;
     
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucketName;
@@ -94,6 +98,13 @@ public class BlogS3ImageUploadService {
             CaseFile saved = caseFileRepository.save(caseFile);
             log.info("CaseFile 저장 OK -> id={}, bucket={}, key={}", 
                     saved.getId(), saved.getS3Bucket(), saved.getS3Key());
+            
+            // 마지막 이미지인 경우 바로 OCR 처리 시작
+            if (Boolean.TRUE.equals(isLastImage) && caseId != null) {
+                log.info("마지막 이미지 업로드 완료, OCR 처리 시작: caseId={}", caseId);
+                caseOcrService.processLastImage(caseId);
+            }
+            
             return saved;
                     
         } catch (Exception e) {
