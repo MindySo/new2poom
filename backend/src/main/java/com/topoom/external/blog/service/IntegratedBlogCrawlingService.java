@@ -216,6 +216,7 @@ public class IntegratedBlogCrawlingService {
 
             if (title.isBlank() || href == null || href.isBlank()) return null;
             if (title.contains("공지") || title.contains("안내") || title.contains("공모전")) return null;
+            if (title.contains("실종경보(해제)") || title.contains("실종경보해제")) return null;
 
             String fullUrl = href.startsWith("http") ? href : "https://blog.naver.com" + href;
 
