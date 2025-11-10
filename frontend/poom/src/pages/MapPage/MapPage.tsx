@@ -7,7 +7,7 @@ import MyLocationButton from '../../components/map/MyLocationButton/MyLocationBu
 import MyLocationMarker from '../../components/map/MyLocationMarker/MyLocationMarker';
 import MovementRadius from '../../components/map/MovementRadius/MovementRadius';
 import MobileStatusBoard from '../../components/map/MobileStatusBoard/MobileStatusBoard';
-import MobileModal from '../../components/map/MobileModal/MobileModal';
+import MobileModal, { type MobileModalRef } from '../../components/map/MobileModal/MobileModal';
 import Marker from '../../components/map/Marker/Marker';
 import styles from './MapPage.module.css';
 
@@ -18,6 +18,7 @@ const MapPage: React.FC = () => {
 
   const isLoaded = useKakaoMap(API_KEY);
   const mapRef = useRef<HTMLDivElement | null>(null);
+  const mobileModalRef = useRef<MobileModalRef>(null);
   const [map, setMap] = useState<kakao.maps.Map | null>(null);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [selectedMissingId, setSelectedMissingId] = useState<number | null>(null);
@@ -26,9 +27,13 @@ const MapPage: React.FC = () => {
   const [selectedRadiusPosition, setSelectedRadiusPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [selectedRadiusValue, setSelectedRadiusValue] = useState<number>(0);
   const [isTestModalOpen, setIsTestModalOpen] = useState(false);
+  const [mobileModalState, setMobileModalState] = useState<'initial' | 'half' | 'full'>('initial');
+
+  // 지도 탭 감지를 위한 상태
+  const tapStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
 
   // 최근 24시간 내 실종자 데이터 가져오기 (Marker용)
-  const { data: markerMissingList, isLoading: isMarkerLoading, isError: isMarkerError, error: markerError } = useRecentMissing(48);
+  const { data: markerMissingList, isLoading: isMarkerLoading, isError: isMarkerError, error: markerError } = useRecentMissing(24);
 
   // 디버깅: markerMissingList 확인
   useEffect(() => {
@@ -60,7 +65,7 @@ const MapPage: React.FC = () => {
     } else {
       console.log('데이터 없음');
     }
-  }, [markerMissingList]);
+  }, [isMarkerError, isMarkerLoading, markerError, markerMissingList]);
 
   // 디버깅: map 상태 확인
   useEffect(() => {
@@ -79,6 +84,83 @@ const MapPage: React.FC = () => {
     const mapInstance = new kakao.maps.Map(mapRef.current, mapOptions);
     setMap(mapInstance);
   }, [isLoaded]);
+
+  // 모바일에서 지도 탭 감지하여 모달 내리기
+  useEffect(() => {
+    if (!isMobile || !mapRef.current) return;
+    if (mobileModalState === 'initial') return; // 이미 내려가있으면 무시
+
+    const mapElement = mapRef.current;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      // 모달이 올라와있을 때만 동작
+      if (mobileModalState !== 'half' && mobileModalState !== 'full') return;
+
+      tapStartRef.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+        time: Date.now(),
+      };
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      // 모달이 올라와있을 때만 동작
+      if (mobileModalState !== 'half' && mobileModalState !== 'full') return;
+      if (!tapStartRef.current) return;
+
+      const touchEnd = e.changedTouches[0];
+      const deltaX = Math.abs(touchEnd.clientX - tapStartRef.current.x);
+      const deltaY = Math.abs(touchEnd.clientY - tapStartRef.current.y);
+      const deltaTime = Date.now() - tapStartRef.current.time;
+
+      // 탭으로 판단 (이동 거리 10px 미만, 시간 300ms 미만)
+      if (deltaX < 10 && deltaY < 10 && deltaTime < 300) {
+        mobileModalRef.current?.collapseToInitial(); // 모달을 initial 상태로
+      }
+
+      tapStartRef.current = null;
+    };
+
+    const handleMouseDown = (e: MouseEvent) => {
+      // 모달이 올라와있을 때만 동작
+      if (mobileModalState !== 'half' && mobileModalState !== 'full') return;
+
+      tapStartRef.current = {
+        x: e.clientX,
+        y: e.clientY,
+        time: Date.now(),
+      };
+    };
+
+    const handleMouseUp = (e: MouseEvent) => {
+      // 모달이 올라와있을 때만 동작
+      if (mobileModalState !== 'half' && mobileModalState !== 'full') return;
+      if (!tapStartRef.current) return;
+
+      const deltaX = Math.abs(e.clientX - tapStartRef.current.x);
+      const deltaY = Math.abs(e.clientY - tapStartRef.current.y);
+      const deltaTime = Date.now() - tapStartRef.current.time;
+
+      // 탭으로 판단 (이동 거리 10px 미만, 시간 300ms 미만)
+      if (deltaX < 10 && deltaY < 10 && deltaTime < 300) {
+        mobileModalRef.current?.collapseToInitial(); // 모달을 initial 상태로
+      }
+
+      tapStartRef.current = null;
+    };
+
+    mapElement.addEventListener('touchstart', handleTouchStart, { passive: true });
+    mapElement.addEventListener('touchend', handleTouchEnd, { passive: true });
+    mapElement.addEventListener('mousedown', handleMouseDown);
+    mapElement.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      mapElement.removeEventListener('touchstart', handleTouchStart);
+      mapElement.removeEventListener('touchend', handleTouchEnd);
+      mapElement.removeEventListener('mousedown', handleMouseDown);
+      mapElement.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isMobile, mobileModalState]);
 
   const handleMissingCardClick = (id: number) => {
     // 같은 카드를 클릭하면 토글 (닫기)
@@ -220,7 +302,7 @@ const MapPage: React.FC = () => {
         {/* 모바일 상태 보드 */}
         {isMobile && (
           <div className={styles.mobileStatusBoardWrapper}>
-            <MobileStatusBoard />
+            <MobileStatusBoard visible={!isTestModalOpen || mobileModalState === 'initial'} />
           </div>
         )}
 
@@ -312,8 +394,10 @@ const MapPage: React.FC = () => {
       {/* 모바일 모달 */}
       {isMobile && (
         <MobileModal
+          ref={mobileModalRef}
           isOpen={isTestModalOpen}
           onClose={() => setIsTestModalOpen(false)}
+          onStateChange={setMobileModalState}
         >
           <div style={{ padding: '16px' }}>
             <h2 style={{ marginTop: 0 }}>테스트 모달</h2>

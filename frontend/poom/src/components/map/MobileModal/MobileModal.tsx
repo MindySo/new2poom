@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import styles from './MobileModal.module.css';
 
 interface MobileModalProps {
@@ -6,9 +6,14 @@ interface MobileModalProps {
   onClose: () => void;
   children: React.ReactNode;
   onOverlayClick?: () => void;
+  onStateChange?: (state: 'initial' | 'half' | 'full') => void;
 }
 
-const MobileModal: React.FC<MobileModalProps> = ({ isOpen, onClose, children, onOverlayClick }) => {
+export interface MobileModalRef {
+  collapseToInitial: () => void;
+}
+
+const MobileModal = forwardRef<MobileModalRef, MobileModalProps>(({ isOpen, onClose, children, onOverlayClick, onStateChange }, ref) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -28,13 +33,13 @@ const MobileModal: React.FC<MobileModalProps> = ({ isOpen, onClose, children, on
   // 최대 상태 높이: 화면 높이 - MobileTopBar(약 104px) - 간격(?px)
   const INITIAL_HEIGHT = HANDLE_HEIGHT;
   const HALF_HEIGHT = window.innerHeight * 0.5;
-  const FULL_HEIGHT = window.innerHeight - 200; // 전체 높이 - TopBar(104px) - 간격
+  const FULL_HEIGHT = window.innerHeight - 200;
 
   useEffect(() => {
     if (isOpen) {
       setIsClosing(false);
-      setModalState('initial');
-      setExpandedHeight(INITIAL_HEIGHT);
+      setModalState('half');
+      setExpandedHeight(HALF_HEIGHT);
     } else if (!isOpen && expandedHeight > INITIAL_HEIGHT) {
       // 닫기 애니메이션 시작
       setIsClosing(true);
@@ -44,6 +49,19 @@ const MobileModal: React.FC<MobileModalProps> = ({ isOpen, onClose, children, on
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
+
+  // modalState 변경 시 부모에게 알림
+  useEffect(() => {
+    onStateChange?.(modalState);
+  }, [modalState, onStateChange]);
+
+  // ref를 통해 외부에서 호출 가능한 함수 expose
+  useImperativeHandle(ref, () => ({
+    collapseToInitial: () => {
+      setExpandedHeight(INITIAL_HEIGHT);
+      setModalState('initial');
+    },
+  }));
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!handleRef.current?.contains(e.target as Node)) return;
@@ -188,7 +206,7 @@ const MobileModal: React.FC<MobileModalProps> = ({ isOpen, onClose, children, on
   return (
     <>
       {/* 오버레이 (손잡이만 보일 때 지도 클릭 감지) */}
-      {modalState === 'initial' && (
+      {isOpen && modalState === 'initial' && (
         <div
           className={styles.overlay}
           onClick={handleOverlayClick}
@@ -206,20 +224,23 @@ const MobileModal: React.FC<MobileModalProps> = ({ isOpen, onClose, children, on
       />
 
       {/* 모달 */}
-      <div
-        ref={modalRef}
-        className={`${styles.modalContainer} ${isClosing ? styles.modalClose : ''}`}
-        style={{
-          height: expandedHeight,
-          transform: `translateY(${currentTranslate}px)`,
-          transition: isDragging ? 'none' : 'height 0.3s ease, transform 0.3s ease',
-        }}
-      >
+      {(isOpen || isClosing) && (
+        <div
+          ref={modalRef}
+          className={`${styles.modalContainer} ${isClosing ? styles.modalClose : ''}`}
+          style={{
+            height: expandedHeight,
+            transform: `translateY(${currentTranslate}px)`,
+            transition: isDragging ? 'none' : 'height 0.3s ease, transform 0.3s ease',
+          }}
+        >
         {/* 손잡이 */}
         <div
           ref={handleRef}
           className={styles.handle}
           onClick={handleHandleClick}
+          onMouseDown={handleMouseDown}
+          onTouchStart={handleTouchStart}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
@@ -244,8 +265,11 @@ const MobileModal: React.FC<MobileModalProps> = ({ isOpen, onClose, children, on
           {children}
         </div>
       </div>
+      )}
     </>
   );
-};
+});
+
+MobileModal.displayName = 'MobileModal';
 
 export default MobileModal;
