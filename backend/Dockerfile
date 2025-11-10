@@ -16,6 +16,7 @@ RUN apk add --no-cache \
 # Set Chrome/Chromium environment variables
 ENV CHROME_BIN=/usr/bin/chromium-browser \
     CHROME_PATH=/usr/lib/chromium/ \
+    CHROMEDRIVER_PATH=/usr/bin/chromedriver \
     CHROMIUM_FLAGS="--no-sandbox --disable-dev-shm-usage --disable-gpu"
 
 COPY build/libs/*-SNAPSHOT.jar app.jar
