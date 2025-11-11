@@ -28,7 +28,6 @@ const PoliceTopBar: React.FC<PoliceTopBarProps> = ({ className = '' }) => {
 
   // 경찰서 페이지용 색상
   const policeColor = '#2B3A55'; // darkMain 색상
-  const activeColor = '#0FB4DB'; // active 네비게이션 색상
 
   return (
     <div
@@ -68,12 +67,12 @@ const PoliceTopBar: React.FC<PoliceTopBarProps> = ({ className = '' }) => {
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             const isHovered = hoveredPath === item.path;
+            const labelColor = (isActive || isHovered) ? '#ffffffff' : 'rgba(255, 255, 255, 0.75)';
             return (
               <button
                 key={item.path}
                 className={`${styles.navButton} ${isActive ? styles.active : ''}`}
                 style={{
-                  color: isActive ? activeColor : isHovered ? theme.colors.white : 'rgba(255, 255, 255, 0.7)',
                   fontWeight: isActive ? 600 : 500,
                 }}
                 onClick={() => handleNavClick(item.path)}
@@ -91,6 +90,7 @@ const PoliceTopBar: React.FC<PoliceTopBarProps> = ({ className = '' }) => {
                 <span
                   className={styles.navLabel}
                   style={{
+                    color: labelColor,
                     textShadow: isHovered ? `0 0 8px ${theme.colors.white}` : 'none',
                     transition: 'text-shadow 0.3s ease',
                   }}

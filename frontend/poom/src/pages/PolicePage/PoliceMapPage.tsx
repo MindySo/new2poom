@@ -1,17 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PoliceSideBar from '../../components/police/PoliceSideBar/PoliceSideBar';
 import useKakaoMap from '../../hooks/useKakaoMap';
-import { useIsMobile, useRecentMissing } from '../../hooks';
+import { useRecentMissing } from '../../hooks';
 import Marker from '../../components/map/Marker/Marker';
+import PoliceDashboard from '../../components/police/PoliceDashboard/PoliceDashboard';
 import styles from './PoliceMapPage.module.css';
 
 const API_KEY = import.meta.env.VITE_KAKAO_JAVASCRIPT_KEY;
 
 const PoliceMapPage: React.FC = () => {
-  const isMobile = useIsMobile(1024);
   const isLoaded = useKakaoMap(API_KEY);
   const mapRef = useRef<HTMLDivElement | null>(null);
   const [map, setMap] = useState<kakao.maps.Map | null>(null);
+  const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+  const [selectedMissingId, setSelectedMissingId] = useState<number | null>(null);
 
   // 최근 72시간 내 실종자 데이터 가져오기 (마커용)
   const { data: recentMissingList } = useRecentMissing(72);
@@ -29,17 +31,66 @@ const PoliceMapPage: React.FC = () => {
     setMap(mapInstance);
   }, [isLoaded]);
 
+  const moveMapToVisibleCenter = (lat: number, lng: number) => {
+    if (!map) return;
+    const mapContainer = mapRef.current;
+    if (!mapContainer) return;
+
+    const mapWidth = mapContainer.offsetWidth;
+    const mapHeight = mapContainer.offsetHeight;
+
+    const topBarHeight = 90;
+    const sideBarWidth = 380;
+    const dashboardWidth = isDashboardOpen ? window.innerWidth * 0.4 : 0;
+
+    const visibleLeft = sideBarWidth + dashboardWidth;
+    const visibleTop = topBarHeight;
+    const visibleWidth = mapWidth - visibleLeft;
+    const visibleHeight = mapHeight - visibleTop;
+
+    const centerX = visibleLeft + visibleWidth / 2;
+    const centerY = visibleTop + visibleHeight / 2;
+
+    const mapCenterX = mapWidth / 2;
+    const mapCenterY = mapHeight / 2;
+
+    const offsetX = centerX - mapCenterX;
+    const offsetY = centerY - mapCenterY;
+
+    const targetLatLng = new kakao.maps.LatLng(lat, lng);
+    const projection = map.getProjection();
+    const targetPoint = projection.pointFromCoords(targetLatLng);
+    const adjustedPoint = new kakao.maps.Point(targetPoint.x - offsetX, targetPoint.y - offsetY);
+    const adjustedLatLng = projection.coordsFromPoint(adjustedPoint);
+
+    map.panTo(adjustedLatLng);
+  };
+
   const handleMissingCardClick = (id: number) => {
-    // 경찰서 페이지에서 실종자 카드 클릭 시 처리
-    if (map) {
-      // TODO: 실종자 위치로 지도 이동 등의 기능 추가
-      console.log('Missing person clicked:', id);
+    if (selectedMissingId === id && isDashboardOpen) {
+      setIsDashboardOpen(false);
+      setSelectedMissingId(null);
+      return;
     }
+
+    setSelectedMissingId(id);
+    setIsDashboardOpen(true);
+
+    if (!map || !recentMissingList) return;
+    const person = recentMissingList.find((p) => p.id === id);
+    if (person && person.latitude && person.longitude) {
+      moveMapToVisibleCenter(person.latitude, person.longitude);
+    }
+  };
+
+  const handleCloseDashboard = () => {
+    setIsDashboardOpen(false);
+    setSelectedMissingId(null);
   };
 
   return (
     <>
-      {!isMobile && <PoliceSideBar onMissingCardClick={handleMissingCardClick} />}
+      <PoliceSideBar onMissingCardClick={handleMissingCardClick} />
       <div className={styles.mapContainer}>
         {!isLoaded && <p className={styles.loadingText}>지도를 불러오는 중...</p>}
         <div ref={mapRef} className={styles.mapElement} />
@@ -62,6 +113,11 @@ const PoliceMapPage: React.FC = () => {
           return null;
         })}
       </div>
+      <PoliceDashboard
+        isOpen={isDashboardOpen}
+        onClose={handleCloseDashboard}
+        missingId={selectedMissingId}
+      />
     </>
   );
 };
