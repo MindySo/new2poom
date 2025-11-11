@@ -29,6 +29,7 @@ const MobileModal = forwardRef<MobileModalRef, MobileModalProps>(({ isOpen, onCl
   const modalRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const detailInfoRef = useRef<HTMLDivElement>(null);
   const [isOverlayClickable, setIsOverlayClickable] = useState(true);
 
   // 실종자 상세 정보 가져오기
@@ -47,9 +48,10 @@ const MobileModal = forwardRef<MobileModalRef, MobileModalProps>(({ isOpen, onCl
   };
 
   // 손잡이 높이
-  const HANDLE_HEIGHT = 48;
+  const HANDLE_HEIGHT = 40;
   const INITIAL_HEIGHT = HANDLE_HEIGHT;
-  const HALF_HEIGHT = window.innerHeight * 0.5;
+  const [dynamicHalfHeight, setDynamicHalfHeight] = useState(window.innerHeight * 0.5);
+  const HALF_HEIGHT = dynamicHalfHeight;
   const FULL_HEIGHT = window.innerHeight - 200;
 
   // 모달 상태 관리 훅
@@ -107,6 +109,38 @@ const MobileModal = forwardRef<MobileModalRef, MobileModalProps>(({ isOpen, onCl
     }, 300); // 300ms 후 클릭 가능 (애니메이션 시간 고려)
     return () => clearTimeout(timer);
   }, [modalState]);
+
+  // 콘텐츠 기반 half 높이 동적 계산
+  useEffect(() => {
+    if (!detailData || !detailInfoRef.current) return;
+
+    // 약간의 지연을 두고 측정 (렌더링 완료 후)
+    const timer = setTimeout(() => {
+      if (detailInfoRef.current && contentRef.current) {
+        // 상세정보 섹션의 상단 위치 (contentRef 기준)
+        const contentTop = contentRef.current.getBoundingClientRect().top;
+        const detailTop = detailInfoRef.current.getBoundingClientRect().top;
+        const detailOffsetFromContent = detailTop - contentTop;
+
+        // 손잡이 높이 + 콘텐츠 패딩 + 상세정보까지의 거리
+        const calculatedHeight = HANDLE_HEIGHT + detailOffsetFromContent;
+
+        // 최소/최대 제한 설정
+        const minHeight = 180; // 최소 높이
+        const maxHeight = window.innerHeight * 0.7; // 최대 화면의 70%
+        const finalHeight = Math.min(Math.max(calculatedHeight, minHeight), maxHeight);
+
+        setDynamicHalfHeight(finalHeight);
+
+        // 현재 half 상태라면 높이 업데이트
+        if (modalState === 'half') {
+          setExpandedHeight(finalHeight);
+        }
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [detailData, HANDLE_HEIGHT, modalState, setExpandedHeight]);
 
   // ref를 통해 외부에서 호출 가능한 함수 expose
   useImperativeHandle(ref, () => ({
@@ -222,8 +256,9 @@ const MobileModal = forwardRef<MobileModalRef, MobileModalProps>(({ isOpen, onCl
           ref={contentRef}
           className={styles.content}
           style={{
-            maxHeight: expandedHeight - 48, // 손잡이 높이 제외
+            maxHeight: expandedHeight - 40, // 손잡이 높이 제외
             overflowY: 'auto',
+            display: modalState === 'initial' ? 'none' : 'block', // initial 상태에서는 숨기기
           }}
           onScroll={handleContentScroll}
         >
@@ -232,22 +267,6 @@ const MobileModal = forwardRef<MobileModalRef, MobileModalProps>(({ isOpen, onCl
             <div style={{ padding: '16px' }}>
               <h2 style={{ marginTop: 0 }}>지도 사용 가이드</h2>
               <p>지도의 마커를 클릭하면 실종자 정보가 여기에 표시됩니다.</p>
-              <p>손잡이를 드래그하거나 클릭해서 모달 크기를 조절할 수 있습니다.</p>
-              <p>손잡이를 드래그하거나 클릭해서 모달 크기를 조절할 수 있습니다.</p>
-              <p>손잡이를 드래그하거나 클릭해서 모달 크기를 조절할 수 있습니다.</p>
-              <p>손잡이를 드래그하거나 클릭해서 모달 크기를 조절할 수 있습니다.</p>
-              <p>손잡이를 드래그하거나 클릭해서 모달 크기를 조절할 수 있습니다.</p>
-              <p>손잡이를 드래그하거나 클릭해서 모달 크기를 조절할 수 있습니다.</p>
-              <p>손잡이를 드래그하거나 클릭해서 모달 크기를 조절할 수 있습니다.</p>
-              <p>손잡이를 드래그하거나 클릭해서 모달 크기를 조절할 수 있습니다.</p>
-              <p>손잡이를 드래그하거나 클릭해서 모달 크기를 조절할 수 있습니다.</p>
-              <p>손잡이를 드래그하거나 클릭해서 모달 크기를 조절할 수 있습니다.</p>
-              <p>손잡이를 드래그하거나 클릭해서 모달 크기를 조절할 수 있습니다.</p>
-              <p>손잡이를 드래그하거나 클릭해서 모달 크기를 조절할 수 있습니다.</p>
-              <p>손잡이를 드래그하거나 클릭해서 모달 크기를 조절할 수 있습니다.</p>
-              <p>손잡이를 드래그하거나 클릭해서 모달 크기를 조절할 수 있습니다.</p>
-              <p>손잡이를 드래그하거나 클릭해서 모달 크기를 조절할 수 있습니다.</p>
-              <p>손잡이를 드래그하거나 클릭해서 모달 크기를 조절할 수 있습니다.</p>
               <p>손잡이를 드래그하거나 클릭해서 모달 크기를 조절할 수 있습니다.</p>
             </div>
           ) : isDetailLoading ? (
@@ -334,7 +353,7 @@ const MobileModal = forwardRef<MobileModalRef, MobileModalProps>(({ isOpen, onCl
                   <>
                     {/* 추가 사진 */}
                     {thumbnailImages.length > 0 && (
-                      <div className={cardStyles['m-archive-card__thumbnailRow']}>
+                      <div className={`${cardStyles['m-archive-card__thumbnailRow']} ${styles.thumbnailRow}`}>
                         {thumbnailImages.map((img, index) => (
                           <div key={img.fileId || index} className={cardStyles['m-archive-card__thumbnail']}>
                             <img src={img.url || tempImg} alt={`추가 사진 ${index + 1}`} />
@@ -344,7 +363,7 @@ const MobileModal = forwardRef<MobileModalRef, MobileModalProps>(({ isOpen, onCl
                     )}
 
                     {/* 상세정보 */}
-                    <div className={cardStyles['m-archive-card__detailInfo']}>
+                    <div ref={detailInfoRef} className={cardStyles['m-archive-card__detailInfo']}>
                       <Text as="div" size="xs" weight="bold" className={cardStyles['m-archive-card__detailTitle']}>
                         상세정보
                       </Text>
@@ -389,23 +408,11 @@ const MobileModal = forwardRef<MobileModalRef, MobileModalProps>(({ isOpen, onCl
                           </div>
                         </div>
 
-                        {/* 오른쪽: 우선순위와 미상 정보 */}
+                        {/* 오른쪽: 우선순위 */}
                         <div className={cardStyles['m-archive-card__aiInfoWrapper']}>
                           <div className={cardStyles['m-archive-card__aiInfo']}>
                             {detailData.aiSupport ? (
                               <>
-                                <div className={cardStyles['m-archive-card__aiInfoSection']}>
-                                  <Text as="div" size="xs" weight="bold" className={cardStyles['m-archive-card__aiInfoLabel']}>
-                                    미상 정보
-                                  </Text>
-                                  {detailData.aiSupport.infoItems?.map((item, index) => (
-                                    <div key={index} className={cardStyles['m-archive-card__aiInfoItem']}>
-                                      <Text as="div" size="xs" color="gray">{item.label}</Text>
-                                      <Text as="div" size="xs">{item.value}</Text>
-                                    </div>
-                                  ))}
-                                </div>
-
                                 <div className={cardStyles['m-archive-card__aiInfoSection']}>
                                   <Text as="div" size="xs" weight="bold" className={cardStyles['m-archive-card__aiInfoLabel']}>
                                     우선순위
