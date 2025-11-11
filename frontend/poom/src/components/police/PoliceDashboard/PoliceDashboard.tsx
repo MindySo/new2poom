@@ -258,6 +258,9 @@ const PoliceDashboard: React.FC<PoliceDashboardProps> = ({ isOpen, onClose, miss
               }}
               onClick={(e) => {
                 e.stopPropagation(); // 카드 클릭 이벤트와 충돌 방지
+                if (missingId) {
+                  navigate(`/police/detail?id=${missingId}`);
+                }
               }}
             >
               Detection Result

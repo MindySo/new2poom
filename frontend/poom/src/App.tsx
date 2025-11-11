@@ -9,13 +9,14 @@ import MapPage from './pages/MapPage/MapPage';
 import ListPage from './pages/ListPage/ListPage';
 import ReportPage from './pages/ReportPage/ReportPage';
 import PoliceMapPage from './pages/PolicePage/PoliceMapPage';
+import PoliceDetailPage from './pages/PolicePage/PoliceDetailPage';
 import styles from './App.module.css';
 
 function AppContent() {
   const isMobile = useIsMobile(1024);
   const location = useLocation();
   const isReportPage = location.pathname === '/report';
-  const isPolicePage = location.pathname === '/police';
+  const isPolicePage = location.pathname.startsWith('/police');
   useGAPageView(); 
 
   return (
@@ -30,6 +31,7 @@ function AppContent() {
           <Route path="/list" element={<ListPage />} />
           <Route path="/report" element={<ReportPage />} />
           <Route path="/police" element={<PoliceMapPage />} />
+          <Route path="/police/detail" element={<PoliceDetailPage />} />
         </Routes>
       </div>
     </div>
