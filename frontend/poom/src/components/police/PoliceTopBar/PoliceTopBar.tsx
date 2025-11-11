@@ -43,7 +43,7 @@ const PoliceTopBar: React.FC<PoliceTopBarProps> = ({ className = '' }) => {
           className={styles.logoBox}
           style={{
             backgroundColor: policeColor,
-            boxShadow: `4px 4px 12px rgba(43, 58, 85, 0.3)`,
+            boxShadow: `4px 4px 12px rgba(255, 255, 255, 0.3)`,
           }}
           onClick={() => handleNavClick('/')}
         >
