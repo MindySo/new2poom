@@ -307,15 +307,18 @@ const MapPage: React.FC = () => {
     const mapWidth = mapContainer.offsetWidth;
     const mapHeight = mapContainer.offsetHeight;
 
-    // 모바일 모달은 초기에 half 상태로 열림 (화면의 50%)
+    // 모바일 모달의 half 상태 높이 (MobileModal에서 설정한 동적 높이와 동일하게)
+    // 모달 초기 open height는 window.innerHeight의 약 50%이지만,
+    // 실제 마커 센터링은 모달이 차지하는 공간 아래쪽 중간에 위치하도록 조정
     const HALF_HEIGHT = window.innerHeight * 0.5;
 
-    // 실제 보이는 지도 영역 계산 (상단부터 모달 위까지)
+    // 모달이 차지하는 공간을 고려하여 마커를 약간 더 아래쪽에 위치시키기
+    // (모달 위의 지도 영역 중앙에 마커 배치)
     const visibleTop = 0;
     const visibleHeight = mapHeight - HALF_HEIGHT;
 
     // 보이는 영역의 중앙 Y 좌표 계산
-    const centerY = visibleTop + visibleHeight / 2;
+    const centerY = visibleTop + visibleHeight / 2 + 40; // 40px 아래로 조정
 
     // 지도 컨테이너의 중앙 픽셀 좌표
     const mapCenterY = mapHeight / 2;
@@ -432,11 +435,12 @@ const MapPage: React.FC = () => {
         )}
 
         {/* 선택된 마커의 이동 반경 표시 */}
-        {map && selectedRadiusPosition && selectedRadiusValue > 0 && (
+        {map && selectedRadiusPosition && selectedRadiusValue > 0 && selectedMissingId && (
           <MovementRadius
             map={map}
             position={selectedRadiusPosition}
             radius={selectedRadiusValue}
+            missingId={selectedMissingId}
           />
         )}
 

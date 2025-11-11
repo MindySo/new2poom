@@ -296,23 +296,23 @@ const MobileModal = forwardRef<MobileModalRef, MobileModalProps>(({ isOpen, onCl
                     </div>
 
                     <div className={cardStyles['m-archive-card__row']}>
-                      <Text as="span" size="sm" weight="bold" className={cardStyles['m-archive-card__name']}>
+                      <Text as="span" size="md" weight="bold" className={cardStyles['m-archive-card__name']}>
                         {detailData.personName}
                       </Text>
-                      <Text as="span" size="xs" color="gray" className={cardStyles['m-archive-card__meta']}>
+                      <Text as="span" size="sm" color="gray" className={cardStyles['m-archive-card__meta']}>
                         {detailData.gender ?? '성별 미상'} / {detailData.ageAtTime}세
                       </Text>
                     </div>
                     <div className={cardStyles['m-archive-card__info']}>
                       <div>
-                        <Text as="div" size="xs" color="gray" className={cardStyles['m-archive-card__label']}>발생일</Text>
-                        <Text as="div" size="xs" className={cardStyles['m-archive-card__value']}>
+                        <Text as="div" size="sm" color="gray" className={cardStyles['m-archive-card__label']}>발생일</Text>
+                        <Text as="div" size="sm" className={cardStyles['m-archive-card__value']}>
                           {formatDate(detailData.crawledAt)}
                         </Text>
                       </div>
                       <div>
-                        <Text as="div" size="xs" color="gray" className={cardStyles['m-archive-card__label']}>발생장소</Text>
-                        <Text as="div" size="xs" className={cardStyles['m-archive-card__value']}>
+                        <Text as="div" size="sm" color="gray" className={cardStyles['m-archive-card__label']}>발생장소</Text>
+                        <Text as="div" size="sm" className={cardStyles['m-archive-card__value']}>
                           {detailData.occurredLocation}
                         </Text>
                       </div>
@@ -363,41 +363,41 @@ const MobileModal = forwardRef<MobileModalRef, MobileModalProps>(({ isOpen, onCl
                     )}
 
                     {/* 상세정보 */}
-                    <div ref={detailInfoRef} className={cardStyles['m-archive-card__detailInfo']}>
-                      <Text as="div" size="xs" weight="bold" className={cardStyles['m-archive-card__detailTitle']}>
+                    <div ref={detailInfoRef} className={`${cardStyles['m-archive-card__detailInfo']} ${styles.detailInfo}`}>
+                      <Text as="div" size="md" weight="bold" className={cardStyles['m-archive-card__detailTitle']}>
                         상세정보
                       </Text>
                       <div className={cardStyles['m-archive-card__detailList']}>
                         <div className={cardStyles['m-archive-card__detailItem']}>
-                          <Text as="div" size="xs" color="gray">신체정보</Text>
-                          <Text as="div" size="xs">
+                          <Text as="div" size="sm" color="gray">신체정보</Text>
+                          <Text as="div" size="sm">
                             {detailData.heightCm ? `${detailData.heightCm}cm` : '-'} / {detailData.weightKg ? `${detailData.weightKg}kg` : '-'}
                           </Text>
                         </div>
                         <div className={cardStyles['m-archive-card__detailItem']}>
-                          <Text as="div" size="xs" color="gray">체형</Text>
-                          <Text as="div" size="xs">{detailData.bodyType || '-'}</Text>
+                          <Text as="div" size="sm" color="gray">체형</Text>
+                          <Text as="div" size="sm">{detailData.bodyType || '-'}</Text>
                         </div>
                         <div className={cardStyles['m-archive-card__detailItem']}>
-                          <Text as="div" size="xs" color="gray">얼굴형</Text>
-                          <Text as="div" size="xs">{detailData.faceShape || '-'}</Text>
+                          <Text as="div" size="sm" color="gray">얼굴형</Text>
+                          <Text as="div" size="sm">{detailData.faceShape || '-'}</Text>
                         </div>
                         <div className={cardStyles['m-archive-card__detailItem']}>
-                          <Text as="div" size="xs" color="gray">두발 형태</Text>
-                          <Text as="div" size="xs">
+                          <Text as="div" size="sm" color="gray">두발 형태</Text>
+                          <Text as="div" size="sm">
                             {detailData.hairColor || '-'} / {detailData.hairStyle || '-'}
                           </Text>
                         </div>
                         <div className={cardStyles['m-archive-card__detailItem']}>
-                          <Text as="div" size="xs" color="gray">복장</Text>
-                          <Text as="div" size="xs">{detailData.clothingDesc || '-'}</Text>
+                          <Text as="div" size="sm" color="gray">복장</Text>
+                          <Text as="div" size="sm">{detailData.clothingDesc || '-'}</Text>
                         </div>
                       </div>
                     </div>
 
                     {/* AI 이미지와 AI 서포트 정보 */}
-                    <div className={cardStyles['m-archive-card__aiSection']}>
-                      <Text as="div" size="xs" weight="bold" className={cardStyles['m-archive-card__detailTitle']}>
+                    <div className={`${cardStyles['m-archive-card__aiSection']} ${styles.aiSection}`}>
+                      <Text as="div" size="md" weight="bold" className={cardStyles['m-archive-card__detailTitle']}>
                         AI 서포트
                       </Text>
                       <div className={cardStyles['m-archive-card__aiContent']}>
@@ -414,28 +414,28 @@ const MobileModal = forwardRef<MobileModalRef, MobileModalProps>(({ isOpen, onCl
                             {detailData.aiSupport ? (
                               <>
                                 <div className={cardStyles['m-archive-card__aiInfoSection']}>
-                                  <Text as="div" size="xs" weight="bold" className={cardStyles['m-archive-card__aiInfoLabel']}>
+                                  <Text as="div" size="sm" weight="bold" className={cardStyles['m-archive-card__aiInfoLabel']}>
                                     우선순위
                                   </Text>
                                   <div className={cardStyles['m-archive-card__aiInfoItem']}>
-                                    <Text as="div" size="xs" color="gray">1순위</Text>
-                                    <Text as="div" size="xs">{detailData.aiSupport.top1Desc || '-'}</Text>
+                                    <Text as="div" size="sm" color="gray">1순위</Text>
+                                    <Text as="div" size="sm">{detailData.aiSupport.top1Desc || '-'}</Text>
                                   </div>
                                   <div className={cardStyles['m-archive-card__aiInfoItem']}>
-                                    <Text as="div" size="xs" color="gray">2순위</Text>
-                                    <Text as="div" size="xs">{detailData.aiSupport.top2Desc || '-'}</Text>
+                                    <Text as="div" size="sm" color="gray">2순위</Text>
+                                    <Text as="div" size="sm">{detailData.aiSupport.top2Desc || '-'}</Text>
                                   </div>
                                 </div>
                               </>
                             ) : (
                               <div className={cardStyles['m-archive-card__aiInfoSection']}>
-                                <Text as="div" size="xs" color="gray">AI 정보가 없습니다.</Text>
+                                <Text as="div" size="sm" color="gray">AI 정보가 없습니다.</Text>
                               </div>
                             )}
                           </div>
                         </div>
                       </div>
-                      <Text as="div" size="xs" color="gray" className={cardStyles['m-archive-card__aiCaption']}>
+                      <Text as="div" size="sm" color="gray" className={cardStyles['m-archive-card__aiCaption']}>
                         ① AI 서포트 정보는 AI를 기반으로 정보를 제공합니다.
                         제공되는 정보는 참고용이며, 사실과 다를 수 있습니다.
                       </Text>
