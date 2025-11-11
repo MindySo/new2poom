@@ -7,30 +7,29 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
 /**
- * 최종 DB 저장용 메시지
- * - OcrConsumer가 finalize-queue에 발행
- * - OCR 완료된 데이터만 포함
+ * OCR 요청 메시지
+ * - S3UploadConsumer가 ocr-request-queue에 발행
+ * - OCR 처리 완료 후 finalize-queue로 전달
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FinalizeMessage implements Serializable {
+public class OcrRequestMessage implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     /**
-     * 요청 고유 ID
+     * 요청 고유 ID (트래킹용)
      */
     private String requestId;
 
     /**
-     * 블로그 URL
+     * 블로그 게시글 URL
      */
-    private String blogUrl;
+    private String postUrl;
 
     /**
      * 게시글 제목
@@ -43,7 +42,7 @@ public class FinalizeMessage implements Serializable {
     private String text;
 
     /**
-     * S3에 업로드된 이미지 정보 목록
+     * S3에 업로드된 이미지 정보들
      */
     private List<ImageInfo> uploadedImages;
 
@@ -53,13 +52,14 @@ public class FinalizeMessage implements Serializable {
     private List<ContactInfo> contacts;
 
     /**
-     * OCR 원본 결과 텍스트
+     * OCR 처리할 마지막 이미지의 S3 키
+     * (TEXT_CAPTURE 타입의 이미지)
      */
-    private String ocrResult;
+    private String lastImageS3Key;
 
     /**
-     * 파싱된 OCR 데이터
-     * (personName, age, gender 등)
+     * 재시도 횟수 (RabbitMQ retry에서 자동 증가)
      */
-    private Map<String, Object> parsedOcrData;
+    @Builder.Default
+    private Integer retryCount = 0;
 }
