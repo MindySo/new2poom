@@ -29,46 +29,46 @@ public class ClassificationConsumer {
     private final MessageProducer messageProducer;
     // TODO: ImageClassificationService 주입 필요
 
-    @RabbitListener(queues = RabbitMQConfig.CRAWLING_QUEUE, concurrency = "3-5")
-    public void consumeCrawling(CrawlingMessage message) {
-        log.info("소비: crawling-queue - requestId={}, blogUrl={}",
+    @RabbitListener(queues = RabbitMQConfig.CLASSIFICATION_QUEUE, concurrency = "3-5")
+    public void consumeClassification(ClassificationMessage message) {
+        log.info("소비: classification-queue - requestId={}, blogUrl={}",
             message.getRequestId(), message.getBlogUrl());
 
         try {
             List<ClassifiedImage> classifiedImages = new ArrayList<>();
 
-            // 각 임시 이미지 파일을 읽어서 분류
-            for (String tempPath : message.getTempImagePaths()) {
-                try {
-                    // 이미지 파일 읽기
-                    byte[] imageData = Files.readAllBytes(Paths.get(tempPath));
+            // 각 이미지를 분류 (이미 ClassifiedImage 리스트가 있는 경우)
+            if (message.getClassifiedImages() != null && !message.getClassifiedImages().isEmpty()) {
+                for (ClassifiedImage img : message.getClassifiedImages()) {
+                    try {
+                        // 이미지 파일 읽기
+                        byte[] imageData = Files.readAllBytes(Paths.get(img.getTempPath()));
 
-                    // TODO: 서드파티 이미지 분류 API 호출
-                    // ClassifiedImage.ImageType type = imageClassificationService.classify(imageData);
+                        // TODO: 서드파티 이미지 분류 API 호출
+                        // ClassifiedImage.ImageType type = imageClassificationService.classify(imageData);
 
-                    // 임시로 FACE로 설정 (실제 구현 시 API 호출 결과 사용)
-                    ClassifiedImage.ImageType type = ClassifiedImage.ImageType.FACE;
+                        // 임시로 기존 타입 또는 TEXT_CAPTURE로 설정
+                        ClassifiedImage.ImageType type = img.getType() != null
+                            ? img.getType()
+                            : ClassifiedImage.ImageType.TEXT_CAPTURE;
 
-                    classifiedImages.add(ClassifiedImage.builder()
-                        .type(type)
-                        .tempPath(tempPath)
-                        .build());
+                        classifiedImages.add(ClassifiedImage.builder()
+                            .type(type)
+                            .tempPath(img.getTempPath())
+                            .build());
 
-                } catch (Exception e) {
-                    log.error("이미지 분류 실패: {}", tempPath, e);
-                    throw new RuntimeException("이미지 분류 실패", e); // Retry 트리거
+                    } catch (Exception e) {
+                        log.error("이미지 분류 실패: {}", img.getTempPath(), e);
+                        throw new RuntimeException("이미지 분류 실패", e); // Retry 트리거
+                    }
                 }
             }
 
-            // 다음 단계로 발행
-            ClassificationMessage next = ClassificationMessage.builder()
-                .requestId(message.getRequestId())
-                .blogUrl(message.getBlogUrl())
-                .text(message.getText())
-                .classifiedImages(classifiedImages)
-                .build();
+            // 분류 결과를 메시지에 업데이트
+            message.setClassifiedImages(classifiedImages);
 
-            messageProducer.sendToClassificationQueue(next);
+            // s3-upload-queue로 발행
+            messageProducer.sendToS3UploadQueue(message);
 
             log.info("이미지 분류 완료: {} - 총 {} 건",
                 message.getBlogUrl(), classifiedImages.size());

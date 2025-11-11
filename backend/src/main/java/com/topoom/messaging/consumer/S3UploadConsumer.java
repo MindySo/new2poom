@@ -1,8 +1,10 @@
 package com.topoom.messaging.consumer;
 
 import com.topoom.config.RabbitMQConfig;
+import com.topoom.external.blog.service.BlogS3ImageUploadService;
 import com.topoom.messaging.dto.*;
 import com.topoom.messaging.producer.MessageProducer;
+import com.topoom.missingcase.entity.CaseFile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -11,13 +13,13 @@ import org.springframework.stereotype.Component;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Step 3: S3 업로드 Consumer
- * - classification-queue에서 메시지 소비
+ * - s3-upload-queue에서 메시지 소비
  * - 분류된 이미지들을 S3에 업로드
- * - OCR 필요 시 backend-ocr HTTP API 호출
- * - finalize-queue에 결과 발행
+ * - OCR 필요 시 ocr-request-queue로 전달
  */
 @Component
 @RequiredArgsConstructor
@@ -25,45 +27,49 @@ import java.util.*;
 public class S3UploadConsumer {
 
     private final MessageProducer messageProducer;
-    // TODO: S3Service 주입 필요
-    // TODO: OcrService (HTTP 클라이언트) 주입 필요
+    private final BlogS3ImageUploadService blogS3ImageUploadService;
 
-    @RabbitListener(queues = RabbitMQConfig.CLASSIFICATION_QUEUE, concurrency = "2-3")
-    public void consumeClassification(ClassificationMessage message) {
-        log.info("소비: classification-queue - requestId={}, images={}",
+    @RabbitListener(queues = RabbitMQConfig.S3_UPLOAD_QUEUE, concurrency = "3-5")
+    public void consumeS3Upload(ClassificationMessage message) {
+        log.info("소비: s3-upload-queue - requestId={}, images={}",
             message.getRequestId(), message.getClassifiedImages().size());
 
         try {
-            List<ImageInfo> imageInfos = new ArrayList<>();
-            List<String> textCaptureUrls = new ArrayList<>();
+            List<ImageInfo> uploadedImages = new ArrayList<>();
+            String lastImageS3Key = null;
+            int sequence = 1;
 
             // 각 분류된 이미지를 S3에 업로드
             for (ClassifiedImage img : message.getClassifiedImages()) {
                 try {
-                    // 임시 파일 읽기
-                    byte[] imageData = Files.readAllBytes(Paths.get(img.getTempPath()));
+                    // S3 업로드 (BlogS3ImageUploadService 활용)
+                    // 현재는 caseId가 없으므로 임시로 null 전달
+                    CaseFile uploaded = blogS3ImageUploadService.downloadAndUploadImage(
+                        img.getTempPath(),
+                        message.getBlogUrl(),
+                        null, // caseId는 나중에 DB 저장 시 설정
+                        message.getTitle(),
+                        sequence,
+                        img.getType() == ClassifiedImage.ImageType.TEXT_CAPTURE
+                    );
 
-                    // S3 경로 결정
-                    String s3Key = buildS3Key(img.getType(), message.getRequestId());
-
-                    // TODO: S3 업로드 (멱등성: 동일 키면 덮어쓰기)
-                    // String s3Url = s3Service.upload(s3Key, imageData);
-
-                    // 임시로 더미 URL 생성
-                    String s3Url = "https://s3.amazonaws.com/bucket/" + s3Key;
-
-                    imageInfos.add(ImageInfo.builder()
-                        .type(img.getType())
-                        .s3Url(s3Url)
+                    uploadedImages.add(ImageInfo.builder()
+                        .type(mapClassifiedImageTypeToImageInfoType(img.getType()))
+                        .s3Key(uploaded.getS3Key())
+                        .s3Url(uploaded.getS3Url())
                         .build());
 
-                    // TEXT_CAPTURE면 OCR 대상으로 수집
+                    // 마지막 이미지 (TEXT_CAPTURE) 확인
                     if (img.getType() == ClassifiedImage.ImageType.TEXT_CAPTURE) {
-                        textCaptureUrls.add(s3Url);
+                        lastImageS3Key = uploaded.getS3Key();
                     }
 
                     // 임시 파일 삭제
-                    Files.deleteIfExists(Paths.get(img.getTempPath()));
+                    if (img.getTempPath() != null) {
+                        Files.deleteIfExists(Paths.get(img.getTempPath()));
+                    }
+
+                    sequence++;
 
                 } catch (Exception e) {
                     log.error("S3 업로드 실패: {}", img.getTempPath(), e);
@@ -71,39 +77,22 @@ public class S3UploadConsumer {
                 }
             }
 
-            // OCR 필요한 이미지가 있으면 OCR API 호출
-            Map<String, String> ocrResults = new HashMap<>();
-            if (!textCaptureUrls.isEmpty()) {
-                for (String s3Url : textCaptureUrls) {
-                    try {
-                        // TODO: backend-ocr HTTP API 호출
-                        // String ocrText = ocrService.processOcr(s3Url);
-
-                        // 임시로 더미 OCR 결과
-                        String ocrText = "{\"result\": \"OCR 결과\"}";
-                        ocrResults.put(s3Url, ocrText);
-
-                    } catch (Exception e) {
-                        log.error("OCR 호출 실패: {}", s3Url, e);
-                        ocrResults.put(s3Url, "ERROR: " + e.getMessage());
-                    }
-                }
-            }
-
-            // Finalize 큐로 발행
-            FinalizeMessage finalizeMsg = FinalizeMessage.builder()
+            // OCR 큐로 발행
+            OcrRequestMessage ocrMsg = OcrRequestMessage.builder()
                 .requestId(message.getRequestId())
-                .blogUrl(message.getBlogUrl())
+                .postUrl(message.getBlogUrl())
+                .title(message.getTitle())
                 .text(message.getText())
-                .images(imageInfos)
-                .hasOcrPending(false) // OCR 동기 처리 완료
-                .ocrResults(ocrResults)
+                .uploadedImages(uploadedImages)
+                .contacts(message.getContacts())
+                .lastImageS3Key(lastImageS3Key)
+                .retryCount(0)
                 .build();
 
-            messageProducer.sendToFinalizeQueue(finalizeMsg);
+            messageProducer.sendToOcrQueue(ocrMsg);
 
-            log.info("S3 업로드 완료: {} - OCR 처리: {}건",
-                message.getBlogUrl(), ocrResults.size());
+            log.info("S3 업로드 완료, OCR 큐로 발행: {} - images={}",
+                message.getBlogUrl(), uploadedImages.size());
 
         } catch (Exception e) {
             log.error("S3UploadConsumer 처리 실패: {}", message.getRequestId(), e);
@@ -112,14 +101,16 @@ public class S3UploadConsumer {
     }
 
     /**
-     * S3 키 생성 (타입별 폴더 분리)
+     * ClassifiedImage.ImageType을 ImageInfo.ImageType으로 변환
      */
-    private String buildS3Key(ClassifiedImage.ImageType type, String requestId) {
-        String folder = switch(type) {
-            case FACE -> "images/face/";
-            case BODY -> "images/body/";
-            case TEXT_CAPTURE -> "images/text/";
+    private ImageInfo.ImageType mapClassifiedImageTypeToImageInfoType(ClassifiedImage.ImageType type) {
+        if (type == null) {
+            return ImageInfo.ImageType.FACE; // 기본값
+        }
+        return switch (type) {
+            case FACE -> ImageInfo.ImageType.FACE;
+            case BODY -> ImageInfo.ImageType.BODY;
+            case TEXT_CAPTURE -> ImageInfo.ImageType.TEXT_CAPTURE;
         };
-        return folder + requestId + "_" + UUID.randomUUID() + ".jpg";
     }
 }

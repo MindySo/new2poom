@@ -31,6 +31,11 @@ public class ClassificationMessage implements Serializable {
     private String blogUrl;
 
     /**
+     * 게시글 제목
+     */
+    private String title;
+
+    /**
      * 블로그 본문 텍스트
      */
     private String text;
@@ -39,4 +44,9 @@ public class ClassificationMessage implements Serializable {
      * 분류된 이미지 목록
      */
     private List<ClassifiedImage> classifiedImages;
+
+    /**
+     * 추출된 연락처 정보들
+     */
+    private List<ContactInfo> contacts;
 }
