@@ -3,16 +3,18 @@
  * Triggers: Changes in frontend/ directory on dev branch
  */
 pipeline {
-    agent any
-
-    tools {
-            nodejs 'NodeJS'  // Jenkins Global Tool Configuration에 설정된 NodeJS 이름과 일치해야 함
+    agent {
+        docker {
+            image 'node:20-alpine'
+            args '-u root:root'
         }
+    }
 
     environment {
         S3_PROD_BUCKET = 'topoom-s3-bucket'
         CLOUDFRONT_DISTRIBUTION_ID = 'E3ECTA5JTG17L5'
         AWS_PROD_REGION = 'ap-northeast-2'
+        HOME = '/tmp'
     }
 
     options {
@@ -68,6 +70,13 @@ pipeline {
 
         /* -------------------------------------------------- */
         stage('Deploy to S3') {
+            agent {
+                docker {
+                    image 'amazon/aws-cli:latest'
+                    args '-u root:root --entrypoint=""'
+                    reuseNode true
+                }
+            }
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
                                   credentialsId: 'aws-credentials']]) {
@@ -92,6 +101,13 @@ pipeline {
 
         /* -------------------------------------------------- */
         stage('Invalidate CloudFront') {
+            agent {
+                docker {
+                    image 'amazon/aws-cli:latest'
+                    args '-u root:root --entrypoint=""'
+                    reuseNode true
+                }
+            }
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
                                   credentialsId: 'aws-credentials']]) {
