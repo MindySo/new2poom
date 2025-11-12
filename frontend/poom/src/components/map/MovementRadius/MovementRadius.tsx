@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import styles from './MovementRadius.module.css';
+/* 실제 스타일은 Kakao Maps의 Circle API에서 직접 처리됩니다 */
 
 interface MovementRadiusProps {
   map: kakao.maps.Map;
