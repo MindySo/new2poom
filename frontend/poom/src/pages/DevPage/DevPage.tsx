@@ -89,6 +89,27 @@ const DevPage: React.FC = () => {
         >
           📝 신고 페이지
         </Link>
+        
+        <Link 
+          to="/police" 
+          style={{ 
+            padding: '20px 30px', 
+            backgroundColor: '#6c757d', 
+            color: 'white', 
+            textDecoration: 'none', 
+            borderRadius: '10px',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+            transition: 'transform 0.2s',
+            display: 'block',
+            minWidth: '150px'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+          onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          🚔 경찰서 페이지
+        </Link>
       </div>
       
       <div style={{
@@ -102,7 +123,7 @@ const DevPage: React.FC = () => {
       }}>
         <h3 style={{ color: '#333', marginBottom: '15px' }}>개발 현황</h3>
         <p style={{ color: '#666', lineHeight: '1.6' }}>
-          현재 3개의 주요 페이지가 개발 중입니다.<br/>
+          현재 4개의 주요 페이지가 개발 중입니다.<br/>
           각 페이지를 클릭하여 개발 상황을 확인해보세요.
         </p>
       </div>
