@@ -205,7 +205,10 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
       <div className={`${styles['m-archive-card__expandable']} ${isExpanded ? styles['m-archive-card__expandable--open'] : ''}`}>
         <div className={styles['m-archive-card__expandedContent']}>
           {isDetailLoading ? (
-            <div style={{ padding: '1rem', textAlign: 'center' }}>로딩 중...</div>
+            <div className={styles['loading-container']}>
+              <div className={styles['spinner']}></div>
+              <Text as="div" size="xs" color="gray" style={{ marginTop: '1rem' }}>로딩 중...</Text>
+            </div>
           ) : detailData ? (
             <>
               {/* 추가 사진 - 한 줄로 작게 */}

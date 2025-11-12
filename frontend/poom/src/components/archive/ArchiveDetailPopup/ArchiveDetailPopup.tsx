@@ -33,19 +33,35 @@ const ArchiveDetailPopup: React.FC<ArchiveDetailPopupProps> = ({ personId, initi
     ? initialElapsedTime 
     : calculatedElapsedTime;
 
-  // 로딩 상태 (초기 경과 시간이 없을 때만 로딩 표시)
-  if (isLoading && !initialElapsedTime) {
+  // 로딩 상태
+  if (isLoading) {
     return (
       <div className={styles['popup-overlay']} onClick={onClose}>
         <div className={styles['popup-content']} onClick={(e) => e.stopPropagation()}>
-          <div style={{ padding: '2rem', textAlign: 'center' }}>로딩 중...</div>
+          <div className={styles['loading-container']}>
+            <div className={styles['spinner']}></div>
+            <Text as="div" size="sm" color="gray" style={{ marginTop: '1rem' }}>로딩 중...</Text>
+          </div>
         </div>
       </div>
     );
   }
 
-  // 에러 상태
-  if (error || !person) {
+  // 에러 상태 (로딩이 아닐 때만 에러 표시)
+  if (error && !isLoading) {
+    return (
+      <div className={styles['popup-overlay']} onClick={onClose}>
+        <div className={styles['popup-content']} onClick={(e) => e.stopPropagation()}>
+          <div style={{ padding: '2rem', textAlign: 'center', color: 'red' }}>
+            데이터를 불러오는 중 오류가 발생했습니다.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 데이터가 없을 때 (에러도 아니고 로딩도 아닐 때)
+  if (!person) {
     return (
       <div className={styles['popup-overlay']} onClick={onClose}>
         <div className={styles['popup-content']} onClick={(e) => e.stopPropagation()}>

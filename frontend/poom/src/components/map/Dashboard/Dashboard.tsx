@@ -136,7 +136,10 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose, missingId }) => 
         {/* Content - Two rows layout */}
         <div className={styles.contentContainer}>
           {isLoading ? (
-            <div className={styles.emptyMessage}>로딩 중...</div>
+            <div className={styles.loadingContainer}>
+              <div className={styles.spinner}></div>
+              <Text as="div" size="sm" color="gray" style={{ marginTop: '1rem' }}>로딩 중...</Text>
+            </div>
           ) : missingDetail ? (
             <>
               {/* 왼쪽 줄 */}
