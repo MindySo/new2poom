@@ -5,9 +5,11 @@ import { useMissingDetail } from '../../../hooks/useMissingDetail';
 import { useShareMissingPerson } from '../../../hooks/useShareMissingPerson';
 import { useElapsedTime } from '../../../hooks/useElapsedTime';
 import type { MissingPerson } from '../../../types/missing';
+import type { ImageFile } from '../../../types/missing';
 import styles from './MArchiveCard.module.css';
 import Badge from '../../common/atoms/Badge';
 import Text from '../../common/atoms/Text';
+import ImageCarousel from '../../common/molecules/ImageCarousel/ImageCarousel';
 import tempImg from '../../../assets/TempImg.png';
 import Button from '../../common/atoms/Button';
 
@@ -19,6 +21,8 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [carouselOpen, setCarouselOpen] = useState(false);
+  const [initialImageIndex, setInitialImageIndex] = useState(0);
   const { share: handleShare, isSharing } = useShareMissingPerson();
   
   // 목록 캐시에서 기본 정보 가져오기
@@ -76,6 +80,43 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
   const aiImageUrl = outputImages && outputImages.length > 0 ? outputImages[0].url : tempImg;
   const displayMainImageUrl = mainImage?.url || tempImg;
 
+  // 모든 이미지를 배열로 수집
+  const getAllImages = (): ImageFile[] => {
+    const images: ImageFile[] = [];
+    
+    // 메인 이미지
+    if (mainImage) {
+      images.push(mainImage);
+    }
+    
+    // 추가 등록 사진들
+    if (inputImages && inputImages.length > 0) {
+      images.push(...inputImages);
+    }
+    
+    // AI 서포트 이미지들
+    if (outputImages && outputImages.length > 0) {
+      images.push(...outputImages);
+    }
+    
+    return images;
+  };
+
+  // 이미지 클릭 핸들러
+  const handleImageClick = (imageUrl: string) => {
+    const allImages = getAllImages();
+    const index = allImages.findIndex(img => img.url === imageUrl);
+    if (index !== -1) {
+      setInitialImageIndex(index);
+      setCarouselOpen(true);
+    }
+  };
+
+  // 캐러셀 닫기 핸들러
+  const handleCloseCarousel = () => {
+    setCarouselOpen(false);
+  };
+
   // 공유하기 핸들러
   const onShareClick = () => {
     handleShare(displayData);
@@ -85,7 +126,13 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
     <div className={styles['m-archive-card']}>
       <div className={styles['m-archive-card__content']}>
         <div className={styles['m-archive-card__imageWrap']}>
-          <img src={displayMainImageUrl} alt="메인 이미지" className={styles['m-archive-card__image']} />
+          <img 
+            src={displayMainImageUrl} 
+            alt="메인 이미지" 
+            className={styles['m-archive-card__image']}
+            onClick={() => mainImage && handleImageClick(mainImage.url)}
+            style={{ cursor: 'pointer' }}
+          />
         </div>
         <div className={styles['m-archive-card__right']}>
           <div className={styles['m-archive-card__main']}>
@@ -164,7 +211,11 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
               {thumbnailImages.length > 0 && (
                 <div className={styles['m-archive-card__thumbnailRow']}>
                   {thumbnailImages.map((img, index) => (
-                    <div key={img.fileId || index} className={styles['m-archive-card__thumbnail']}>
+                    <div 
+                      key={img.fileId || index} 
+                      className={styles['m-archive-card__thumbnail']}
+                      onClick={() => img.url && handleImageClick(img.url)}
+                    >
                       <img src={img.url || tempImg} alt={`추가 사진 ${index + 1}`} />
                     </div>
                   ))}
@@ -205,7 +256,12 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
                   {/* 왼쪽: AI 이미지 */}
                   <div className={styles['m-archive-card__aiImageWrapperOuter']}>
                     <div className={styles['m-archive-card__aiImageWrapper']}>
-                      <img src={aiImageUrl} alt="AI 생성 이미지" />
+                      <img 
+                        src={aiImageUrl} 
+                        alt="AI 생성 이미지"
+                        onClick={() => outputImages && outputImages.length > 0 && handleImageClick(outputImages[0].url)}
+                        style={{ cursor: 'pointer' }}
+                      />
                     </div>
                   </div>
                   
@@ -254,6 +310,15 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
           ▼
         </span>
       </button>
+
+      {/* 이미지 캐러셀 */}
+      {carouselOpen && displayData && (
+        <ImageCarousel
+          images={getAllImages()}
+          initialIndex={initialImageIndex}
+          onClose={handleCloseCarousel}
+        />
+      )}
     </div>
   );
 };

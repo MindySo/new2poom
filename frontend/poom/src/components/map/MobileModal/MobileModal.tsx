@@ -8,6 +8,8 @@ import { useModalStateManagement } from '../../../hooks/useModalStateManagement'
 import Badge from '../../common/atoms/Badge';
 import Text from '../../common/atoms/Text';
 import Button from '../../common/atoms/Button';
+import ImageCarousel from '../../common/molecules/ImageCarousel/ImageCarousel';
+import type { ImageFile } from '../../../types/missing';
 import tempImg from '../../../assets/TempImg.png';
 import styles from './MobileModal.module.css';
 import cardStyles from '../../archive/MArchiveCard/MArchiveCard.module.css';
@@ -31,6 +33,8 @@ const MobileModal = forwardRef<MobileModalRef, MobileModalProps>(({ isOpen, onCl
   const contentRef = useRef<HTMLDivElement>(null);
   const detailInfoRef = useRef<HTMLDivElement>(null);
   const [isOverlayClickable, setIsOverlayClickable] = useState(true);
+  const [carouselOpen, setCarouselOpen] = useState(false);
+  const [initialImageIndex, setInitialImageIndex] = useState(0);
 
   // 실종자 상세 정보 가져오기
   const { data: detailData, isLoading: isDetailLoading } = useMissingDetail(personId || null);
@@ -45,6 +49,44 @@ const MobileModal = forwardRef<MobileModalRef, MobileModalProps>(({ isOpen, onCl
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return '-';
     return date.toISOString().slice(0, 10);
+  };
+
+  // 모든 이미지를 배열로 수집
+  const getAllImages = (): ImageFile[] => {
+    if (!detailData) return [];
+    const images: ImageFile[] = [];
+    
+    // 메인 이미지
+    if (detailData.mainImage) {
+      images.push(detailData.mainImage);
+    }
+    
+    // 추가 등록 사진들
+    if (detailData.inputImages && detailData.inputImages.length > 0) {
+      images.push(...detailData.inputImages);
+    }
+    
+    // AI 서포트 이미지들
+    if (detailData.outputImages && detailData.outputImages.length > 0) {
+      images.push(...detailData.outputImages);
+    }
+    
+    return images;
+  };
+
+  // 이미지 클릭 핸들러
+  const handleImageClick = (imageUrl: string) => {
+    const allImages = getAllImages();
+    const index = allImages.findIndex(img => img.url === imageUrl);
+    if (index !== -1) {
+      setInitialImageIndex(index);
+      setCarouselOpen(true);
+    }
+  };
+
+  // 캐러셀 닫기 핸들러
+  const handleCloseCarousel = () => {
+    setCarouselOpen(false);
   };
 
   // 손잡이 높이
@@ -277,15 +319,17 @@ const MobileModal = forwardRef<MobileModalRef, MobileModalProps>(({ isOpen, onCl
             <div style={{ padding: '16px', textAlign: 'center' }}>실종자 정보를 찾을 수 없습니다.</div>
           ) : (
             // 정상적으로 데이터가 있을 때
-            <div className={cardStyles['m-archive-card']}>
-              <div className={cardStyles['m-archive-card__content']}>
-                <div className={cardStyles['m-archive-card__imageWrap']}>
-                  <img
-                    src={detailData.mainImage?.url || tempImg}
-                    alt="메인 이미지"
-                    className={cardStyles['m-archive-card__image']}
-                  />
-                </div>
+              <div className={cardStyles['m-archive-card']}>
+                <div className={cardStyles['m-archive-card__content']}>
+                  <div className={cardStyles['m-archive-card__imageWrap']}>
+                    <img
+                      src={detailData.mainImage?.url || tempImg}
+                      alt="메인 이미지"
+                      className={cardStyles['m-archive-card__image']}
+                      onClick={() => detailData.mainImage && handleImageClick(detailData.mainImage.url)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </div>
                 <div className={cardStyles['m-archive-card__right']}>
                   <div className={cardStyles['m-archive-card__main']}>
                     <div className={cardStyles['m-archive-card__header']}>
@@ -355,7 +399,11 @@ const MobileModal = forwardRef<MobileModalRef, MobileModalProps>(({ isOpen, onCl
                     {thumbnailImages.length > 0 && (
                       <div className={`${cardStyles['m-archive-card__thumbnailRow']} ${styles.thumbnailRow}`}>
                         {thumbnailImages.map((img, index) => (
-                          <div key={img.fileId || index} className={cardStyles['m-archive-card__thumbnail']}>
+                          <div 
+                            key={img.fileId || index} 
+                            className={cardStyles['m-archive-card__thumbnail']}
+                            onClick={() => img.url && handleImageClick(img.url)}
+                          >
                             <img src={img.url || tempImg} alt={`추가 사진 ${index + 1}`} />
                           </div>
                         ))}
@@ -404,7 +452,12 @@ const MobileModal = forwardRef<MobileModalRef, MobileModalProps>(({ isOpen, onCl
                         {/* 왼쪽: AI 이미지 */}
                         <div className={cardStyles['m-archive-card__aiImageWrapperOuter']}>
                           <div className={cardStyles['m-archive-card__aiImageWrapper']}>
-                            <img src={aiImageUrl} alt="AI 생성 이미지" />
+                            <img 
+                              src={aiImageUrl} 
+                              alt="AI 생성 이미지"
+                              onClick={() => detailData.outputImages && detailData.outputImages.length > 0 && handleImageClick(detailData.outputImages[0].url)}
+                              style={{ cursor: 'pointer' }}
+                            />
                           </div>
                         </div>
 
@@ -447,6 +500,15 @@ const MobileModal = forwardRef<MobileModalRef, MobileModalProps>(({ isOpen, onCl
           )}
         </div>
       </div>
+      )}
+
+      {/* 이미지 캐러셀 */}
+      {carouselOpen && detailData && (
+        <ImageCarousel
+          images={getAllImages()}
+          initialIndex={initialImageIndex}
+          onClose={handleCloseCarousel}
+        />
       )}
     </>
   );
