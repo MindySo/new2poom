@@ -5,10 +5,14 @@
 pipeline {
     agent any
 
+    tools {
+            nodejs 'NodeJS'  // Jenkins Global Tool Configuration에 설정된 NodeJS 이름과 일치해야 함
+        }
+
     environment {
-        S3_BUCKET = 'topoom-s3-bucket'
+        S3_PROD_BUCKET = 'topoom-s3-bucket'
         CLOUDFRONT_DISTRIBUTION_ID = 'E3ECTA5JTG17L5'
-        AWS_REGION = 'ap-northeast-2'
+        AWS_PROD_REGION = 'ap-northeast-2'
     }
 
     options {
