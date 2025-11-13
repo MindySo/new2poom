@@ -51,7 +51,10 @@ public class MissingCaseUpdateService {
         // 4. 메인 이미지 설정
         setMainImage(missingCase);
 
-        // 5. 저장
+        // 5. 최종 필수값 검증 (이름, 성별, 나이, 위도, 경도)
+        validateRequiredFields(missingCase);
+
+        // 6. 저장
         missingCaseRepository.save(missingCase);
 
         log.info("✅ MissingCase 최종 업데이트 완료: caseId={}, personName={}, location={}",
@@ -224,6 +227,48 @@ public class MissingCaseUpdateService {
         } catch (Exception e) {
             log.error("메인 이미지 설정 중 오류: caseId={}", missingCase.getId(), e);
         }
+    }
+
+    /**
+     * 최종 필수값 검증
+     * 필수값: 이름, 성별, 나이, 위도, 경도
+     */
+    private void validateRequiredFields(MissingCase missingCase) {
+        StringBuilder missingFields = new StringBuilder();
+
+        if (isNullOrEmpty(missingCase.getPersonName())) {
+            missingFields.append("이름, ");
+        }
+
+        if (isNullOrEmpty(missingCase.getGender())) {
+            missingFields.append("성별, ");
+        }
+
+        if (missingCase.getCurrentAge() == null) {
+            missingFields.append("나이, ");
+        }
+
+        if (missingCase.getLatitude() == null) {
+            missingFields.append("위도, ");
+        }
+
+        if (missingCase.getLongitude() == null) {
+            missingFields.append("경도, ");
+        }
+
+        if (missingFields.length() > 0) {
+            // 마지막 쉼표 제거
+            missingFields.setLength(missingFields.length() - 2);
+
+            String errorMsg = String.format(
+                "필수값 누락으로 최종 업데이트 불가: caseId=%d, 누락된 필드=[%s]",
+                missingCase.getId(), missingFields.toString());
+
+            log.error(errorMsg);
+            throw new RuntimeException(errorMsg);
+        }
+
+        log.info("필수값 검증 완료: caseId={}", missingCase.getId());
     }
 
     private boolean isNullOrEmpty(String value) {

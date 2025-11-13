@@ -21,11 +21,16 @@ public class FinalizeConsumer {
     private final MissingCaseUpdateService missingCaseUpdateService;
 
     @RabbitListener(queues = RabbitMQConfig.FINALIZE_QUEUE)
-    public void consumeFinalize(FinalizeMessage message) {
+    public void consumeFinalize(FinalizeMessage message,
+                                org.springframework.amqp.core.Message rawMessage) {
         int retryCount = RabbitMQConfig.RetryContextHolder.getRetryCount();
 
-        log.info("최종 업데이트 시작 (재시도 {}회): requestId={}, caseId={}",
-            retryCount, message.getRequestId(), message.getCaseId());
+        // 메시지 ID로 재시도 여부 확인
+        String messageId = rawMessage.getMessageProperties().getMessageId();
+        Integer deliveryCount = rawMessage.getMessageProperties().getHeader("x-delivery-count");
+
+        log.info("📨 최종 업데이트 시작 (재시도 {}회): requestId={}, caseId={}, messageId={}, deliveryCount={}",
+            retryCount, message.getRequestId(), message.getCaseId(), messageId, deliveryCount);
 
         try {
             // MissingCaseUpdateService를 통한 최종 업데이트
@@ -38,8 +43,9 @@ public class FinalizeConsumer {
                 message.getRequestId(), message.getCaseId());
 
         } catch (Exception e) {
-            log.error("❌ 최종 업데이트 실패 (시도 {}회 실패): requestId={}, caseId={}",
-                retryCount, message.getRequestId(), message.getCaseId(), e);
+            log.error("❌ 최종 업데이트 실패 (ThreadLocal 재시도 {}회, deliveryCount={}): requestId={}, caseId={}, 예외={}",
+                retryCount, deliveryCount, message.getRequestId(), message.getCaseId(),
+                e.getClass().getSimpleName() + ": " + e.getMessage());
             throw e; // Retry 및 DLQ 처리
         }
     }

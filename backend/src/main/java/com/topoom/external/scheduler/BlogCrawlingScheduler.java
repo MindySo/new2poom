@@ -27,16 +27,16 @@ public class BlogCrawlingScheduler {
     private final MessageProducer messageProducer;
 
     /**
-     * 15분마다 경찰청 실종경보 블로그 크롤링 + 삭제 프로세스 (2단계)
+     * 10분마다 경찰청 실종경보 블로그 크롤링 + 삭제 프로세스 (2단계)
      *
      * 변경사항:
      * - 카테고리 목록만 크롤링 (빠른 실행)
      * - 각 게시글을 RabbitMQ 큐로 발행 (병렬 처리)
      * - 삭제 프로세스는 기존과 동일
      */
-    @Scheduled(fixedDelay = 300000)  // 15분 = 900,000ms
+    @Scheduled(fixedDelay = 600000)  // 10분 = 600,000ms
     public void scheduleBlogCrawling() {
-        log.info("🔄 블로그 크롤링 스케줄러 시작 (15분 주기)");
+        log.info("🔄 블로그 크롤링 스케줄러 시작 (10분 주기)");
 
         String batchId = UUID.randomUUID().toString();
 

@@ -237,7 +237,10 @@ public class CaseOcrService {
         Matcher clothingMatcher = CLOTHING_PATTERN.matcher(ocrText);
         if (clothingMatcher.find()) {
             String clothing = clothingMatcher.group(1).trim();
-            if (clothing.length() >= 2 && !clothing.matches("^(착의|의상|착의의상|착의사항)$")) {
+            // "진행상태"가 포함되어 있으면 null 처리
+            if (clothing.contains("진행상태")) {
+                // null 삽입하지 않음 (parsed에 추가하지 않으면 null로 처리됨)
+            } else if (clothing.length() >= 2 && !clothing.matches("^(착의|의상|착의의상|착의사항)$")) {
                 parsed.put("clothingDesc", clothing);
             }
         }
@@ -251,7 +254,13 @@ public class CaseOcrService {
         // 진행상태
         Matcher progressStatusMatcher = PROGRESS_STATUS_PATTERN.matcher(ocrText);
         if (progressStatusMatcher.find()) {
-            parsed.put("progressStatus", progressStatusMatcher.group(1).trim());
+            String progressStatus = progressStatusMatcher.group(1).trim();
+            // 유효한 값이 아니면 "신고"로 설정
+            if (!progressStatus.equals("이첩") && !progressStatus.equals("이관") &&
+                !progressStatus.equals("신고") && !progressStatus.equals("하달")) {
+                progressStatus = "신고";
+            }
+            parsed.put("progressStatus", progressStatus);
         }
 
         // 기본값 설정

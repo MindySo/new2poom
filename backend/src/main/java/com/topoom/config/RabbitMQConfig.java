@@ -64,8 +64,8 @@ public class RabbitMQConfig {
     // Dead Letter Exchange & Queue
     // ========================================
     @Bean
-    public DirectExchange deadLetterExchange() {
-        return new DirectExchange(DEAD_LETTER_EXCHANGE);
+    public TopicExchange deadLetterExchange() {
+        return new TopicExchange(DEAD_LETTER_EXCHANGE);
     }
 
     @Bean
@@ -77,7 +77,7 @@ public class RabbitMQConfig {
     public Binding deadLetterBinding() {
         return BindingBuilder.bind(deadLetterQueue())
                 .to(deadLetterExchange())
-                .with("#");
+                .with("#"); // TopicExchange이므로 # 와일드카드 사용 가능
     }
 
     // ========================================
@@ -162,21 +162,31 @@ public class RabbitMQConfig {
     public static class RetryCountLoggingListener implements RetryListener {
         @Override
         public <T, E extends Throwable> boolean open(RetryContext context, RetryCallback<T, E> callback) {
-            // 메서드 실행 전에 ThreadLocal에 재시도 횟수 저장
+            // onError에서 정확한 재시도 횟수를 설정하므로 여기서는 로그만
             int retryCount = context.getRetryCount();
-            RetryContextHolder.setRetryCount(retryCount);
-            log.debug("재시도 시작: {}회차", retryCount);
+            log.debug("🔄 재시도 컨텍스트 시작: context.retryCount={}", retryCount);
             return true;
         }
 
         @Override
         public <T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback, Throwable throwable) {
             int retryCount = context.getRetryCount();
-            log.debug("재시도 실패: {}회차, 예외={}", retryCount, throwable.getClass().getSimpleName());
+            // ThreadLocal에 정확한 재시도 횟수 저장 (Consumer에서 사용)
+            RetryContextHolder.setRetryCount(retryCount);
+
+            log.warn("❌ 재시도 실패: {}회차 실패 (다음: {}회차), 예외={}, 메시지={}",
+                retryCount, retryCount + 1, throwable.getClass().getSimpleName(), throwable.getMessage());
         }
 
         @Override
         public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback, Throwable throwable) {
+            int finalRetryCount = context.getRetryCount();
+            if (throwable != null) {
+                log.error("⚠️ 모든 재시도 실패 (총 {}회 시도), DLQ로 이동 예정, 최종 예외={}",
+                    finalRetryCount, throwable.getClass().getSimpleName());
+            } else {
+                log.info("✅ 재시도 성공: {}회차에 성공", finalRetryCount);
+            }
             // 재시도 완료 후 ThreadLocal 정리
             RetryContextHolder.clear();
         }
