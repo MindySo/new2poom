@@ -2,63 +2,50 @@ package com.topoom.messaging.consumer;
 
 import com.topoom.config.RabbitMQConfig;
 import com.topoom.messaging.dto.FinalizeMessage;
+import com.topoom.missingcase.service.MissingCaseUpdateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Step 4: DB 저장 Consumer (최종)
+ * 최종 DB 저장 Consumer
  * - finalize-queue에서 메시지 소비
- * - BlogData 및 BlogImage 엔티티 생성하여 DB에 저장
+ * - MissingCaseUpdateService를 통한 DB 업데이트, 좌표 변환, 메인 이미지 설정
  */
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class FinalizeConsumer {
 
-    // TODO: BlogDataRepository 주입 필요
-    // TODO: BlogImageRepository 주입 필요
+    private final MissingCaseUpdateService missingCaseUpdateService;
 
     @RabbitListener(queues = RabbitMQConfig.FINALIZE_QUEUE)
-    @Transactional
-    public void consumeFinalize(FinalizeMessage message) {
-        log.info("소비: finalize-queue - requestId={}, blogUrl={}",
-            message.getRequestId(), message.getBlogUrl());
+    public void consumeFinalize(FinalizeMessage message,
+                                org.springframework.amqp.core.Message rawMessage) {
+        int retryCount = RabbitMQConfig.RetryContextHolder.getRetryCount();
+
+        // 메시지 ID로 재시도 여부 확인
+        String messageId = rawMessage.getMessageProperties().getMessageId();
+        Integer deliveryCount = rawMessage.getMessageProperties().getHeader("x-delivery-count");
+
+        log.info("📨 최종 업데이트 시작 (재시도 {}회): requestId={}, caseId={}, messageId={}, deliveryCount={}",
+            retryCount, message.getRequestId(), message.getCaseId(), messageId, deliveryCount);
 
         try {
-            // TODO: BlogData 엔티티 생성 및 저장
-            /*
-            BlogData blogData = BlogData.builder()
-                .url(message.getBlogUrl())
-                .content(message.getText())
-                .crawledAt(LocalDateTime.now())
-                .build();
+            // MissingCaseUpdateService를 통한 최종 업데이트
+            // - OCR 파싱 데이터로 DB 업데이트
+            // - 좌표 변환 (Kakao API)
+            // - 메인 이미지 설정
+            missingCaseUpdateService.finalizeUpdate(message.getCaseId(), message.getParsedOcrData());
 
-            blogDataRepository.save(blogData);
-
-            // BlogImage 엔티티들 생성 및 저장
-            for (ImageInfo img : message.getImages()) {
-                String ocrData = message.getOcrResults().get(img.getS3Url());
-
-                BlogImage blogImage = BlogImage.builder()
-                    .blogData(blogData)
-                    .imageType(img.getType())
-                    .s3Url(img.getS3Url())
-                    .ocrData(ocrData)
-                    .uploadedAt(LocalDateTime.now())
-                    .build();
-
-                blogImageRepository.save(blogImage);
-            }
-            */
-
-            log.info("DB 저장 완료: {} - 이미지 {}건",
-                message.getBlogUrl(), message.getImages().size());
+            log.info("✅ 최종 업데이트 완료: requestId={}, caseId={}",
+                message.getRequestId(), message.getCaseId());
 
         } catch (Exception e) {
-            log.error("FinalizeConsumer 처리 실패: {}", message.getRequestId(), e);
+            log.error("❌ 최종 업데이트 실패 (재시도 {}회, deliveryCount={}): requestId={}, caseId={}, 예외={}",
+                retryCount, deliveryCount, message.getRequestId(), message.getCaseId(),
+                e.getClass().getSimpleName() + ": " + e.getMessage());
             throw e; // Retry 및 DLQ 처리
         }
     }
