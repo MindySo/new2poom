@@ -6,8 +6,13 @@ import styles from "./ListPage.module.css";
 import bannerImg from "../../assets/hero_section.png";
 import { useIsMobile } from "../../hooks/useMediaQuery";
 import { useMissingList } from "../../hooks/useMissingList";
-import { formatElapsed } from "../../utils/formatElapsed";
 import { theme } from "../../theme";
+import { formatElapsed } from "../../utils/formatElapsed";
+
+
+
+
+
 
 // hoursSinceMissing 계산 헬퍼 함수
 const calculateHoursSinceMissing = (crawledAt: string): number => {

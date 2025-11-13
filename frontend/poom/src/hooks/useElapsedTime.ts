@@ -16,13 +16,23 @@ export const useElapsedTime = (iso: string): string => {
     return !isNaN(date.getTime());
   };
 
-  const safeIso = isValidDate(iso) ? iso : new Date().toISOString();
-  const [elapsed, setElapsed] = useState(() => formatElapsed(safeIso));
+  // 빈 문자열이거나 유효하지 않은 날짜면 빈 문자열을 state로 초기화
+  const [elapsed, setElapsed] = useState(() => {
+    if (!isValidDate(iso)) {
+      return '';
+    }
+    return formatElapsed(iso);
+  });
 
   useEffect(() => {
+    // 유효하지 않은 날짜면 빈 문자열로 설정하고 종료
     if (!isValidDate(iso)) {
+      setElapsed('');
       return;
     }
+
+    // 초기값 설정
+    setElapsed(formatElapsed(iso));
 
     // 24시간 이내인지 확인
     const occurred = new Date(iso).getTime();
