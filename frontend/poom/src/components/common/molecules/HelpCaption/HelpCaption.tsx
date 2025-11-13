@@ -28,19 +28,33 @@ const HelpCaption: React.FC<HelpCaptionProps> = ({
   size = 1.2
 }) => {
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    setIsTooltipOpen(!isTooltipOpen);
+    if (isTooltipOpen) {
+      // 닫을 때는 애니메이션 실행 후 상태 변경
+      setIsClosing(true);
+      setTimeout(() => {
+        setIsTooltipOpen(false);
+        setIsClosing(false);
+      }, 300); // 애니메이션 duration과 동일
+    } else {
+      // 열 때는 바로 상태 변경
+      setIsTooltipOpen(true);
+    }
     // 클릭 후 focus 제거하여 활성화 상태 해제
     e.currentTarget.blur();
   };
 
   const overlayElement = showOverlay && isTooltipOpen && (
-    <div className={styles.overlay} onClick={handleClick} />
+    <div
+      className={`${styles.overlay} ${isClosing ? styles.overlayClosing : ''}`}
+      onClick={handleClick}
+    />
   );
 
   const tooltipElement = isTooltipOpen && (
-    <div className={`${styles.tooltip} ${tooltipCentered ? styles.tooltipCentered : ''}`}>
+    <div className={`${styles.tooltip} ${tooltipCentered ? styles.tooltipCentered : ''} ${isClosing ? styles.closing : ''}`}>
       <div
         className={`${styles.tooltipContent} ${tooltipCentered ? styles.tooltipContentCentered : ''}`}
         style={{
