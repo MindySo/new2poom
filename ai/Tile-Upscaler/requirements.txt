@@ -1,10 +1,10 @@
 git+https://github.com/doevent/Real-ESRGAN.git
 opencv-python
 diffusers
-torch
+torch=2.1.2
 torchvision
 pipeline
-transformers
+transformers=4.45.0
 accelerate
 safetensors
 peft
