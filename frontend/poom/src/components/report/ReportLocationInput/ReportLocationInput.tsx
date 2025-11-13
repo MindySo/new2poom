@@ -96,13 +96,11 @@ const ReportLocationInput: React.FC<ReportLocationInputProps> = React.memo(({ co
               setIsLoadingLocation(false);
             }
           } catch (error) {
-            console.error('위치 변환 실패:', error);
             setLocation(`${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
             setIsLoadingLocation(false);
           }
         },
         (error) => {
-          console.error('위치 정보를 가져오는데 실패했습니다:', error);
           alert('위치 정보를 가져올 수 없습니다. 브라우저 설정에서 위치 접근 권한을 확인해주세요.');
           setIsLoadingLocation(false);
         },

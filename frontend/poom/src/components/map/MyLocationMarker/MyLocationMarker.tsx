@@ -44,11 +44,8 @@ const MyLocationMarker: React.FC<MyLocationMarkerProps> = ({ map, position }) =>
     overlay.setMap(map);
     overlayRef.current = overlay;
 
-    console.log('[MyLocationMarker] 내 위치 마커 생성됨:', position);
-
     // cleanup
     return () => {
-      console.log('[MyLocationMarker] 내 위치 마커 제거됨');
       if (overlayRef.current) {
         overlayRef.current.setMap(null);
       }

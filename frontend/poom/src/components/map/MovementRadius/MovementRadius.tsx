@@ -34,9 +34,7 @@ const MovementRadius: React.FC<MovementRadiusProps> = ({ map, position, radius, 
 
         const data: MissingPersonDetail = await response.json();
         setSpeed(data.speed || 0);
-        console.log('[MovementRadius] API에서 speed 받아옴:', data.speed, 'km/h (', (data.speed / 3.6).toFixed(2), 'm/s)');
       } catch (error) {
-        console.error('[MovementRadius] API 호출 실패:', error);
       }
     };
 
@@ -92,7 +90,6 @@ const MovementRadius: React.FC<MovementRadiusProps> = ({ map, position, radius, 
 
     // 최대값에 도달했으면 원을 표시하지 않음
     if (isMaxReached) {
-      console.log('[MovementRadius] 최대값 도달, 이동반경 제거됨');
       return;
     }
 
@@ -109,12 +106,6 @@ const MovementRadius: React.FC<MovementRadiusProps> = ({ map, position, radius, 
 
     circle.setMap(map);
     circleRef.current = circle;
-
-    console.log('[MovementRadius] 이동반경 표시됨:', {
-      position,
-      currentRadius: Math.round(currentRadius),
-      speed: `${speed} km/h (${(speed / 3.6).toFixed(2)} m/s)`,
-    });
 
     // cleanup
     return () => {

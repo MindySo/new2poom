@@ -16,7 +16,6 @@ export const useShareMissingPerson = () => {
       await navigator.clipboard.writeText(url);
       alert('링크가 클립보드에 복사되었습니다!');
     } catch (error) {
-      console.error('복사 실패:', error);
       // 최후의 수단: URL을 직접 표시
       alert(`공유 링크: ${url}`);
     }
@@ -81,14 +80,12 @@ export const useShareMissingPerson = () => {
         } catch (error: any) {
           // 사용자가 공유를 취소한 경우는 무시
           if (error.name !== 'AbortError' && error.name !== 'InvalidStateError') {
-            console.error('공유 실패:', error);
             // 대체 방법: 클립보드 복사
             await fallbackShare(shareUrl);
           }
         }
       } else {
         // Web Share API를 지원하지 않는 경우 클립보드 복사
-        console.log('Web Share API를 지원하지 않는 브라우저입니다. 모바일 브라우저에서 시도해주세요.');
         await fallbackShare(shareUrl);
       }
     } finally {

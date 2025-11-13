@@ -27,10 +27,6 @@ const ReportDetailInput: React.FC<ReportDetailInputProps> = React.memo(({ contex
   const handleSubmit = () => {
     if (detail.trim()) {
       // 마지막 단계이므로 완료 처리 (실제로는 API 호출 등)
-      console.log('신고 완료:', {
-        ...context,
-        detail: detail.trim(),
-      });
       // 완료 후 처리 로직 추가 가능
     }
   };

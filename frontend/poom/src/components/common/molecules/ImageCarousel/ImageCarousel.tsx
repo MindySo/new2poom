@@ -46,11 +46,6 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images, initialIndex, onC
 
   if (images.length === 0) return null;
 
-  // 디버깅: 이미지 개수 확인
-  React.useEffect(() => {
-    console.log('ImageCarousel - 이미지 개수:', images.length, '현재 인덱스:', currentIndex);
-  }, [images.length, currentIndex]);
-
   const currentImage = images[currentIndex];
 
   return (
