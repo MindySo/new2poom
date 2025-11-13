@@ -28,7 +28,10 @@ const ArchiveDetailPopup: React.FC<ArchiveDetailPopupProps> = ({ personId, initi
   
   // initialElapsedTime이 있으면 우선 사용하고, person.crawledAt이 로드되어 calculatedElapsedTime이 유효한 값일 때만 전환
   // 이렇게 하면 ListPage에서 계산한 값이 즉시 표시되어 "0시간 0분 0초" 문제 해결
-  const isCalculatedTimeValid = person?.crawledAt && calculatedElapsedTime && calculatedElapsedTime !== '0시간 0분 0초';
+  const isCalculatedTimeValid = person?.crawledAt && calculatedElapsedTime && 
+    calculatedElapsedTime !== '0시간 0분 0초' && 
+    calculatedElapsedTime !== '0초' && 
+    calculatedElapsedTime !== '';
   const elapsedTime = (initialElapsedTime && !isCalculatedTimeValid)
     ? initialElapsedTime 
     : calculatedElapsedTime;
