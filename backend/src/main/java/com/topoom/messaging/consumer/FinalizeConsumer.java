@@ -43,7 +43,7 @@ public class FinalizeConsumer {
                 message.getRequestId(), message.getCaseId());
 
         } catch (Exception e) {
-            log.error("❌ 최종 업데이트 실패 (ThreadLocal 재시도 {}회, deliveryCount={}): requestId={}, caseId={}, 예외={}",
+            log.error("❌ 최종 업데이트 실패 (재시도 {}회, deliveryCount={}): requestId={}, caseId={}, 예외={}",
                 retryCount, deliveryCount, message.getRequestId(), message.getCaseId(),
                 e.getClass().getSimpleName() + ": " + e.getMessage());
             throw e; // Retry 및 DLQ 처리

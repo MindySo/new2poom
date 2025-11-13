@@ -44,7 +44,7 @@ public class DlqRetryScheduler {
      * 15분마다 DLQ 메시지 재처리
      * fixedDelay: 이전 실행 완료 후 15분 대기
      */
-    @Scheduled(fixedDelay = 15 * 60 * 1000) // 30분 = 1,800,000ms
+    @Scheduled(fixedDelay = 15 * 60 * 1000) // 15분 = 900,000ms
     public void retryDlqMessages() {
         log.info("🔄 DLQ 정기 재처리 배치 시작 (30분 주기)");
 
