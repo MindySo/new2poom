@@ -12,6 +12,7 @@ export interface HelpCaptionProps {
   margin?: string;
   tooltipCentered?: boolean;
   showOverlay?: boolean;
+  size?: number;
 }
 
 const HelpCaption: React.FC<HelpCaptionProps> = ({
@@ -23,7 +24,8 @@ const HelpCaption: React.FC<HelpCaptionProps> = ({
   tooltipTextColor = '#2B3A55',
   margin = '0',
   tooltipCentered = false,
-  showOverlay = false
+  showOverlay = false,
+  size = 1.2
 }) => {
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
 
@@ -60,6 +62,9 @@ const HelpCaption: React.FC<HelpCaptionProps> = ({
         onClick={handleClick}
         aria-label="도움말"
         style={{
+          width: `${size}rem`,
+          height: `${size}rem`,
+          fontSize: `${size * 13.33}px`,
           color: isTooltipOpen ? activeColor : inactiveColor,
           borderColor: isTooltipOpen ? activeColor : inactiveColor,
           // CSS 변수로 hover 색상 전달

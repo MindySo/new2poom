@@ -119,6 +119,8 @@ const MobileStatusBoard: React.FC<MobileStatusBoardProps> = ({
           helpCaptionTooltipBackgroundColor={theme.colors.white}
           helpCaptionTooltipTextColor={theme.colors.darkMain}
           helpCaptionMargin="0 20px 0 0"
+          helpCaptionTooltipCentered={true}
+          helpCaptionShowOverlay={true}
           className={styles.statusBoardOverride}
         />
       </div>
