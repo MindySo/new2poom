@@ -35,42 +35,6 @@ const MapPage: React.FC = () => {
   // 최근 24시간 내 실종자 데이터 가져오기 (Marker용)
   const { data: markerMissingList, isLoading: isMarkerLoading, isError: isMarkerError, error: markerError } = useRecentMissing(24);
 
-  // 디버깅: markerMissingList 확인
-  useEffect(() => {
-    console.log('=== 마커 데이터 디버깅 ===');
-    console.log('로딩 상태:', { isMarkerLoading, isMarkerError });
-    if (markerError) {
-      console.error('마커 에러:', markerError);
-    }
-    console.log('markerMissingList:', markerMissingList);
-    if (markerMissingList && markerMissingList.length > 0) {
-      console.log('데이터 개수:', markerMissingList.length);
-      console.log('첫 번째 데이터:', markerMissingList[0]);
-      console.log('첫 번째 데이터 상세:', {
-        id: markerMissingList[0].id,
-        personName: markerMissingList[0].personName,
-        latitude: markerMissingList[0].latitude,
-        longitude: markerMissingList[0].longitude,
-        occurredLocation: markerMissingList[0].occurredLocation,
-        mainImage: markerMissingList[0].mainImage,
-      });
-      const withCoords = markerMissingList.filter(p => p.latitude && p.longitude);
-      console.log('위치 정보가 있는 데이터:', withCoords.length, '개');
-      console.log('위치 정보 있는 데이터들:', withCoords.map(p => ({
-        id: p.id,
-        name: p.personName,
-        lat: p.latitude,
-        lng: p.longitude,
-      })));
-    } else {
-      console.log('데이터 없음');
-    }
-  }, [isMarkerError, isMarkerLoading, markerError, markerMissingList]);
-
-  // 디버깅: map 상태 확인
-  useEffect(() => {
-    console.log('map 상태:', { isLoaded, mapExists: !!map });
-  }, [isLoaded, map]);
 
   useEffect(() => {
     if (!isLoaded || !mapRef.current) return;
@@ -378,7 +342,6 @@ const MapPage: React.FC = () => {
           setIsLoadingLocation(false);
         },
         (error) => {
-          console.error('위치 정보를 가져오는데 실패했습니다:', error);
           alert('위치 정보를 가져올 수 없습니다. 브라우저 설정에서 위치 접근 권한을 확인해주세요.');
           setIsLoadingLocation(false);
         },

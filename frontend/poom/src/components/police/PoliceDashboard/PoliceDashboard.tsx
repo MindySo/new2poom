@@ -78,15 +78,7 @@ const PoliceDashboard: React.FC<PoliceDashboardProps> = ({ isOpen, onClose, miss
     if (missingDetail.outputImages && missingDetail.outputImages.length > 0) {
       images.push(...missingDetail.outputImages);
     }
-    
-    // 디버깅: 수집된 이미지 확인
-    console.log('수집된 이미지:', {
-      mainImage: missingDetail.mainImage ? 1 : 0,
-      inputImages: missingDetail.inputImages?.length || 0,
-      outputImages: missingDetail.outputImages?.length || 0,
-      total: images.length
-    });
-    
+
     return images;
   };
 
