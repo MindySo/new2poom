@@ -12,6 +12,7 @@ export interface HelpCaptionProps {
   margin?: string;
   tooltipCentered?: boolean;
   showOverlay?: boolean;
+  size?: number;
 }
 
 const HelpCaption: React.FC<HelpCaptionProps> = ({
@@ -23,22 +24,37 @@ const HelpCaption: React.FC<HelpCaptionProps> = ({
   tooltipTextColor = '#2B3A55',
   margin = '0',
   tooltipCentered = false,
-  showOverlay = false
+  showOverlay = false,
+  size = 1.2
 }) => {
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    setIsTooltipOpen(!isTooltipOpen);
+    if (isTooltipOpen) {
+      // 닫을 때는 애니메이션 실행 후 상태 변경
+      setIsClosing(true);
+      setTimeout(() => {
+        setIsTooltipOpen(false);
+        setIsClosing(false);
+      }, 300); // 애니메이션 duration과 동일
+    } else {
+      // 열 때는 바로 상태 변경
+      setIsTooltipOpen(true);
+    }
     // 클릭 후 focus 제거하여 활성화 상태 해제
     e.currentTarget.blur();
   };
 
   const overlayElement = showOverlay && isTooltipOpen && (
-    <div className={styles.overlay} onClick={handleClick} />
+    <div
+      className={`${styles.overlay} ${isClosing ? styles.overlayClosing : ''}`}
+      onClick={handleClick}
+    />
   );
 
   const tooltipElement = isTooltipOpen && (
-    <div className={`${styles.tooltip} ${tooltipCentered ? styles.tooltipCentered : ''}`}>
+    <div className={`${styles.tooltip} ${tooltipCentered ? styles.tooltipCentered : ''} ${isClosing ? styles.closing : ''}`}>
       <div
         className={`${styles.tooltipContent} ${tooltipCentered ? styles.tooltipContentCentered : ''}`}
         style={{
@@ -60,6 +76,9 @@ const HelpCaption: React.FC<HelpCaptionProps> = ({
         onClick={handleClick}
         aria-label="도움말"
         style={{
+          width: `${size}rem`,
+          height: `${size}rem`,
+          fontSize: `${size * 13.33}px`,
           color: isTooltipOpen ? activeColor : inactiveColor,
           borderColor: isTooltipOpen ? activeColor : inactiveColor,
           // CSS 변수로 hover 색상 전달

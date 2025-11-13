@@ -4,14 +4,11 @@
 }
 
 .helpButton {
-  width: 1.2rem;
-  height: 1.2rem;
   border-radius: 50%;
   background-color: transparent;
   border-width: 1px;
   border-style: solid;
   cursor: pointer;
-  font-size: 16px;
   font-weight: bold;
   display: flex;
   align-items: center;
@@ -56,8 +53,12 @@
   position: absolute;
   top: -0.5rem;
   left: calc(100% + 0.75rem);
-  z-index: 1000;
+  z-index: 1100;
   animation: slideIn 0.3s ease-out;
+}
+
+.tooltip.closing {
+  animation: slideOut 0.3s ease-out forwards;
 }
 
 .tooltipContent {
@@ -90,8 +91,12 @@
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 999;
+  z-index: 1050;
   animation: overlayFadeIn 0.3s ease-out;
+}
+
+.overlay.overlayClosing {
+  animation: overlayFadeOut 0.3s ease-out forwards;
 }
 
 /* 중앙 배치 스타일 */
@@ -100,8 +105,12 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 1000;
+  z-index: 1100;
   animation: fadeIn 0.3s ease-out;
+}
+
+.tooltipCentered.closing {
+  animation: fadeOut 0.3s ease-out forwards;
 }
 
 .tooltipContentCentered::before {
@@ -119,6 +128,17 @@
   }
 }
 
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -130,11 +150,31 @@
   }
 }
 
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+}
+
 @keyframes overlayFadeIn {
   from {
     opacity: 0;
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes overlayFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }
