@@ -68,7 +68,7 @@ pipeline {
             steps {
                 dir('frontend/poom') {
                     sh '''
-                        # 이전 빌드 결과물 정리 (Docker container 내부에서 실행)
+                        # 이전 빌드 결과물 정리 (Docker container 내부 실행)
                         rm -rf node_modules dist || true
 
                         npm ci
