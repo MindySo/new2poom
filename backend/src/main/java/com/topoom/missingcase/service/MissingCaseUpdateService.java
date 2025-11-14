@@ -49,22 +49,22 @@ public class MissingCaseUpdateService {
     }
 
     /**
-     * 최종 업데이트 (좌표 변환 & 메인 이미지 설정)
+     * 최종 업데이트 (메인 이미지 설정 & 좌표 변환)
      * 주의: OCR 데이터는 OcrConsumer에서 이미 저장됨
      */
     @Transactional
     public void finalizeUpdate(Long caseId, Map<String, Object> parsedOcrData) {
-        log.info("MissingCase 최종 업데이트 시작 (좌표 변환 & 메인 이미지 설정): caseId={}", caseId);
+        log.info("MissingCase 최종 업데이트 시작 (메인 이미지 설정 & 좌표 변환): caseId={}", caseId);
 
         // 1. MissingCase 조회
         MissingCase missingCase = missingCaseRepository.findById(caseId)
             .orElseThrow(() -> new RuntimeException("MissingCase를 찾을 수 없습니다: " + caseId));
 
-        // 2. 좌표 변환 (Kakao API)
-        updateCoordinates(missingCase);
-
-        // 3. 메인 이미지 설정
+        // 2. 메인 이미지 설정 (좌표 변환 실패 시에도 저장되어야 함)
         setMainImage(missingCase);
+
+        // 3. 좌표 변환 (Kakao API)
+        updateCoordinates(missingCase);
 
         // 4. 최종 필수값 검증 (이름, 성별, 나이, 위도, 경도)
         validateRequiredFields(missingCase);
@@ -109,6 +109,8 @@ public class MissingCaseUpdateService {
                 String dateStr = (String) parsedData.get("occurredAt");
                 LocalDateTime occurredAt = LocalDateTime.parse(dateStr + "T00:00:00");
                 missingCase.setOccurredAt(occurredAt);
+                // crawledAt도 occurredAt과 동일한 값으로 설정
+                missingCase.setCrawledAt(occurredAt);
             } catch (Exception e) {
                 log.warn("발생일시 파싱 실패: caseId={}, value={}",
                     missingCase.getId(), parsedData.get("occurredAt"), e);
