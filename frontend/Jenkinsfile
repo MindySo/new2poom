@@ -28,6 +28,14 @@ pipeline {
         /* -------------------------------------------------- */
         stage('Checkout') {
             steps {
+                script {
+                    // workspace 정리 (corrupted files 제거)
+                    sh '''
+                        rm -rf frontend/poom/node_modules || true
+                        rm -rf .git || true
+                        rm -rf * || true
+                    '''
+                }
                 checkout([
                     $class: 'GitSCM',
                     branches: [[name: '*/dev']],
