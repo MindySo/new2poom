@@ -20,7 +20,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
-    "@types/kakao.maps": "^1.0.0",
     "@types/node": "^24.6.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.1.9",
