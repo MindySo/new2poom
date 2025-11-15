@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback, startTransition } from "react";
 import { ArchiveCard } from "../../components/archive/ArchiveCard/ArchiveCard";
 import { MArchiveCard } from "../../components/archive/MArchiveCard/MArchiveCard";
 import { ArchiveDetailPopup } from "../../components/archive/ArchiveDetailPopup/ArchiveDetailPopup";
@@ -55,6 +55,18 @@ const ListPage = () => {
       handleSearch();
     }
   };
+
+  // 탭 변경 핸들러 최적화 (startTransition으로 낮은 우선순위 업데이트)
+  const handleTabChange = useCallback((tab: TabKey) => {
+    startTransition(() => {
+      setActiveTab(tab);
+    });
+  }, []);
+
+  // 카드 클릭 핸들러 최적화
+  const handleCardClick = useCallback((personId: number) => {
+    setSelectedPersonId(personId);
+  }, []);
 
   const filteredPeople = useMemo(() => {
     let filtered = people;
@@ -223,7 +235,7 @@ const ListPage = () => {
         <div className={`${styles['list-tabs']} ${styles['mobile-tabs']}`}>
           <button
             className={`${styles['mobile-tab']} ${activeTab === "all" ? styles['mobile-tab-active'] : ''}`}
-            onClick={() => setActiveTab("all")}
+            onClick={() => handleTabChange("all")}
             style={{
               backgroundColor: activeTab === "all" ? theme.colors.darkMain : theme.colors.white,
               color: activeTab === "all" ? theme.colors.white : theme.colors.gray,
@@ -234,7 +246,7 @@ const ListPage = () => {
           </button>
           <button
             className={`${styles['mobile-tab']} ${activeTab === "within24" ? styles['mobile-tab-active'] : ''}`}
-            onClick={() => setActiveTab("within24")}
+            onClick={() => handleTabChange("within24")}
             style={{
               backgroundColor: activeTab === "within24" ? theme.colors.darkMain : theme.colors.white,
               color: activeTab === "within24" ? theme.colors.white : theme.colors.gray,
@@ -245,7 +257,7 @@ const ListPage = () => {
           </button>
           <button
             className={`${styles['mobile-tab']} ${activeTab === "over24" ? styles['mobile-tab-active'] : ''}`}
-            onClick={() => setActiveTab("over24")}
+            onClick={() => handleTabChange("over24")}
             style={{
               backgroundColor: activeTab === "over24" ? theme.colors.darkMain : theme.colors.white,
               color: activeTab === "over24" ? theme.colors.white : theme.colors.gray,
@@ -314,19 +326,19 @@ const ListPage = () => {
         <div className={styles['list-tabs']}>
         <button
           className={activeTab === "all" ? "active" : undefined}
-          onClick={() => setActiveTab("all")}
+          onClick={() => handleTabChange("all")}
         >
           전체
         </button>
         <button
           className={activeTab === "within24" ? "active" : undefined}
-          onClick={() => setActiveTab("within24")}
+          onClick={() => handleTabChange("within24")}
         >
           24시간 이내
         </button>
         <button
           className={activeTab === "over24" ? "active" : undefined}
-          onClick={() => setActiveTab("over24")}
+          onClick={() => handleTabChange("over24")}
         >
           24시간 이상
         </button>
@@ -339,7 +351,7 @@ const ListPage = () => {
           <ArchiveCard 
             key={p.id} 
             person={p} 
-            onClick={() => setSelectedPersonId(p.id)}
+            onClick={() => handleCardClick(p.id)}
           />
         ))}
       </div>
