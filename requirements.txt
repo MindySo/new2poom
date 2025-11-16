@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+torch
+torchvision
+torchreid
+transformers
+accelerate
+ultralytics
+opencv-python
+numpy
+scikit-learn
+pillow
+gdown
+tensorboard
+python-multipart
+boto3
