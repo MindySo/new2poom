@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import SideBar from '../../components/map/SideBar/SideBar';
 import useKakaoMap from '../../hooks/useKakaoMap';
 import Dashboard from '../../components/map/Dashboard/Dashboard';
-import { useIsMobile, useRecentMissing } from '../../hooks';
+import { useIsMobile, useRecentMissing, useMapLocationCenter } from '../../hooks';
 import BottomSheet, { type BottomSheetRef } from '../../components/common/molecules/BottomSheet/BottomSheet';
 import MyLocationButton from '../../components/map/MyLocationButton/MyLocationButton';
 import MyLocationMarker from '../../components/map/MyLocationMarker/MyLocationMarker';
@@ -21,6 +21,7 @@ const MapPage: React.FC = () => {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const bottomSheetRef = useRef<BottomSheetRef>(null);
   const [map, setMap] = useState<kakao.maps.Map | null>(null);
+  const { moveMapToCenter } = useMapLocationCenter({ map, mapContainerRef: mapRef, isMobile });
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [selectedMissingId, setSelectedMissingId] = useState<number | null>(null);
   const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -37,20 +38,58 @@ const MapPage: React.FC = () => {
   // 최근 24시간 내 실종자 데이터 가져오기 (Marker용)
   const { data: markerMissingList, isLoading: isMarkerLoading, isError: isMarkerError, error: markerError } = useRecentMissing(1000);
 
-
   useEffect(() => {
     if (!isLoaded || !mapRef.current) return;
 
-    // 추후에 center 조건부로 변경: 마커가 있다면 전국 지도, 마커가 없다면 내 위치 중심
-    const center = new kakao.maps.LatLng(37.5665, 126.9780); // 서울 중심
-    const mapOptions = {
-      center,
-      level: 5, // 확대 레벨
-    };
+    // 내 위치로 지도 초기화
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const center = new kakao.maps.LatLng(latitude, longitude);
+          const mapOptions = {
+            center,
+            level: 5,
+          };
 
-    const mapInstance = new kakao.maps.Map(mapRef.current, mapOptions);
-    setMap(mapInstance);
+          const mapInstance = new kakao.maps.Map(mapRef.current!, mapOptions);
+          setMap(mapInstance);
+          setMyLocation({ lat: latitude, lng: longitude });
+        },
+        () => {
+          // 위치 조회 실패 시 서울 중심으로 폴백
+          const center = new kakao.maps.LatLng(37.5665, 126.9780);
+          const mapOptions = {
+            center,
+            level: 5,
+          };
+
+          const mapInstance = new kakao.maps.Map(mapRef.current!, mapOptions);
+          setMap(mapInstance);
+        }
+      );
+    } else {
+      // geolocation 미지원 시 서울 중심
+      const center = new kakao.maps.LatLng(37.5665, 126.9780);
+      const mapOptions = {
+        center,
+        level: 5,
+      };
+
+      const mapInstance = new kakao.maps.Map(mapRef.current, mapOptions);
+      setMap(mapInstance);
+    }
   }, [isLoaded]);
+
+  // 모바일에서 초기 진입 시 내 위치를 모달을 고려한 중앙에 배치
+  useEffect(() => {
+    if (!isMobile || !map || !myLocation) return;
+
+    // 초기 진입 시에만 실행 (모달이 열려있지 않을 때)
+    if (isInitialModalOpen && !isTestModalOpen) {
+      moveMapToVisibleCenterMobile(myLocation.lat, myLocation.lng);
+    }
+  }, [isMobile, map, myLocation]);
 
   // 모바일에서 지도 탭 감지 (initial/half 상태일 때)
   useEffect(() => {
@@ -340,12 +379,11 @@ const MapPage: React.FC = () => {
 
           setMyLocation(location);
 
-          // 지도 중심을 내 위치로 이동
-          const moveLatLon = new kakao.maps.LatLng(latitude, longitude);
-          map.panTo(moveLatLon);
-
           // 줌 레벨 조정 (더 가까이)
           map.setLevel(3);
+
+          // 훅에서 제공하는 함수로 환경에 맞게 지도 중심 조정
+          moveMapToCenter(latitude, longitude);
 
           setIsLoadingLocation(false);
         },
