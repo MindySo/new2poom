@@ -19,13 +19,14 @@ interface MissingInfoModalProps {
   personId?: number | null; // 선택된 실종자 ID
   onOverlayClick?: () => void;
   onStateChange?: (state: 'initial' | 'half' | 'full') => void;
+  onGoBack?: () => void; // 초기 정보 모달로 돌아가는 콜백
 }
 
 export interface MissingInfoModalRef {
   collapseToInitial: () => void;
 }
 
-const MissingInfoModal = forwardRef<MissingInfoModalRef, MissingInfoModalProps>(({ isOpen, onClose, personId, onOverlayClick, onStateChange }, ref) => {
+const MissingInfoModal = forwardRef<MissingInfoModalRef, MissingInfoModalProps>(({ isOpen, onClose, personId, onOverlayClick, onStateChange, onGoBack }, ref) => {
   const navigate = useNavigate();
   const bottomSheetRef = useRef<BottomSheetRef>(null);
   const detailInfoRef = useRef<HTMLDivElement>(null);
@@ -121,6 +122,19 @@ const MissingInfoModal = forwardRef<MissingInfoModalRef, MissingInfoModalProps>(
         ) : (
           // 정상적으로 데이터가 있을 때
           <>
+            {/* 뒤로 가기 버튼 */}
+            <div style={{ padding: '8px 0 12px 0' }}>
+              <Button
+                variant="secondary"
+                size="small"
+                onClick={onGoBack}
+                style={{ width: '100%', justifyContent: 'center' }}
+                aria-label="뒤로 가기"
+              >
+                ← 목록으로 돌아가기
+              </Button>
+            </div>
+
             <div className={cardStyles['m-archive-card']}>
               <div className={cardStyles['m-archive-card__content']}>
                 <div className={cardStyles['m-archive-card__imageWrap']}>

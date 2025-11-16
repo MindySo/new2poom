@@ -8,6 +8,7 @@ import MyLocationMarker from '../../components/map/MyLocationMarker/MyLocationMa
 import MovementRadius from '../../components/map/MovementRadius/MovementRadius';
 import MobileStatusBoard from '../../components/map/MobileStatusBoard/MobileStatusBoard';
 import MissingInfoModal, { type MissingInfoModalRef } from '../../components/map/MissingInfoModal/MissingInfoModal';
+import InitialInfoModal from '../../components/map/InitialInfoModal/InitialInfoModal';
 import Marker from '../../components/map/Marker/Marker';
 import styles from './MapPage.module.css';
 
@@ -28,6 +29,7 @@ const MapPage: React.FC = () => {
   const [selectedRadiusValue, setSelectedRadiusValue] = useState<number>(0);
   const [isTestModalOpen, setIsTestModalOpen] = useState(false);
   const [mobileModalState, setMobileModalState] = useState<'initial' | 'half' | 'full'>('initial');
+  const [isInitialModalOpen, setIsInitialModalOpen] = useState(true); // 초기 정보 모달
 
   // 지도 탭 감지를 위한 상태
   const tapStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
@@ -39,6 +41,7 @@ const MapPage: React.FC = () => {
   useEffect(() => {
     if (!isLoaded || !mapRef.current) return;
 
+    // 추후에 center 조건부로 변경: 마커가 있다면 전국 지도, 마커가 없다면 내 위치 중심
     const center = new kakao.maps.LatLng(37.5665, 126.9780); // 서울 중심
     const mapOptions = {
       center,
@@ -437,18 +440,36 @@ const MapPage: React.FC = () => {
 
       {/* 모바일 모달 */}
       {isMobile && (
-        <MissingInfoModal
-          ref={missingInfoModalRef}
-          isOpen={isTestModalOpen}
-          personId={selectedMissingId}
-          onClose={() => {
-            setIsTestModalOpen(false);
-            setSelectedMissingId(null);
-            setSelectedRadiusPosition(null);
-            setSelectedRadiusValue(0);
-          }}
-          onStateChange={setMobileModalState}
-        />
+        <>
+          {/* 초기 정보 모달 (마커 목록) - BottomSheet 사용 */}
+          <InitialInfoModal
+            isOpen={isInitialModalOpen && !isTestModalOpen}
+            onClose={() => setIsInitialModalOpen(false)}
+            onMarkerCardClick={(id) => {
+              setIsInitialModalOpen(false);
+              handleMissingCardClick(id);
+            }}
+          />
+
+          {/* 마커 상세 정보 모달 */}
+          <MissingInfoModal
+            ref={missingInfoModalRef}
+            isOpen={isTestModalOpen}
+            personId={selectedMissingId}
+            onClose={() => {
+              setIsTestModalOpen(false);
+              setSelectedMissingId(null);
+              setSelectedRadiusPosition(null);
+              setSelectedRadiusValue(0);
+            }}
+            onStateChange={setMobileModalState}
+            onGoBack={() => {
+              setIsTestModalOpen(false);
+              setSelectedMissingId(null);
+              setIsInitialModalOpen(true);
+            }}
+          />
+        </>
       )}
     </>
   );

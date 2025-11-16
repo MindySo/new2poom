@@ -147,7 +147,7 @@ const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
 
           // 최소/최대 제한 설정
           const minHeight = 200; // 최소 높이
-          const maxHeight = window.innerHeight * 0.36; // 최대 화면의 70%
+          const maxHeight = window.innerHeight * 0.42; // 최대 화면의 70%
           const finalHeight = Math.min(Math.max(calculatedHeight, minHeight), maxHeight);
 
           setDynamicHalfHeight(finalHeight);
@@ -179,19 +179,21 @@ const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
           />
         )}
 
-        {/* 배경 */}
-        <div
-          className={`${styles.backdrop} ${isClosing ? styles.backdropClose : ''}`}
-          onClick={handleBackdropClick}
-          onTouchEnd={(e) => {
-            e.stopPropagation(); // 터치 이벤트 전파 방지
-            handleBackdropClick(e as any);
-          }}
-          style={{
-            opacity: modalState === 'full' ? 0.5 : 0,
-            pointerEvents: modalState === 'full' ? 'auto' : 'none',
-          }}
-        />
+        {/* 배경 (full 상태에서만 렌더링) */}
+        {isOpen && modalState === 'full' && (
+          <div
+            className={`${styles.backdrop} ${isClosing ? styles.backdropClose : ''}`}
+            onClick={handleBackdropClick}
+            onTouchEnd={(e) => {
+              e.stopPropagation(); // 터치 이벤트 전파 방지
+              handleBackdropClick(e as any);
+            }}
+            style={{
+              opacity: 0.5,
+              pointerEvents: 'auto',
+            }}
+          />
+        )}
 
         {/* 모달 */}
         {(isOpen || isClosing) && (
