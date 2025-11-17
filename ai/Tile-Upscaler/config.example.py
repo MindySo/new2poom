@@ -13,3 +13,8 @@ GMS_CONFIG = {
     'api_key': 'YOUR_GMS_API_KEY',  # e.g., 'S13P32A706-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
     'base_url': 'https://gms.ssafy.io/gmsapi/api.openai.com/v1'
 }
+
+# HuggingFace Configuration
+HUGGINGFACE_CONFIG = {
+    'token': ''  # Fill in your HuggingFace token here (optional, leave empty if public model)
+}
