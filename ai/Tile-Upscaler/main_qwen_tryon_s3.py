@@ -122,7 +122,7 @@ class LazyQwenTryOnPipeline:
             self.pipe = QwenImageEditPlusPipeline.from_pretrained(
                 "Qwen/Qwen-Image-Edit-2509",
                 torch_dtype=dtype,
-                device_map="auto"  # Automatically distribute across GPUs
+                device_map="balanced"  # Distribute evenly across all GPUs
             )
             print("Qwen-Image-Edit-2509 loaded and distributed across GPUs!")
 
@@ -239,6 +239,92 @@ def select_best_face_image(image_paths):
         return image_paths[0]
 
 
+def create_face_with_body_template(face_image_path, output_path):
+    """Crop face and add simple body template below for Try-On"""
+    print(f"Creating face + body template from: {os.path.basename(face_image_path)}")
+
+    img = cv2.imread(face_image_path)
+    h, w = img.shape[:2]
+
+    # Detect face
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray, 1.1, 4, minSize=(int(w*0.1), int(h*0.1)))
+
+    if len(faces) > 0:
+        # Get largest face
+        face = max(faces, key=lambda f: f[2] * f[3])
+        (x, y, fw, fh) = face
+
+        # Expand crop region for head and shoulders
+        expand_x = 0.6
+        expand_y_top = 0.5
+        expand_y_bottom = 0.3  # Just a bit below chin
+
+        x1 = max(0, int(x - fw * expand_x))
+        y1 = max(0, int(y - fh * expand_y_top))
+        x2 = min(w, int(x + fw * (1 + expand_x)))
+        y2 = min(h, int(y + fh * (1 + expand_y_bottom)))
+
+        # Crop face/head
+        face_crop = img[y1:y2, x1:x2]
+        face_h, face_w = face_crop.shape[:2]
+
+        # Create canvas: face on top, body template below
+        # Body should be ~2.5x the height of head
+        body_h = int(face_h * 2.5)
+        canvas_h = face_h + body_h
+        canvas_w = face_w
+
+        # Create white canvas
+        canvas = np.ones((canvas_h, canvas_w, 3), dtype=np.uint8) * 255
+
+        # Paste face on top
+        canvas[0:face_h, 0:face_w] = face_crop
+
+        # Draw simple body silhouette (trapezoidal shape)
+        # Shoulders to waist
+        shoulder_width = face_w
+        waist_y = int(body_h * 0.4)
+        waist_width = int(face_w * 0.9)
+        hip_y = int(body_h * 0.7)
+        hip_width = int(face_w * 1.0)
+
+        # Body shape in light gray
+        body_color = (240, 240, 240)  # Very light gray
+
+        # Upper body (shoulders to waist)
+        pts = np.array([
+            [0, face_h],
+            [shoulder_width-1, face_h],
+            [int((shoulder_width - waist_width)/2 + waist_width), face_h + waist_y],
+            [int((shoulder_width - waist_width)/2), face_h + waist_y]
+        ], np.int32)
+        cv2.fillPoly(canvas, [pts], body_color)
+
+        # Lower body (waist to hips)
+        pts2 = np.array([
+            [int((shoulder_width - waist_width)/2), face_h + waist_y],
+            [int((shoulder_width - waist_width)/2 + waist_width), face_h + waist_y],
+            [int((shoulder_width - hip_width)/2 + hip_width), face_h + hip_y],
+            [int((shoulder_width - hip_width)/2), face_h + hip_y]
+        ], np.int32)
+        cv2.fillPoly(canvas, [pts2], body_color)
+
+        # Save
+        cv2.imwrite(output_path, canvas)
+        result_pil = Image.open(output_path)
+
+        print(f"  → Face + body template: {result_pil.size}")
+        return result_pil, True
+    else:
+        # No face detected, use original
+        print("  → No face detected, using original image")
+        img_pil = Image.open(face_image_path)
+        img_pil.save(output_path)
+        return img_pil, False
+
+
 def process_missing_person_case_tryon(case_id):
     """Process case with Qwen Try-On"""
     print(f"\n{'='*60}")
@@ -263,29 +349,37 @@ def process_missing_person_case_tryon(case_id):
         face_candidates = downloaded_files[:-1]
         face_image = select_best_face_image(face_candidates)
 
-        # Step 1: Extract clothing from first image
+        # Step 1: Create face + body template
+        face_body_template_path = os.path.join(temp_dir, "face_body_template.jpg")
+        face_body_template, face_detected = create_face_with_body_template(
+            face_image,
+            face_body_template_path
+        )
+
+        # Step 2: Extract clothing from first image
         extracted_clothes_path = os.path.join(temp_dir, "extracted_clothes.png")
         lazy_qwen_tryon.extract_clothes(clothing_ref_image, extracted_clothes_path)
 
-        # Step 2: Try on clothing onto face image
+        # Step 3: Try on clothing onto face+body template
         final_output = os.path.join(temp_dir, "final_result.jpg")
         result_image = lazy_qwen_tryon.tryon_clothes(
-            face_image,
+            face_body_template_path,  # Use face + body template
             extracted_clothes_path,
             final_output
         )
 
-        # Step 3: Analysis result
+        # Step 4: Analysis result
         analysis_result = {
             "case_id": case_id,
             "processed_at": time.strftime("%Y-%m-%d %H:%M:%S"),
-            "processing_method": "Qwen_Try_On_2_Stage",
+            "processing_method": "Qwen_Try_On_Face_Body_Template",
             "face_image_used": os.path.basename(face_image),
+            "face_detected": face_detected,
             "clothing_reference": os.path.basename(clothing_ref_image),
             "output_size": result_image.size
         }
 
-        # Step 4: Upload
+        # Step 5: Upload
         success = s3_handler.upload_processed_results(
             case_id,
             final_output,
