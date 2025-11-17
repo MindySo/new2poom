@@ -13,6 +13,7 @@ interface BottomSheetProps {
 
 export interface BottomSheetRef {
   collapseToInitial: () => void;
+  expandToHalf: () => void;
 }
 
 const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
@@ -88,15 +89,8 @@ const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     // ref를 통해 외부에서 호출 가능한 함수 expose
     useImperativeHandle(ref, () => ({
       collapseToInitial: collapseModalToInitial,
+      expandToHalf: expandToHalf,
     }));
-
-    // 모달 완전 닫기
-    const closeModalCompletely = () => {
-      startClosing();
-      setTimeout(() => {
-        onClose();
-      }, 300);
-    };
 
     // 배경 클릭 시 initial로 축소
     const handleBackdropClick = (e: React.MouseEvent) => {
