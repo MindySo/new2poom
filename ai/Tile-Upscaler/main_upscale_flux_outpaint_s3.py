@@ -234,9 +234,53 @@ class LazyFluxFillPipeline:
 lazy_flux_fill_pipe = LazyFluxFillPipeline()
 
 
+def detect_face_score(image_path):
+    """Detect face and return score (face area, or 0 if no face)"""
+    img = cv2.imread(image_path)
+    if img is None:
+        return 0
+
+    h, w = img.shape[:2]
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray, 1.1, 4, minSize=(int(w*0.1), int(h*0.1)))
+
+    if len(faces) > 0:
+        # Return area of largest face
+        face = max(faces, key=lambda f: f[2] * f[3])
+        return face[2] * face[3]
+    return 0
+
+
+def select_best_face_image(image_paths):
+    """Select image with best (largest) face detection"""
+    print(f"Selecting best face from {len(image_paths)} images...")
+
+    best_image = None
+    best_score = 0
+
+    for img_path in image_paths:
+        score = detect_face_score(img_path)
+        filename = os.path.basename(img_path)
+        if score > 0:
+            print(f"  → {filename}: face area = {score}")
+            if score > best_score:
+                best_score = score
+                best_image = img_path
+        else:
+            print(f"  → {filename}: no face")
+
+    if best_image:
+        print(f"  ✓ Selected: {os.path.basename(best_image)}")
+        return best_image
+    else:
+        print(f"  ✓ No faces found, using first image: {os.path.basename(image_paths[0])}")
+        return image_paths[0]
+
+
 def crop_face_region(image_path, output_path):
     """Crop to focus on face region"""
-    print(f"Detecting and cropping face...")
+    print(f"Cropping face from: {os.path.basename(image_path)}")
 
     img = cv2.imread(image_path)
     h, w = img.shape[:2]
@@ -369,11 +413,13 @@ def process_missing_person_case_flux_outpaint(case_id):
             print(f"Error: Need at least 2 images")
             return False
 
-        face_image_path = downloaded_files[0]
+        # Last image is text description
         text_image_path = downloaded_files[-1]
+        print(f"\nText description: {os.path.basename(text_image_path)}")
 
-        print(f"\nFace: {os.path.basename(face_image_path)}")
-        print(f"Text: {os.path.basename(text_image_path)}")
+        # Select best face image from remaining images
+        face_candidates = downloaded_files[:-1]
+        face_image_path = select_best_face_image(face_candidates)
 
         # Step 1: Crop face region
         cropped_face_path = os.path.join(temp_dir, "face_cropped.jpg")
