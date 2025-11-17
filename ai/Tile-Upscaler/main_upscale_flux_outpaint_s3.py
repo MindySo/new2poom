@@ -14,7 +14,6 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from diffusers import FluxFillPipeline
-from RealESRGAN import RealESRGAN
 
 # Import configurations
 try:

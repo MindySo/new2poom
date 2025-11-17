@@ -12,15 +12,12 @@ diffusers>=0.31.0
 transformers>=4.46.0
 accelerate>=0.34.0
 safetensors>=0.4.5
-huggingface-hub>=0.26.0
+huggingface-hub>=0.34.0,<1.0
 
 # Image processing
 Pillow>=10.0.0
 opencv-python>=4.8.0
 numpy>=1.24.0
-
-# Upscaling
-git+https://github.com/sberbank-ai/Real-ESRGAN.git
 
 # AWS S3
 boto3>=1.28.0
