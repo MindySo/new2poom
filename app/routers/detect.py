@@ -1,7 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Form
 import cv2
 import numpy as np
 import requests
+import tempfile
 from PIL import Image
 import io
 
@@ -14,27 +15,41 @@ from app.utils.s3 import upload_image_to_s3
 
 router = APIRouter()
 
-@router.post("/search")
-async def search_person(
-    video_url: str,
-    query_mode: int,  # 1=img, 2=text, 3=both
-    text_query: str = None,
-    image_url: str = None,
-    missing_id: int = None,
-    cctv_id: int = None                           
+def download_video_to_tempfile(url):
+    response = requests.get(url, stream=True)
+    response.raise_for_status()
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
+        for chunk in response.iter_content(chunk_size=1024*1024):
+            tmp.write(chunk)
+        return tmp.name
+    
+@router.post("/detect")
+async def detect(
+    video_url: str = Form(...),
+    text_query: str = Form(None),
+    image_url: str = Form(None),
+    case_id: int = Form(None),
+    cctv_id: int = Form(None)                         
 ):
+    if image_url and text_query:
+        query_mode = 3   # 이미지 + 텍스트
+    elif image_url:
+        query_mode = 1   # 이미지만
+    elif text_query:
+        query_mode = 2   # 텍스트만
+    else:
+        return {"error": "No query provided. Please provide image_url and/or text_query."}
     
     # ---- Load Video ----
     # ----------------------------------------------------
     # 1) Download video from S3 URL
     # ----------------------------------------------------
-    video_bytes = requests.get(video_url).content
-    temp_video = "temp_video.mp4"
+    temp_video_path = download_video_to_tempfile(video_url)
 
-    with open(temp_video, "wb") as f:
-        f.write(video_bytes)
-
-    cap = cv2.VideoCapture(temp_video)
+    cap = cv2.VideoCapture(temp_video_path)
+    if not cap.isOpened():
+        return {"error": "Failed to open video"}
 
     # ---- Load Query Feature ----
     query_features = []
@@ -104,18 +119,34 @@ async def search_person(
     result = []
     for idx in ranked_idx[:10]:
         crop = crops[idx]
+        det = detections[idx]
 
-        # PIL 변환
+        x1, y1, x2, y2 = det["box"]
+        frame_idx = det["frame"]
+
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+        ret, frame = cap.read()
+
+        if not ret:
+            continue
+
+         # ---- 전체 프레임에 박스 그리기 ----
+        full_frame = frame.copy()
+        cv2.rectangle(full_frame, (x1, y1), (x2, y2), (0, 255, 0), 3)
+
+        # ---- PIL 변환 ----
         pil_crop = Image.fromarray(cv2.cvtColor(crop, cv2.COLOR_BGR2RGB))
+        pil_full = Image.fromarray(cv2.cvtColor(full_frame, cv2.COLOR_BGR2RGB))
 
         # ---- S3 업로드 ----
-        prefix = f"detections/missing-person-{missing_id}/cctv-{cctv_id}/"
-        image_url = upload_image_to_s3(pil_crop, prefix=prefix)
+        prefix = f"detections/missing-person-{case_id}/cctv-{cctv_id}/"
+        crop_url = upload_image_to_s3(pil_crop, prefix=prefix)
+        full_url = upload_image_to_s3(pil_full, prefix=prefix + "full-")
 
         result.append({
             "score": float(scores[idx][0]),
             "detection": detections[idx],
-            "image_url": image_url   # <= S3 URL 포함
+            "image_url": crop_url
         })
 
     return {

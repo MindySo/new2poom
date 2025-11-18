@@ -34,4 +34,4 @@ def upload_image_to_s3(pil_img, prefix="detections/"):
     )
 
     # 반환: 퍼블릭 URL
-    return f"https://{BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{file_name}"
+    return f"https://cdn.back2poom.site/{file_name}"
