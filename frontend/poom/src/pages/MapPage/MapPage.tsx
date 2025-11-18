@@ -215,7 +215,7 @@ const MapPage: React.FC = () => {
 
             // 반경 표시
             setSelectedRadiusPosition({ lat: person.latitude, lng: person.longitude });
-            setSelectedRadiusValue(1000);
+            setSelectedRadiusValue(100); // 임시 테스트: 100m부터 시작해서 증가 보기
           }
         }
       }
@@ -243,7 +243,7 @@ const MapPage: React.FC = () => {
 
           // 반경 표시
           setSelectedRadiusPosition({ lat: person.latitude, lng: person.longitude });
-          setSelectedRadiusValue(1000); // 임시값 1000m, 나중에 API에서 받아올 수 있음
+          setSelectedRadiusValue(100); // 임시 테스트: 100m부터 시작해서 증가 보기
         }
       }
     }
@@ -440,14 +440,14 @@ const MapPage: React.FC = () => {
         )}
 
         {/* 선택된 마커의 이동 반경 표시 */}
-        {/* {map && selectedRadiusPosition && selectedRadiusValue > 0 && selectedMissingId && (
+        {map && selectedRadiusPosition && selectedRadiusValue > 0 && selectedMissingId && (
           <MovementRadius
             map={map}
             position={selectedRadiusPosition}
             radius={selectedRadiusValue}
             missingId={selectedMissingId}
           />
-        )} */}
+        )}
 
         {/* 내 위치 버튼 (MobileModal 위에 표시) */}
         {map && isMobile && (
