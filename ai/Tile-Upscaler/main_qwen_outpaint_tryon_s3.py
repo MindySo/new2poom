@@ -165,9 +165,17 @@ class LazyFluxFillPipeline:
         print(f"  Mask saved to: {debug_mask_path}")
         print(f"  Outpainting body in all directions...")
 
-        # Outpaint body
+        # Outpaint body with detailed prompt
+        prompt = (
+            "full body portrait, standing straight, arms at sides, "
+            "simple white t-shirt, plain pants, "
+            "neutral pose, front view, "
+            "clean white background, professional photo, "
+            "complete body from head to feet, well-proportioned"
+        )
+
         result = self.pipe(
-            prompt="standing person, full body, neutral background",
+            prompt=prompt,
             image=canvas,
             mask_image=mask,
             height=target_h,
