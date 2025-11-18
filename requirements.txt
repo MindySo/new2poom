@@ -14,3 +14,4 @@ gdown
 tensorboard
 python-multipart
 boto3
+dotenv

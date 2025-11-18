@@ -1,6 +1,7 @@
-from fastapi import APIRouter, UploadFile, File, Form
+from fastapi import APIRouter
 import cv2
 import numpy as np
+import requests
 from PIL import Image
 import io
 
@@ -15,26 +16,34 @@ router = APIRouter()
 
 @router.post("/search")
 async def search_person(
-    video_file: UploadFile = File(...),
-    query_mode: int = Form(...),  # 1=img, 2=text, 3=both
-    text_query: str = Form(None),
-    image_query: UploadFile = File(None),
-    missing_id: int = Form(...),
-    cctv_id: int = Form(...)                                 
+    video_url: str,
+    query_mode: int,  # 1=img, 2=text, 3=both
+    text_query: str = None,
+    image_url: str = None,
+    missing_id: int = None,
+    cctv_id: int = None                           
 ):
+    
     # ---- Load Video ----
-    temp_video = video_file.filename
+    # ----------------------------------------------------
+    # 1) Download video from S3 URL
+    # ----------------------------------------------------
+    video_bytes = requests.get(video_url).content
+    temp_video = "temp_video.mp4"
+
     with open(temp_video, "wb") as f:
-        f.write(await video_file.read())
+        f.write(video_bytes)
 
     cap = cv2.VideoCapture(temp_video)
 
     # ---- Load Query Feature ----
     query_features = []
 
-    if query_mode in [1, 3] and image_query is not None:
-        data = await image_query.read()
-        nparr = np.frombuffer(data, np.uint8)
+    # (1) Image Query
+    if query_mode in [1, 3] and image_url:
+
+        img_bytes = requests.get(image_url).content
+        nparr = np.frombuffer(img_bytes, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
         # reid
@@ -48,10 +57,11 @@ async def search_person(
         combined = 0.7 * reid_feat + 0.3 * clip_feat
         query_features.append(combined)
 
+    # (2) Text Query
     if query_mode in [2, 3] and text_query:
         query_features.append(extract_clip_text(text_query))
 
-    # 가중 평균
+    # 평균 가중치
     if len(query_features) == 2:
         query_feat = 0.6 * query_features[0] + 0.4 * query_features[1]
     else:
