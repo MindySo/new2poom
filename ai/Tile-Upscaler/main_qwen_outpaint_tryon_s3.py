@@ -124,8 +124,8 @@ class LazyFluxFillPipeline:
             print("FLUX.1-Fill loaded!")
 
     def outpaint_body(self, face_image_path, output_path):
-        """Outpaint body below face image"""
-        print(f"Outpainting body from face: {os.path.basename(face_image_path)}")
+        """Outpaint body around face image (all directions)"""
+        print(f"Outpainting full body from face: {os.path.basename(face_image_path)}")
 
         self.load()
 
@@ -133,26 +133,26 @@ class LazyFluxFillPipeline:
         face_img = Image.open(face_image_path).convert('RGB')
         face_w, face_h = face_img.size
 
-        # Create canvas: face at top, empty space below for body
-        # Body should be about 2.5x face height
-        body_h = int(face_h * 2.5)
-        canvas_h = face_h + body_h
-        canvas_w = max(face_w, 512)  # At least 512 wide
+        # Create larger canvas: face in upper-center, expand in all directions
+        # Target full body proportions
+        target_w = max(int(face_w * 1.8), 768)  # 좌우로 넓게
+        target_h = int(face_h * 3.5)  # 전체 높이 (머리부터 발끝까지)
 
         # Create canvas and mask
-        canvas = Image.new('RGB', (canvas_w, canvas_h), (255, 255, 255))
-        mask = Image.new('L', (canvas_w, canvas_h), 0)  # 0 = keep, 255 = generate
+        canvas = Image.new('RGB', (target_w, target_h), (255, 255, 255))
+        mask = Image.new('L', (target_w, target_h), 255)  # 전체를 생성 영역으로
 
-        # Paste face at top center
-        paste_x = (canvas_w - face_w) // 2
-        canvas.paste(face_img, (paste_x, 0))
+        # Paste face in upper-center area
+        paste_x = (target_w - face_w) // 2
+        paste_y = int(target_h * 0.15)  # 상단 15% 위치에 얼굴 배치
+        canvas.paste(face_img, (paste_x, paste_y))
 
-        # Create mask for body area (everything below face)
+        # Mask: keep only the face area (0), generate everything else (255)
         mask_draw = ImageDraw.Draw(mask)
-        mask_draw.rectangle([0, face_h, canvas_w, canvas_h], fill=255)
+        mask_draw.rectangle([paste_x, paste_y, paste_x + face_w, paste_y + face_h], fill=0)
 
-        print(f"  Canvas: {canvas.size}, Face area: {face_w}x{face_h}")
-        print(f"  Outpainting body area below face...")
+        print(f"  Canvas: {canvas.size}, Face at: ({paste_x}, {paste_y}), size: {face_w}x{face_h}")
+        print(f"  Outpainting body in all directions...")
 
         # Outpaint body
         result = self.pipe(
@@ -230,7 +230,7 @@ class LazyQwenTryOnPipeline:
 
         result = self.pipe(
             image=[person_img, clothes_img],
-            prompt="tryon_clothes",
+            prompt="tryon_clothes dress the clothing onto the asian person, replace all clothes with the outfit",
             num_inference_steps=50
         ).images[0]
 
