@@ -86,4 +86,25 @@ public class MissingCaseController {
         }
     }
 
+    /**
+     * 테스트용: 특정 MissingCase에 대해 우선순위 분석 수행
+     */
+    @PostMapping("/test-priority/{caseId}")
+    public ResponseEntity<Map<String, Object>> testPriorityAnalysis(@PathVariable Long caseId) {
+        try {
+            String result = missingCaseService.testPriorityAnalysis(caseId);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "우선순위 분석 요청 완료",
+                    "caseId", caseId,
+                    "result", result
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", e.getMessage()
+            ));
+        }
+    }
+
 }
