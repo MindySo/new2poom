@@ -58,6 +58,43 @@ const MapPage: React.FC = () => {
           const mapInstance = new kakao.maps.Map(mapRef.current!, mapOptions);
           setMap(mapInstance);
           setMyLocation({ lat: latitude, lng: longitude });
+
+          // 데스크톱에서만 지도 생성 후 SideBar/TopBar를 고려한 실제 보이는 영역의 중앙으로 이동
+          if (!isMobile) {
+            // projection이 준비될 때까지 대기
+            setTimeout(() => {
+              const proj = mapInstance.getProjection();
+              if (proj) {
+                const targetLatLng = new kakao.maps.LatLng(latitude, longitude);
+                const mapWidth = mapRef.current!.offsetWidth;
+                const mapHeight = mapRef.current!.offsetHeight;
+                const SIDEBAR_WIDTH = 380;
+                const TOPBAR_HEIGHT = 90;
+
+                const visibleLeft = SIDEBAR_WIDTH;
+                const visibleTop = TOPBAR_HEIGHT;
+                const visibleWidth = mapWidth - SIDEBAR_WIDTH;
+                const visibleHeight = mapHeight - TOPBAR_HEIGHT;
+
+                const centerX = visibleLeft + visibleWidth / 2;
+                const centerY = visibleTop + visibleHeight / 2;
+                const mapCenterX = mapWidth / 2;
+                const mapCenterY = mapHeight / 2;
+
+                const offsetX = centerX - mapCenterX;
+                // Y축 오프셋을 조정하여 시각적으로 더 위로 배치 (40px 상향)
+                const offsetY = centerY - mapCenterY - 40;
+
+                const targetPoint = proj.pointFromCoords(targetLatLng);
+                const adjustedPoint = new kakao.maps.Point(
+                  targetPoint.x - offsetX,
+                  targetPoint.y - offsetY
+                );
+                const adjustedLatLng = proj.coordsFromPoint(adjustedPoint);
+                mapInstance.setCenter(adjustedLatLng);
+              }
+            }, 100);
+          }
         },
         () => {
           // 위치 조회 실패 시 서울 중심으로 폴백
