@@ -348,10 +348,11 @@ const ListPage = () => {
       {/* 카드 리스트 영역 */}
       <div className={styles['list-grid']}>
         {filteredPeople.map((p) => (
-          <ArchiveCard 
-            key={p.id} 
-            person={p} 
+          <ArchiveCard
+            key={p.id}
+            person={p}
             onClick={() => handleCardClick(p.id)}
+            isSelected={selectedPersonId === p.id}
           />
         ))}
       </div>
