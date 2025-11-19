@@ -1,4 +1,5 @@
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useMissingDetail } from '../../hooks';
 import Text from '../../components/common/atoms/Text';
 import Badge from '../../components/common/atoms/Badge';
@@ -7,9 +8,18 @@ import tempImg from '../../assets/TempImg.png';
 import styles from './PoliceDetailPage.module.css';
 
 const PoliceDetailPage = () => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const missingId = searchParams.get('id') ? parseInt(searchParams.get('id')!, 10) : null;
   const { data: missingDetail, isLoading } = useMissingDetail(missingId);
+
+  // 인증 체크 (개발용 임시)
+  useEffect(() => {
+    const isAuthenticated = localStorage.getItem('policeAuth') === 'true';
+    if (!isAuthenticated) {
+      navigate('/police');
+    }
+  }, [navigate]);
 
   return (
     <div className={styles.container}>

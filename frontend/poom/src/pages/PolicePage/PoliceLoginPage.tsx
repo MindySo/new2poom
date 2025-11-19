@@ -9,13 +9,24 @@ const PoliceLoginPage = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: 로그인 API 호출
-    console.log('Login attempt:', { username, password });
-    // 로그인 성공 시 이동할 페이지로 리다이렉트
-    navigate('/police/map');
+    setError(''); // 에러 초기화
+
+    // 임시 하드코딩된 계정 체크 (개발용)
+    if (username === 'admin' && password === 'poom1234') {
+      // 로그인 성공 시 localStorage에 저장
+      localStorage.setItem('policeAuth', 'true');
+      navigate('/police/map');
+    } else {
+      setError('아이디 또는 비밀번호가 일치하지 않습니다.');
+    }
+
+    // TODO: 로그인 API 호출 (나중에 백엔드 연동 시 사용)
+    // console.log('Login attempt:', { username, password });
+    // navigate('/police/map');
   };
 
   return (
@@ -60,6 +71,14 @@ const PoliceLoginPage = () => {
               required
             />
           </div>
+
+          {error && (
+            <div className={styles.errorMessage}>
+              <Text as="p" size="sm" weight="medium" color="black">
+                {error}
+              </Text>
+            </div>
+          )}
 
           <Button
             type="submit"

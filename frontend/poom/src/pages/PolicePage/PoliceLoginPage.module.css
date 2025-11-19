@@ -104,3 +104,25 @@
   transform: translateY(0);
 }
 
+.errorMessage {
+  background-color: #fff5f5;
+  border: 1px solid #fc8181;
+  border-radius: 8px;
+  padding: 0.875rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: shake 0.3s ease-in-out;
+}
+
+.errorMessage p {
+  color: #c53030 !important;
+  margin: 0;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PoliceSideBar from '../../components/police/PoliceSideBar/PoliceSideBar';
 import useKakaoMap from '../../hooks/useKakaoMap';
 import { useRecentMissing } from '../../hooks';
@@ -9,11 +10,20 @@ import styles from './PoliceMapPage.module.css';
 const API_KEY = import.meta.env.VITE_KAKAO_JAVASCRIPT_KEY;
 
 const PoliceMapPage: React.FC = () => {
+  const navigate = useNavigate();
   const isLoaded = useKakaoMap(API_KEY);
   const mapRef = useRef<HTMLDivElement | null>(null);
   const [map, setMap] = useState<kakao.maps.Map | null>(null);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [selectedMissingId, setSelectedMissingId] = useState<number | null>(null);
+
+  // 인증 체크 (개발용 임시)
+  useEffect(() => {
+    const isAuthenticated = localStorage.getItem('policeAuth') === 'true';
+    if (!isAuthenticated) {
+      navigate('/police');
+    }
+  }, [navigate]);
 
   // 최근 72시간 내 실종자 데이터 가져오기 (마커용)
   const { data: recentMissingList } = useRecentMissing(72);
