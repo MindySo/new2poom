@@ -334,8 +334,8 @@ const ArchiveDetailPopup: React.FC<ArchiveDetailPopupProps> = ({ personId, initi
           {(() => {
             const aiImageDisplayIds = [50000, 50020, 50040, 50041];
             const hasAIImages = aiImageDisplayIds.includes(person?.id || 0) &&
-                               person?.outputImages &&
-                               person.outputImages.length > 0;
+                                person?.outputImages &&
+                                person.outputImages.length > 0;
             const aiImageUrl = hasAIImages ? person?.outputImages?.[0]?.url : null;
 
             return (
