@@ -599,14 +599,14 @@ const MapPage: React.FC = () => {
         )}
 
         {/* 내 위치 버튼 (MobileModal 위에 표시) */}
-        {/*map && isMobile && (
+        {map && isMobile && (
           <div className={styles.myLocationButtonWrapper}>
             <MyLocationButton
               onClick={handleMyLocation}
               disabled={isLoadingLocation}
             />
           </div>
-        )}*/
+        )}
 
         {/* 내 위치 버튼 (데스크톱) */}
         {map && !isMobile && (
