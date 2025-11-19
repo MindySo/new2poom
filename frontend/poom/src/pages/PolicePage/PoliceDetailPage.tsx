@@ -1,9 +1,11 @@
 import { useSearchParams } from 'react-router-dom';
+import { useState } from 'react';
 import { useMissingDetail } from '../../hooks';
 import { useCctvDetection } from '../../hooks/useCctvDetection';
 import Text from '../../components/common/atoms/Text';
 import Badge from '../../components/common/atoms/Badge';
 import ReportList from '../../components/police/ReportList/ReportList';
+import VideoModal from '../../components/police/VideoModal/VideoModal';
 import tempImg from '../../assets/TempImg.png';
 import styles from './PoliceDetailPage.module.css';
 
@@ -12,6 +14,18 @@ const PoliceDetailPage = () => {
   const missingId = searchParams.get('id') ? parseInt(searchParams.get('id')!, 10) : null;
   const { data: missingDetail, isLoading } = useMissingDetail(missingId);
   const { data: cctvDetections, isLoading: isCctvLoading } = useCctvDetection(missingId);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+
+   const handleOpenModal = (url: string) => {
+    setVideoUrl(url);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setVideoUrl(null);
+    setIsModalOpen(false);
+  };
 
   return (
     <div className={styles.container}>
@@ -120,11 +134,17 @@ const PoliceDetailPage = () => {
                 {cctvDetections?.map((det) => (
                   <div key={det.id} className={styles.detectionCard}>
                     <div className={styles.detectionImageWrapper}>
-                      <img
-                        src={det.cctvImageUrl ?? tempImg}
-                        alt={`CCTV Detection ${det.id}`}
-                        className={styles.detectionImage}
-                      />
+                      <div
+                        className={styles.detectionImageWrapper}
+                        onClick={() => 1 && handleOpenModal("https://cdn.back2poom.site/videos/1.mp4")}
+                        style={{ cursor: 1 ? 'pointer' : 'default' }}
+                      >
+                        <img
+                          src={det.cctvImageUrl ?? tempImg}
+                          alt={`CCTV Detection ${det.id}`}
+                          className={styles.detectionImage}
+                        />
+                      </div>
                     </div>
           
                     <div className={styles.detectionInfo}>
@@ -174,6 +194,8 @@ const PoliceDetailPage = () => {
       ) : (
         <div className={styles.errorMessage}>실종자 정보를 찾을 수 없습니다.</div>
       )}
+      {/* Video Modal */}
+      <VideoModal isOpen={isModalOpen} videoUrl={videoUrl} onClose={handleCloseModal} />
     </div>
   );
 };
