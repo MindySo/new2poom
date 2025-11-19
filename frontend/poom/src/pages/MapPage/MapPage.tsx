@@ -15,6 +15,35 @@ import styles from './MapPage.module.css';
 
 const API_KEY = import.meta.env.VITE_KAKAO_JAVASCRIPT_KEY;
 
+const MAX_RADIUS = 15000; // 최대 반지름 15km
+
+// 경과 시간 기반 초기 반지름 계산 함수
+const calculateInitialRadius = (occurredAt: string, speed: number): number => {
+  const occurredTime = new Date(occurredAt).getTime();
+  const currentTime = Date.now();
+  const elapsedSeconds = (currentTime - occurredTime) / 1000;
+
+  // speed는 km/h 단위이므로 m/s로 변환
+  const speedInMeterPerSecond = speed / 3.6;
+
+  // 초기 반지름 계산 (최대 15km로 제한)
+  const initialRadius = speedInMeterPerSecond * elapsedSeconds;
+
+  return Math.min(initialRadius, MAX_RADIUS);
+};
+
+// 최대 범위 초과 여부 확인 함수
+const isMaxRadiusExceeded = (occurredAt: string, speed: number): boolean => {
+  const occurredTime = new Date(occurredAt).getTime();
+  const currentTime = Date.now();
+  const elapsedSeconds = (currentTime - occurredTime) / 1000;
+
+  const speedInMeterPerSecond = speed / 3.6;
+  const calculatedRadius = speedInMeterPerSecond * elapsedSeconds;
+
+  return calculatedRadius >= MAX_RADIUS;
+};
+
 const MapPage: React.FC = () => {
   const isMobile = useIsMobile(1024);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -149,7 +178,11 @@ const MapPage: React.FC = () => {
             if (person.latitude && person.longitude) {
               moveMapToVisibleCenterMobile(person.latitude, person.longitude);
               setSelectedRadiusPosition({ lat: person.latitude, lng: person.longitude });
-              setSelectedRadiusValue(1000);
+
+              // 경과 시간 기반 초기 반지름 계산
+              const speed = person.aiSupport?.speed ?? 3.14;
+              const initialRadius = calculateInitialRadius(person.occurredAt, speed);
+              setSelectedRadiusValue(initialRadius);
             }
           } else {
             // 데스크톱 환경
@@ -160,7 +193,11 @@ const MapPage: React.FC = () => {
             if (person.latitude && person.longitude) {
               moveMapToVisibleCenter(person.latitude, person.longitude);
               setSelectedRadiusPosition({ lat: person.latitude, lng: person.longitude });
-              setSelectedRadiusValue(1000);
+
+              // 경과 시간 기반 초기 반지름 계산
+              const speed = person.aiSupport?.speed ?? 3.14;
+              const initialRadius = calculateInitialRadius(person.occurredAt, speed);
+              setSelectedRadiusValue(initialRadius);
             }
           }
         } else {
@@ -309,9 +346,11 @@ const MapPage: React.FC = () => {
             // 모바일 모달을 제외한 보이는 지도 영역의 중앙으로 이동
             moveMapToVisibleCenterMobile(person.latitude, person.longitude);
 
-            // 반경 표시
+            // 반경 표시 - 경과 시간 기반 초기 반지름 계산
             setSelectedRadiusPosition({ lat: person.latitude, lng: person.longitude });
-            setSelectedRadiusValue(1000);
+            const speed = person.aiSupport?.speed ?? 3.14;
+            const initialRadius = calculateInitialRadius(person.occurredAt, speed);
+            setSelectedRadiusValue(initialRadius);
           }
         }
       }
@@ -342,9 +381,11 @@ const MapPage: React.FC = () => {
           // 실제 보이는 지도 영역의 중앙으로 이동
           moveMapToVisibleCenter(person.latitude, person.longitude);
 
-          // 반경 표시
+          // 반경 표시 - 경과 시간 기반 초기 반지름 계산
           setSelectedRadiusPosition({ lat: person.latitude, lng: person.longitude });
-          setSelectedRadiusValue(1000); // 임시값 1000m, 나중에 API에서 받아올 수 있음
+          const speed = person.aiSupport?.speed ?? 3.14;
+          const initialRadius = calculateInitialRadius(person.occurredAt, speed);
+          setSelectedRadiusValue(initialRadius);
         }
       }
     }
@@ -520,6 +561,10 @@ const MapPage: React.FC = () => {
         {map && markerMissingList && markerMissingList.map((person) => {
           // latitude와 longitude가 있는 경우만 마커 렌더링
           if (person.latitude && person.longitude) {
+            // 최대 범위 초과 여부 확인
+            const speed = person.aiSupport?.speed ?? 3.14;
+            const maxExceeded = isMaxRadiusExceeded(person.occurredAt, speed);
+
             return (
               <Marker
                 key={person.id}
@@ -528,6 +573,7 @@ const MapPage: React.FC = () => {
                 imageUrl={person.mainImage?.url}
                 size="medium"
                 onClick={() => handleMissingCardClick(person.id)}
+                label={maxExceeded ? '예측 반경 초과' : undefined}
               />
             );
           }
@@ -543,14 +589,14 @@ const MapPage: React.FC = () => {
         )}
 
         {/* 선택된 마커의 이동 반경 표시 */}
-        {/* {map && selectedRadiusPosition && selectedRadiusValue > 0 && selectedMissingId && (
+        {map && selectedRadiusPosition && selectedRadiusValue > 0 && selectedMissingId && (
           <MovementRadius
             map={map}
             position={selectedRadiusPosition}
             radius={selectedRadiusValue}
             missingId={selectedMissingId}
           />
-        )} */}
+        )}
 
         {/* 내 위치 버튼 (MobileModal 위에 표시) */}
         {map && isMobile && (
