@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useMissingDetail } from '../../../hooks/useMissingDetail';
 import { useElapsedTime } from '../../../hooks/useElapsedTime';
@@ -24,6 +25,8 @@ const ArchiveDetailPopup: React.FC<ArchiveDetailPopupProps> = ({ personId, initi
   const { share, isSharing } = useShareMissingPerson();
   const [carouselOpen, setCarouselOpen] = React.useState(false);
   const [initialImageIndex, setInitialImageIndex] = React.useState(0);
+  const [aiImageOpen, setAiImageOpen] = React.useState(false);
+  const [aiImageZoom, setAiImageZoom] = React.useState(1);
   const [showScrollbar, setShowScrollbar] = React.useState(false);
   const [isClosing, setIsClosing] = React.useState(false);
   const scrollbarTimerRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -347,7 +350,11 @@ const ArchiveDetailPopup: React.FC<ArchiveDetailPopupProps> = ({ personId, initi
                         <img
                           src={aiImageUrl}
                           alt="AI 서포트 이미지"
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }}
+                          onClick={() => {
+                            setAiImageOpen(true);
+                            setAiImageZoom(1);
+                          }}
                         />
                       ) : (
                         <Text as="div" size="sm" color="gray" style={{ textAlign: 'center', padding: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
@@ -443,6 +450,155 @@ const ArchiveDetailPopup: React.FC<ArchiveDetailPopupProps> = ({ personId, initi
           onClose={handleCloseCarousel}
         />
       )}
+
+      {/* AI 서포트 이미지 Fullscreen 뷰어 - Portal로 렌더링 */}
+      {aiImageOpen && (() => {
+        const aiImageDisplayIds = [50000, 50020, 50040, 50041];
+        const hasAIImages = aiImageDisplayIds.includes(person?.id || 0) &&
+                           person?.outputImages &&
+                           person.outputImages.length > 0;
+        const aiImageUrl = hasAIImages ? person?.outputImages?.[0]?.url : null;
+
+        const viewer = aiImageUrl ? (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 99999,
+              animation: 'fadeIn 0.3s ease-out',
+            }}
+            onClick={() => setAiImageOpen(false)}
+            onWheel={(e) => {
+              e.preventDefault();
+              const delta = e.deltaY > 0 ? 0.9 : 1.1;
+              setAiImageZoom(prev => {
+                const newZoom = prev * delta;
+                return Math.max(1, Math.min(5, newZoom));
+              });
+            }}
+            onTouchMove={(e) => {
+              if (e.touches.length === 2) {
+                e.preventDefault();
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const distance = Math.hypot(
+                  touch2.clientX - touch1.clientX,
+                  touch2.clientY - touch1.clientY
+                );
+
+                const key = '_initialDistance';
+                const container = e.currentTarget as any;
+
+                if (!container[key]) {
+                  container[key] = distance;
+                } else {
+                  const delta = distance / container[key];
+                  setAiImageZoom(prev => {
+                    const newZoom = prev * delta;
+                    return Math.max(1, Math.min(5, newZoom));
+                  });
+                  container[key] = distance;
+                }
+              }
+            }}
+          >
+            <style>
+              {`
+                @keyframes fadeIn {
+                  from {
+                    opacity: 0;
+                  }
+                  to {
+                    opacity: 1;
+                  }
+                }
+              `}
+            </style>
+
+            <div
+              style={{
+                position: 'relative',
+                width: '90vw',
+                height: '90vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={aiImageUrl}
+                alt="AI 서포트 이미지"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  transform: `scale(${aiImageZoom})`,
+                  transition: 'transform 0.1s ease-out',
+                  cursor: aiImageZoom > 1 ? 'grab' : 'pointer',
+                  userSelect: 'none',
+                }}
+                draggable={false}
+              />
+            </div>
+
+            <button
+              style={{
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                width: '40px',
+                height: '40px',
+                backgroundColor: 'transparent',
+                border: 'none',
+                color: 'white',
+                fontSize: '28px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'opacity 0.2s',
+                opacity: 0.8,
+              }}
+              onClick={() => setAiImageOpen(false)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '1';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '0.8';
+              }}
+            >
+              ✕
+            </button>
+
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '20px',
+                left: '20px',
+                color: 'white',
+                fontSize: '13px',
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                padding: '8px 12px',
+                borderRadius: '4px',
+                userSelect: 'none',
+              }}
+            >
+              {(aiImageZoom * 100).toFixed(0)}% | 스크롤/핀치로 확대/축소
+            </div>
+          </div>
+        ) : null;
+
+        return createPortal(viewer, document.body);
+      })()}
     </div>
   );
 };
