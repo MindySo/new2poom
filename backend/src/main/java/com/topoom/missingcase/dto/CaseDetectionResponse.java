@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 public class CaseDetectionResponse {
     private Long id;
     private Double similarityScore;
+    private String cctvLocation;
     private BigDecimal latitude;
     private BigDecimal longitude;
     private String cctvImageUrl;

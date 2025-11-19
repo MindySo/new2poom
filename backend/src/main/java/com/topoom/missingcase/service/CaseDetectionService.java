@@ -25,6 +25,7 @@ public class CaseDetectionService {
         return CaseDetectionResponse.builder()
                 .id(entity.getId())
                 .similarityScore(entity.getSimilarityScore())
+                .cctvLocation(entity.getCctvLocation())
                 .latitude(entity.getLatitude())
                 .longitude(entity.getLongitude())
                 .cctvImageUrl(entity.getS3Key())
