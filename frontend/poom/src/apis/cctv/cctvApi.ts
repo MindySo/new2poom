@@ -9,9 +9,9 @@ interface ApiResponse<T> {
 }
 
 // CCTV 감지 목록 조회
-// GET /api/v1/cctv/{id}
+// GET /api/v1/missing/cctv/{id}
 export const getCctvByMissingId = async (missingId: number): Promise<CctvDetection[]> => {
-  const response = await apiClient.get<ApiResponse<CctvDetection[]>>(`/api/v1/cctv/${missingId}`);
+  const response = await apiClient.get<ApiResponse<CctvDetection[]>>(`/api/v1/missing/cctv/${missingId}`);
   return response.data.data; // 응답 구조: {success, message, data: [...]}
 };
 
