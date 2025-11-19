@@ -132,7 +132,6 @@ const ArchiveDetailPopup: React.FC<ArchiveDetailPopupProps> = ({ personId, initi
     clothingDesc,
     mainImage,
     inputImages,
-    outputImages,
     aiSupport,
     caseContact,
     caseContacts,
@@ -193,22 +192,12 @@ const ArchiveDetailPopup: React.FC<ArchiveDetailPopupProps> = ({ personId, initi
   // 모든 이미지를 배열로 수집
   const getAllImages = (): ImageFile[] => {
     const images: ImageFile[] = [];
-    
-    // 메인 이미지
-    if (mainImage) {
-      images.push(mainImage);
-    }
-    
+
     // 추가 등록 사진들
     if (inputImages && inputImages.length > 0) {
       images.push(...inputImages);
     }
-    
-    // AI 서포트 이미지들
-    if (outputImages && outputImages.length > 0) {
-      images.push(...outputImages);
-    }
-    
+
     return images;
   };
 

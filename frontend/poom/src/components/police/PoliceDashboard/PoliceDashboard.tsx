@@ -63,20 +63,10 @@ const PoliceDashboard: React.FC<PoliceDashboardProps> = ({ isOpen, onClose, miss
   const getAllImages = (): ImageFile[] => {
     if (!missingDetail) return [];
     const images: ImageFile[] = [];
-    
-    // 메인 이미지
-    if (missingDetail.mainImage) {
-      images.push(missingDetail.mainImage);
-    }
-    
+
     // 추가 등록 사진들
     if (missingDetail.inputImages && missingDetail.inputImages.length > 0) {
       images.push(...missingDetail.inputImages);
-    }
-    
-    // AI 서포트 이미지들
-    if (missingDetail.outputImages && missingDetail.outputImages.length > 0) {
-      images.push(...missingDetail.outputImages);
     }
 
     return images;

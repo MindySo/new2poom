@@ -49,19 +49,9 @@ const MissingInfoModal: React.FC<MissingInfoModalProps> = ({ personId, onGoBack,
     if (!detailData) return [];
     const images: ImageFile[] = [];
 
-    // 메인 이미지
-    if (detailData.mainImage) {
-      images.push(detailData.mainImage);
-    }
-
     // 추가 등록 사진들
     if (detailData.inputImages && detailData.inputImages.length > 0) {
       images.push(...detailData.inputImages);
-    }
-
-    // AI 서포트 이미지들
-    if (detailData.outputImages && detailData.outputImages.length > 0) {
-      images.push(...detailData.outputImages);
     }
 
     return images;
