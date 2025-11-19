@@ -125,34 +125,39 @@ const MissingInfoModal: React.FC<MissingInfoModalProps> = ({ personId, onGoBack,
                   />
                 </div>
                 <div className={cardStyles['m-archive-card__right']}>
-                  <div className={cardStyles['m-archive-card__main']}>
-                    <div className={cardStyles['m-archive-card__header']} style={{ marginBottom: '5px' }}>
+                  <div className={cardStyles['m-archive-card__main']} style={{ justifyContent: 'center' }}>
+                    <div className={cardStyles['m-archive-card__header']} style={{ marginBottom: '5px', gap: '4px' }}>
                       <Badge variant="time" size="xs">{elapsedTime}</Badge>
+                      {detailData.targetType && (
+                        <Badge variant="feature" size="xs">{detailData.targetType}</Badge>
+                      )}
                       {detailData.classificationCode && (
                         <Badge variant="feature" size="xs">{detailData.classificationCode}</Badge>
                       )}
                     </div>
 
-                    <div className={cardStyles['m-archive-card__row']}>
-                      <Text as="span" size="sm" weight="bold" className={cardStyles['m-archive-card__name']}>
-                        {detailData.personName}
-                      </Text>
-                      <Text as="span" size="xs" color="gray" className={cardStyles['m-archive-card__meta']}>
-                        {detailData.gender ?? '성별 미상'} / {detailData.ageAtTime}세
-                      </Text>
-                    </div>
-                    <div className={cardStyles['m-archive-card__info']}>
-                      <div>
-                        <Text as="div" size="xs" color="gray" className={cardStyles['m-archive-card__label']}>발생일</Text>
-                        <Text as="div" size="xs" className={cardStyles['m-archive-card__value']}>
-                          {formatDate(detailData.occurredAt)}
+                    <div style={{ paddingLeft: '4px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                      <div className={cardStyles['m-archive-card__row']} style={{ margin: '4px 0 8px' }}>
+                        <Text as="span" size="md" weight="bold" color="darkMain" className={cardStyles['m-archive-card__name']}>
+                          {detailData.personName}
+                        </Text>
+                        <Text as="span" size="xs" color="gray" className={cardStyles['m-archive-card__meta']}>
+                          {detailData.gender ?? '성별 미상'} / {detailData.ageAtTime}세 (현재 {detailData.currentAge}세)
                         </Text>
                       </div>
-                      <div>
-                        <Text as="div" size="xs" color="gray" className={cardStyles['m-archive-card__label']}>발생장소</Text>
-                        <Text as="div" size="xs" className={cardStyles['m-archive-card__value']}>
-                          {detailData.occurredLocation}
-                        </Text>
+                      <div className={cardStyles['m-archive-card__info']}>
+                        <div className={cardStyles['m-archive-card__info-item']}>
+                          <Text as="span" size="xs" color="gray" className={cardStyles['m-archive-card__label']}>발생일</Text>
+                          <Text as="span" size="sm" color="darkMain" className={cardStyles['m-archive-card__value']}>
+                            {formatDate(detailData.occurredAt)}
+                          </Text>
+                        </div>
+                        <div className={cardStyles['m-archive-card__info-item']}>
+                          <Text as="span" size="xs" color="gray" className={cardStyles['m-archive-card__label']}>발생장소</Text>
+                          <Text as="span" size="sm" color="darkMain" className={`${cardStyles['m-archive-card__value']} ${cardStyles['m-archive-card__value--location']}`}>
+                            {detailData.occurredLocation}
+                          </Text>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -247,40 +252,40 @@ const MissingInfoModal: React.FC<MissingInfoModalProps> = ({ personId, onGoBack,
 
                     {/* 상세정보 */}
                     <div ref={detailInfoRef} className={`${cardStyles['m-archive-card__detailInfo']} ${styles.detailInfo}`}>
-                      <Text as="div" size="md" weight="bold" className={cardStyles['m-archive-card__detailTitle']}>
+                      <Text as="div" size="md" weight="bold" color="darkMain" className={cardStyles['m-archive-card__detailTitle']}>
                         상세정보
                       </Text>
                       <div className={cardStyles['m-archive-card__detailList']}>
                         <div className={cardStyles['m-archive-card__detailItem']}>
                           <Text as="div" size="sm" color="gray">신체정보</Text>
-                          <Text as="div" size="sm">
+                          <Text as="div" size="sm" color="darkMain">
                             {detailData.heightCm ? `${detailData.heightCm}cm` : '-'} / {detailData.weightKg ? `${detailData.weightKg}kg` : '-'}
                           </Text>
                         </div>
                         <div className={cardStyles['m-archive-card__detailItem']}>
                           <Text as="div" size="sm" color="gray">체형</Text>
-                          <Text as="div" size="sm">{detailData.bodyType || '-'}</Text>
+                          <Text as="div" size="sm" color="darkMain">{detailData.bodyType || '-'}</Text>
                         </div>
                         <div className={cardStyles['m-archive-card__detailItem']}>
                           <Text as="div" size="sm" color="gray">얼굴형</Text>
-                          <Text as="div" size="sm">{detailData.faceShape || '-'}</Text>
+                          <Text as="div" size="sm" color="darkMain">{detailData.faceShape || '-'}</Text>
                         </div>
                         <div className={cardStyles['m-archive-card__detailItem']}>
                           <Text as="div" size="sm" color="gray">두발 형태</Text>
-                          <Text as="div" size="sm">
+                          <Text as="div" size="sm" color="darkMain">
                             {detailData.hairColor || '-'} / {detailData.hairStyle || '-'}
                           </Text>
                         </div>
                         <div className={cardStyles['m-archive-card__detailItem']}>
                           <Text as="div" size="sm" color="gray">복장</Text>
-                          <Text as="div" size="sm">{detailData.clothingDesc || '-'}</Text>
+                          <Text as="div" size="sm" color="darkMain">{detailData.clothingDesc || '-'}</Text>
                         </div>
                       </div>
                     </div>
 
                     {/* AI 이미지와 AI 서포트 정보 */}
                     <div className={`${cardStyles['m-archive-card__aiSection']} ${styles.aiSection}`}>
-                      <Text as="div" size="md" weight="bold" className={cardStyles['m-archive-card__detailTitle']}>
+                      <Text as="div" size="md" weight="bold" color="darkMain" className={cardStyles['m-archive-card__detailTitle']}>
                         AI 서포트
                       </Text>
                       <div className={cardStyles['m-archive-card__aiContent']}>
@@ -288,7 +293,7 @@ const MissingInfoModal: React.FC<MissingInfoModalProps> = ({ personId, onGoBack,
                         <div className={cardStyles['m-archive-card__aiImageWrapperOuter']}>
                           <div className={cardStyles['m-archive-card__aiImageWrapper']}>
                             <Text as="div" size="sm" color="gray" style={{ textAlign: 'center', padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                              안전한 정보 활용을 위해 이미지 고도화 기능은 현재 준비 중입니다.
+                              안전한 AI 정보 활용을 위해 개인정보 수집 동의가 필요합니다.
                             </Text>
                           </div>
                         </div>
@@ -299,16 +304,16 @@ const MissingInfoModal: React.FC<MissingInfoModalProps> = ({ personId, onGoBack,
                             {detailData.aiSupport ? (
                               <>
                                 <div className={cardStyles['m-archive-card__aiInfoSection']}>
-                                  <Text as="div" size="sm" weight="bold" className={cardStyles['m-archive-card__aiInfoLabel']}>
+                                  <Text as="div" size="sm" weight="bold" color="darkMain" className={cardStyles['m-archive-card__aiInfoLabel']}>
                                     우선순위
                                   </Text>
                                   <div className={cardStyles['m-archive-card__aiInfoItem']}>
                                     <Text as="span" size="sm" color="gray">1순위</Text>
-                                    <Text as="span" size="sm">{detailData.aiSupport.top1Desc || '-'}</Text>
+                                    <Text as="span" size="sm" color="darkMain">{detailData.aiSupport.top1Desc || '-'}</Text>
                                   </div>
                                   <div className={cardStyles['m-archive-card__aiInfoItem']}>
                                     <Text as="span" size="sm" color="gray">2순위</Text>
-                                    <Text as="span" size="sm">{detailData.aiSupport.top2Desc || '-'}</Text>
+                                    <Text as="span" size="sm" color="darkMain">{detailData.aiSupport.top2Desc || '-'}</Text>
                                   </div>
                                 </div>
                               </>

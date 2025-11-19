@@ -246,10 +246,13 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose, missingId }) => 
                   <div className={styles.sectionContentAI}>
                     <Text as="div" size="md" weight="bold" color="darkMain" className={styles.aiTitle}>AI 서포트 이미지</Text>
                     <div className={styles.aiImageWrapper}>
-                      <Text as="div" size="xs" color="gray" style={{ textAlign: 'center', padding: '0 1.5rem 2rem' }}>
-                        안전한 정보 활용을 위해 이미지 고도화 기능은 현재 준비 중입니다.
+                      <Text as="div" size="sm" color="gray" style={{ textAlign: 'center', padding: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                        안전한 AI 정보 활용을 위해 개인정보 수집 동의가 필요합니다.
                       </Text>
                     </div>
+                    <Text as="div" size="xs" color="gray" className={styles.aiCaption}>
+                      ① CCTV 이미지 및 실종자 데이터 기반으로 AI가 예측한 이미지입니다.
+                    </Text>
                   </div>
                 </div>
               </div>
@@ -321,27 +324,26 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose, missingId }) => 
                     <Text as="div" size="md" weight="bold" color="darkMain" className={styles.aiTitle}>AI 서포트 정보</Text>
                     <div className={styles.aiInfoWrapper}>
                       {missingDetail.aiSupport ? (
-                        <>
-                          {/* 우선순위 */}
-                          <div className={styles.aiInfoSection}>
-                            <Text as="div" size="sm" weight="bold" color="darkMain" className={styles.aiSubtitle}>우선순위</Text>
-                            <div className={styles.aiInfoItem}>
-                              <Text as="span" size="xs" color="gray">1순위</Text>
-                              <Text as="span" size="sm" color="darkMain">{missingDetail.aiSupport.top1Desc || '-'}</Text>
-                            </div>
-                            <div className={styles.aiInfoItem}>
-                              <Text as="span" size="xs" color="gray">2순위</Text>
-                              <Text as="span" size="sm" color="darkMain">{missingDetail.aiSupport.top2Desc || '-'}</Text>
-                            </div>
-                            <Text as="div" size="xs" color="gray" style={{ textAlign: 'center', padding: '0 1.5rem 2rem' }}>
-                              ① AI 분석을 주요 정보를 우선적으로 정리한 내용으로, 참고용으로 활용해주시기 바랍니다.
-                            </Text>
+                        <div className={styles.aiInfoSection}>
+                          <Text as="div" size="sm" weight="bold" color="darkMain" className={styles.aiSubtitle}>우선순위</Text>
+                          <div className={styles.aiInfoItem}>
+                            <Text as="span" size="xs" color="gray">1순위</Text>
+                            <Text as="span" size="sm" color="darkMain">{missingDetail.aiSupport.top1Desc || '-'}</Text>
                           </div>
-                        </>
+                          <div className={styles.aiInfoItem}>
+                            <Text as="span" size="xs" color="gray">2순위</Text>
+                            <Text as="span" size="sm" color="darkMain">{missingDetail.aiSupport.top2Desc || '-'}</Text>
+                          </div>
+                        </div>
                       ) : (
-                        <Text as="div" size="sm" color="gray">AI 정보가 없습니다.</Text>
+                        <div className={styles.aiInfoSection}>
+                          <Text as="div" size="sm" color="gray">AI 정보가 없습니다.</Text>
+                        </div>
                       )}
                     </div>
+                    <Text as="div" size="xs" color="gray" className={styles.aiCaption}>
+                      ① AI 분석을 주요 정보를 우선적으로 정리한 내용으로, 참고용으로 활용해주시기 바랍니다.
+                    </Text>
                   </div>
                 </div>
                 

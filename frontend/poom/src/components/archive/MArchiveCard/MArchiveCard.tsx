@@ -157,21 +157,24 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
           {/* 두 번째 행: 이름, 나이, 발생일, 발생장소, 제보하기+공유하기 */}
           <div className={styles['m-archive-card__infoRow']}>
             <div className={styles['m-archive-card__infoSection']}>
-              <Text as="span" size="sm" weight="bold" className={styles['m-archive-card__name']}>{personName}</Text>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                <Text as="span" size="md" weight="bold" color="darkMain" className={styles['m-archive-card__name']}>{personName}</Text>
+                <Text as="span" size="xs" color="gray">{gender ?? '미상'}</Text>
+              </div>
               <div className={styles['m-archive-card__info']}>
                 <div className={styles['m-archive-card__info-item']}>
                   <Text as="span" size="xs" color="gray" className={styles['m-archive-card__label']}>나이</Text>
-                  <Text as="span" size="xs" className={styles['m-archive-card__value']}>
-                    {ageAtTime}세{currentAge ? ` (현재나이 ${currentAge}세)` : ''}
+                  <Text as="span" size="xs" color="darkMain" className={styles['m-archive-card__value']}>
+                    {ageAtTime}세{currentAge ? ` (현재 ${currentAge}세)` : ''}
                   </Text>
                 </div>
                 <div className={styles['m-archive-card__info-item']}>
                   <Text as="span" size="xs" color="gray" className={styles['m-archive-card__label']}>발생일</Text>
-                  <Text as="span" size="xs" className={styles['m-archive-card__value']}>{formatDate(occurredAt)}</Text>
+                  <Text as="span" size="xs" color="darkMain" className={styles['m-archive-card__value']}>{formatDate(occurredAt)}</Text>
                 </div>
                 <div className={styles['m-archive-card__info-item']}>
                   <Text as="span" size="xs" color="gray" className={styles['m-archive-card__label']}>발생장소</Text>
-                  <Text as="span" size="xs" className={styles['m-archive-card__value']}>{occurredLocation}</Text>
+                  <Text as="span" size="xs" color="darkMain" className={styles['m-archive-card__value']}>{occurredLocation}</Text>
                 </div>
               </div>
             </div>
@@ -239,40 +242,40 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
               
               {/* 상세정보 - 한 행으로 배치 */}
               <div className={styles['m-archive-card__detailInfo']}>
-                <Text as="div" size="sm" weight="bold" className={styles['m-archive-card__detailTitle']}>상세정보</Text>
+                <Text as="div" size="sm" weight="bold" color="darkMain" className={styles['m-archive-card__detailTitle']}>상세정보</Text>
                 <div className={styles['m-archive-card__detailList']}>
                   <div className={styles['m-archive-card__detailItem']}>
                     <Text as="div" size="xs" color="gray">신체정보</Text>
-                    <Text as="div" size="xs">{heightCm ? `${heightCm}cm` : '-'} / {weightKg ? `${weightKg}kg` : '-'}</Text>
+                    <Text as="div" size="xs" color="darkMain">{heightCm ? `${heightCm}cm` : '-'} / {weightKg ? `${weightKg}kg` : '-'}</Text>
                   </div>
                   <div className={styles['m-archive-card__detailItem']}>
                     <Text as="div" size="xs" color="gray">체형</Text>
-                    <Text as="div" size="xs">{bodyType || '-'}</Text>
+                    <Text as="div" size="xs" color="darkMain">{bodyType || '-'}</Text>
                   </div>
                   <div className={styles['m-archive-card__detailItem']}>
                     <Text as="div" size="xs" color="gray">얼굴형</Text>
-                    <Text as="div" size="xs">{faceShape || '-'}</Text>
+                    <Text as="div" size="xs" color="darkMain">{faceShape || '-'}</Text>
                   </div>
                   <div className={styles['m-archive-card__detailItem']}>
                     <Text as="div" size="xs" color="gray">두발 형태</Text>
-                    <Text as="div" size="xs">{hairColor || '-'} / {hairStyle || '-'}</Text>
+                    <Text as="div" size="xs" color="darkMain">{hairColor || '-'} / {hairStyle || '-'}</Text>
                   </div>
                   <div className={styles['m-archive-card__detailItem']}>
                     <Text as="div" size="xs" color="gray">복장</Text>
-                    <Text as="div" size="xs">{clothingDesc || '-'}</Text>
+                    <Text as="div" size="xs" color="darkMain">{clothingDesc || '-'}</Text>
                   </div>
                 </div>
               </div>
               
               {/* AI 이미지와 AI 서포트 정보 */}
               <div className={styles['m-archive-card__aiSection']}>
-                <Text as="div" size="sm" weight="bold" className={styles['m-archive-card__detailTitle']}>AI 서포트</Text>
+                <Text as="div" size="sm" weight="bold" color="darkMain" className={styles['m-archive-card__detailTitle']}>AI 서포트</Text>
                 <div className={styles['m-archive-card__aiContent']}>
                   {/* 왼쪽: AI 이미지 */}
                   <div className={styles['m-archive-card__aiImageWrapperOuter']}>
                     <div className={styles['m-archive-card__aiImageWrapper']}>
                       <Text as="div" size="xs" color="gray" style={{ textAlign: 'center', padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                        안전한 정보 활용을 위해 이미지 고도화 기능은 현재 준비 중입니다.
+                        안전한 AI 정보 활용을 위해 개인정보 수집 동의가 필요합니다.
                       </Text>
                     </div>
                   </div>
@@ -282,14 +285,14 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
                     <div className={styles['m-archive-card__aiInfo']}>
                       {aiSupport && (
                         <div className={styles['m-archive-card__aiInfoSection']}>
-                          <Text as="div" size="xs" weight="bold" className={styles['m-archive-card__aiInfoLabel']}>우선순위</Text>
+                          <Text as="div" size="xs" weight="bold" color="darkMain" className={styles['m-archive-card__aiInfoLabel']}>우선순위</Text>
                           <div className={styles['m-archive-card__aiInfoItem']}>
                             <Text as="span" size="xs" color="gray">1순위</Text>
-                            <Text as="span" size="xs">{aiSupport.top1Desc || '-'}</Text>
+                            <Text as="span" size="xs" color="darkMain">{aiSupport.top1Desc || '-'}</Text>
                           </div>
                           <div className={styles['m-archive-card__aiInfoItem']}>
                             <Text as="span" size="xs" color="gray">2순위</Text>
-                            <Text as="span" size="xs">{aiSupport.top2Desc || '-'}</Text>
+                            <Text as="span" size="xs" color="darkMain">{aiSupport.top2Desc || '-'}</Text>
                           </div>
                         </div>
                       )}

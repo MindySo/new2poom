@@ -199,8 +199,8 @@ const PoliceDashboard: React.FC<PoliceDashboardProps> = ({ isOpen, onClose, miss
                   <div className={styles.sectionContentAI}>
                     <Text as="div" size="sm" weight="bold" color="white" className={styles.aiTitle}>AI 서포트 이미지</Text>
                     <div className={styles.aiImageWrapper}>
-                      <Text as="div" size="sm" color="white" style={{ textAlign: 'center', padding: '2rem' }}>
-                        안전한 정보 활용을 위해 이미지 고도화 기능은 현재 준비 중입니다.
+                      <Text as="div" size="sm" color="white" style={{ textAlign: 'center', padding: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                        안전한 AI 정보 활용을 위해 개인정보 수집 동의가 필요합니다.
                       </Text>
                     </div>
                   </div>
@@ -219,7 +219,7 @@ const PoliceDashboard: React.FC<PoliceDashboardProps> = ({ isOpen, onClose, miss
 
                     <Text as="div" size="sm" weight="bold" color="white" className={styles.infoLabel}>나이</Text>
                     <Text as="div" size="md" color="white" className={styles.infoValue}>
-                      {missingDetail.ageAtTime}세 (현재나이 {calculateCurrentAge(missingDetail.occurredAt, missingDetail.ageAtTime)}세)
+                      {missingDetail.ageAtTime}세 (현재 {calculateCurrentAge(missingDetail.occurredAt, missingDetail.ageAtTime)}세)
                     </Text>
 
                     <Text as="div" size="sm" weight="bold" color="white" className={styles.infoLabel}>발생일</Text>
