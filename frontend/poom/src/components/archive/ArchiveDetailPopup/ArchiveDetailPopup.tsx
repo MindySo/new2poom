@@ -328,55 +328,73 @@ const ArchiveDetailPopup: React.FC<ArchiveDetailPopupProps> = ({ personId, initi
           </div>
 
           {/* AI 서포트 섹션 */}
-          <div className={styles['popup-ai-section']}>
-            {/* AI 이미지 카드 */}
-            <div className={styles['popup-ai-card-wrapper']}>
-              <div className={styles['popup-ai-card']}>
-                <Text as="div" size="md" weight="bold" color="darkMain" className={styles['popup-ai-subtitle']}>AI 서포트 이미지</Text>
+          {(() => {
+            const aiImageDisplayIds = [50000, 50020, 50040, 50041];
+            const hasAIImages = aiImageDisplayIds.includes(person?.id || 0) &&
+                               person?.outputImages &&
+                               person.outputImages.length > 0;
+            const aiImageUrl = hasAIImages ? person?.outputImages?.[0]?.url : null;
 
-                <div className={styles['popup-ai-image']}>
-                  <Text as="div" size="sm" color="gray" style={{ textAlign: 'center', padding: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                    안전한 AI 정보 활용을 위해 개인정보 수집 동의가 필요합니다.
-                  </Text>
-                </div>
-                <Text as="div" size="xs" color="gray" className={styles['popup-ai-caption']}>
-                  ① CCTV 이미지 및 실종자 데이터 기반으로 AI가 예측한 이미지입니다.
-                </Text>
-              </div>
-            </div>
+            return (
+              <div className={styles['popup-ai-section']}>
+                {/* AI 이미지 카드 */}
+                <div className={styles['popup-ai-card-wrapper']}>
+                  <div className={styles['popup-ai-card']}>
+                    <Text as="div" size="md" weight="bold" color="darkMain" className={styles['popup-ai-subtitle']}>AI 서포트 이미지</Text>
 
-            {/* AI 정보 카드 */}
-            <div className={styles['popup-ai-card-wrapper']}>
-              <div className={styles['popup-ai-card']}>
-                <Text as="div" size="md" weight="bold" color="darkMain" className={styles['popup-ai-subtitle']}>AI 서포트 정보</Text>
-
-                <div className={styles['popup-ai-info']}>
-                  {aiSupport && (
-                    <div className={styles['popup-ai-info-section']}>
-                      <Text as="div" size="sm" weight="bold" color="darkMain" className={styles['popup-ai-info-label']}>우선순위</Text>
-                      <div className={styles['popup-ai-info-item']}>
-                        <Text as="span" size="xs" color="gray">1순위</Text>
-                        <Text as="span" size="sm" color="darkMain">{aiSupport.top1Desc || '-'}</Text>
-                      </div>
-                      <div className={styles['popup-ai-info-item']}>
-                        <Text as="span" size="xs" color="gray">2순위</Text>
-                        <Text as="span" size="sm" color="darkMain">{aiSupport.top2Desc || '-'}</Text>
-                      </div>
+                    <div className={styles['popup-ai-image']}>
+                      {aiImageUrl ? (
+                        <img
+                          src={aiImageUrl}
+                          alt="AI 서포트 이미지"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <Text as="div" size="sm" color="gray" style={{ textAlign: 'center', padding: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                          안전한 AI 정보 활용을 위해 개인정보 수집 동의가 필요합니다.
+                        </Text>
+                      )}
                     </div>
-                  )}
-                  {!aiSupport && (
-                    <div className={styles['popup-ai-info-section']}>
-                      <Text as="div" size="sm" color="gray">AI 정보가 없습니다.</Text>
-                    </div>
-                  )}
+                    <Text as="div" size="xs" color="gray" className={styles['popup-ai-caption']}>
+                      ① CCTV 이미지 및 실종자 데이터 기반으로 AI가 예측한 이미지입니다.
+                    </Text>
+                  </div>
                 </div>
 
-                <Text as="div" size="xs" color="gray" className={styles['popup-ai-caption']}>
-                  ① AI 분석을 주요 정보를 우선적으로 정리한 내용으로, 참고용으로 활용해주시기 바랍니다.
-                </Text>
+                {/* AI 정보 카드 */}
+                <div className={styles['popup-ai-card-wrapper']}>
+                  <div className={styles['popup-ai-card']}>
+                    <Text as="div" size="md" weight="bold" color="darkMain" className={styles['popup-ai-subtitle']}>AI 서포트 정보</Text>
+
+                    <div className={styles['popup-ai-info']}>
+                      {aiSupport && (
+                        <div className={styles['popup-ai-info-section']}>
+                          <Text as="div" size="sm" weight="bold" color="darkMain" className={styles['popup-ai-info-label']}>우선순위</Text>
+                          <div className={styles['popup-ai-info-item']}>
+                            <Text as="span" size="xs" color="gray">1순위</Text>
+                            <Text as="span" size="sm" color="darkMain">{aiSupport.top1Desc || '-'}</Text>
+                          </div>
+                          <div className={styles['popup-ai-info-item']}>
+                            <Text as="span" size="xs" color="gray">2순위</Text>
+                            <Text as="span" size="sm" color="darkMain">{aiSupport.top2Desc || '-'}</Text>
+                          </div>
+                        </div>
+                      )}
+                      {!aiSupport && (
+                        <div className={styles['popup-ai-info-section']}>
+                          <Text as="div" size="sm" color="gray">AI 정보가 없습니다.</Text>
+                        </div>
+                      )}
+                    </div>
+
+                    <Text as="div" size="xs" color="gray" className={styles['popup-ai-caption']}>
+                      ① AI 분석을 주요 정보를 우선적으로 정리한 내용으로, 참고용으로 활용해주시기 바랍니다.
+                    </Text>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            );
+          })()}
         </div>
 
         {/* 하단 버튼 */}

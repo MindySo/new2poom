@@ -274,51 +274,69 @@ const MissingInfoModal: React.FC<MissingInfoModalProps> = ({ personId, onGoBack,
                     </div>
 
                     {/* AI 이미지와 AI 서포트 정보 */}
-                    <div className={`${cardStyles['m-archive-card__aiSection']} ${styles.aiSection}`}>
-                      <Text as="div" size="md" weight="bold" color="darkMain" className={cardStyles['m-archive-card__detailTitle']}>
-                        AI 서포트
-                      </Text>
-                      <div className={cardStyles['m-archive-card__aiContent']}>
-                        {/* 왼쪽: AI 이미지 */}
-                        <div className={cardStyles['m-archive-card__aiImageWrapperOuter']}>
-                          <div className={cardStyles['m-archive-card__aiImageWrapper']}>
-                            <Text as="div" size="sm" color="gray" style={{ textAlign: 'center', padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                              안전한 AI 정보 활용을 위해 개인정보 수집 동의가 필요합니다.
-                            </Text>
-                          </div>
-                        </div>
+                    {(() => {
+                      const aiImageDisplayIds = [50000, 50020, 50040, 50041];
+                      const hasAIImages = aiImageDisplayIds.includes(detailData?.id || 0) &&
+                                         detailData?.outputImages &&
+                                         detailData.outputImages.length > 0;
+                      const aiImageUrl = hasAIImages ? detailData?.outputImages?.[0]?.url : null;
 
-                        {/* 오른쪽: 우선순위 */}
-                        <div className={cardStyles['m-archive-card__aiInfoWrapper']}>
-                          <div className={cardStyles['m-archive-card__aiInfo']}>
-                            {detailData.aiSupport ? (
-                              <>
-                                <div className={cardStyles['m-archive-card__aiInfoSection']}>
-                                  <Text as="div" size="sm" weight="bold" color="darkMain" className={cardStyles['m-archive-card__aiInfoLabel']}>
-                                    우선순위
+                      return (
+                        <div className={`${cardStyles['m-archive-card__aiSection']} ${styles.aiSection}`}>
+                          <Text as="div" size="md" weight="bold" color="darkMain" className={cardStyles['m-archive-card__detailTitle']}>
+                            AI 서포트
+                          </Text>
+                          <div className={cardStyles['m-archive-card__aiContent']}>
+                            {/* 왼쪽: AI 이미지 */}
+                            <div className={cardStyles['m-archive-card__aiImageWrapperOuter']}>
+                              <div className={cardStyles['m-archive-card__aiImageWrapper']}>
+                                {aiImageUrl ? (
+                                  <img
+                                    src={aiImageUrl}
+                                    alt="AI 서포트 이미지"
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                  />
+                                ) : (
+                                  <Text as="div" size="sm" color="gray" style={{ textAlign: 'center', padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                                    안전한 AI 정보 활용을 위해 개인정보 수집 동의가 필요합니다.
                                   </Text>
-                                  <div className={cardStyles['m-archive-card__aiInfoItem']}>
-                                    <Text as="span" size="sm" color="gray">1순위</Text>
-                                    <Text as="span" size="sm" color="darkMain">{detailData.aiSupport.top1Desc || '-'}</Text>
-                                  </div>
-                                  <div className={cardStyles['m-archive-card__aiInfoItem']}>
-                                    <Text as="span" size="sm" color="gray">2순위</Text>
-                                    <Text as="span" size="sm" color="darkMain">{detailData.aiSupport.top2Desc || '-'}</Text>
-                                  </div>
-                                </div>
-                              </>
-                            ) : (
-                              <div className={cardStyles['m-archive-card__aiInfoSection']}>
-                                <Text as="div" size="sm" color="gray">AI 정보가 없습니다.</Text>
+                                )}
                               </div>
-                            )}
+                            </div>
+
+                            {/* 오른쪽: 우선순위 */}
+                            <div className={cardStyles['m-archive-card__aiInfoWrapper']}>
+                              <div className={cardStyles['m-archive-card__aiInfo']}>
+                                {detailData.aiSupport ? (
+                                  <>
+                                    <div className={cardStyles['m-archive-card__aiInfoSection']}>
+                                      <Text as="div" size="sm" weight="bold" color="darkMain" className={cardStyles['m-archive-card__aiInfoLabel']}>
+                                        우선순위
+                                      </Text>
+                                      <div className={cardStyles['m-archive-card__aiInfoItem']}>
+                                        <Text as="span" size="sm" color="gray">1순위</Text>
+                                        <Text as="span" size="sm" color="darkMain">{detailData.aiSupport.top1Desc || '-'}</Text>
+                                      </div>
+                                      <div className={cardStyles['m-archive-card__aiInfoItem']}>
+                                        <Text as="span" size="sm" color="gray">2순위</Text>
+                                        <Text as="span" size="sm" color="darkMain">{detailData.aiSupport.top2Desc || '-'}</Text>
+                                      </div>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div className={cardStyles['m-archive-card__aiInfoSection']}>
+                                    <Text as="div" size="sm" color="gray">AI 정보가 없습니다.</Text>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           </div>
+                          <Text as="div" size="sm" color="gray" className={cardStyles['m-archive-card__aiCaption']}>
+                            ① AI 분석을 주요 정보를 우선적으로 정리한 내용으로, 참고용으로 활용해주시기 바랍니다.
+                          </Text>
                         </div>
-                      </div>
-                      <Text as="div" size="sm" color="gray" className={cardStyles['m-archive-card__aiCaption']}>
-                        ① AI 분석을 주요 정보를 우선적으로 정리한 내용으로, 참고용으로 활용해주시기 바랍니다.
-                      </Text>
-                    </div>
+                        );
+                      })()}
                   </>
                 );
               })()}

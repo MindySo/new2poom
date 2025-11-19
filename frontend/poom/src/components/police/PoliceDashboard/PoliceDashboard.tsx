@@ -179,22 +179,40 @@ const PoliceDashboard: React.FC<PoliceDashboardProps> = ({ isOpen, onClose, miss
                 </div>
 
                 {/* 두번째 섹션: AI 서포트 이미지 */}
-                <div
-                  className={`${styles.section} ${styles.sectionLarge}`}
-                  style={{
-                    background: `linear-gradient(${policeColor}, ${policeColor}) padding-box, ${theme.colors.rainbow} border-box`,
-                    border: '3px solid transparent',
-                  }}
-                >
-                  <div className={styles.sectionContentAI}>
-                    <Text as="div" size="sm" weight="bold" color="white" className={styles.aiTitle}>AI 서포트 이미지</Text>
-                    <div className={styles.aiImageWrapper}>
-                      <Text as="div" size="sm" color="white" style={{ textAlign: 'center', padding: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                        안전한 AI 정보 활용을 위해 개인정보 수집 동의가 필요합니다.
-                      </Text>
+                {(() => {
+                  const aiImageDisplayIds = [50000, 50020, 50040, 50041];
+                  const hasAIImages = aiImageDisplayIds.includes(missingDetail?.id || 0) &&
+                                     missingDetail?.outputImages &&
+                                     missingDetail.outputImages.length > 0;
+                  const aiImageUrl = hasAIImages ? missingDetail?.outputImages?.[0]?.url : null;
+
+                  return (
+                    <div
+                      className={`${styles.section} ${styles.sectionLarge}`}
+                      style={{
+                        background: `linear-gradient(${policeColor}, ${policeColor}) padding-box, ${theme.colors.rainbow} border-box`,
+                        border: '3px solid transparent',
+                      }}
+                    >
+                      <div className={styles.sectionContentAI}>
+                        <Text as="div" size="sm" weight="bold" color="white" className={styles.aiTitle}>AI 서포트 이미지</Text>
+                        <div className={styles.aiImageWrapper}>
+                          {aiImageUrl ? (
+                            <img
+                              src={aiImageUrl}
+                              alt="AI 서포트 이미지"
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                          ) : (
+                            <Text as="div" size="sm" color="white" style={{ textAlign: 'center', padding: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                              안전한 AI 정보 활용을 위해 개인정보 수집 동의가 필요합니다.
+                            </Text>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  );
+                })()}
               </div>
 
               {/* 오른쪽 줄 */}

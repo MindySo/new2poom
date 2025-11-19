@@ -256,17 +256,33 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
               </div>
               
               {/* AI 이미지와 AI 서포트 정보 */}
-              <div className={styles['m-archive-card__aiSection']}>
-                <Text as="div" size="sm" weight="bold" color="darkMain" className={styles['m-archive-card__detailTitle']}>AI 서포트</Text>
-                <div className={styles['m-archive-card__aiContent']}>
-                  {/* 왼쪽: AI 이미지 */}
-                  <div className={styles['m-archive-card__aiImageWrapperOuter']}>
-                    <div className={styles['m-archive-card__aiImageWrapper']}>
-                      <Text as="div" size="xs" color="gray" style={{ textAlign: 'center', padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                        안전한 AI 정보 활용을 위해 개인정보 수집 동의가 필요합니다.
-                      </Text>
-                    </div>
-                  </div>
+              {(() => {
+                const aiImageDisplayIds = [50000, 50020, 50040, 50041];
+                const hasAIImages = aiImageDisplayIds.includes(displayData?.id || 0) &&
+                                   displayData?.outputImages &&
+                                   displayData.outputImages.length > 0;
+                const aiImageUrl = hasAIImages ? displayData?.outputImages?.[0]?.url : null;
+
+                return (
+                  <div className={styles['m-archive-card__aiSection']}>
+                    <Text as="div" size="sm" weight="bold" color="darkMain" className={styles['m-archive-card__detailTitle']}>AI 서포트</Text>
+                    <div className={styles['m-archive-card__aiContent']}>
+                      {/* 왼쪽: AI 이미지 */}
+                      <div className={styles['m-archive-card__aiImageWrapperOuter']}>
+                        <div className={styles['m-archive-card__aiImageWrapper']}>
+                          {aiImageUrl ? (
+                            <img
+                              src={aiImageUrl}
+                              alt="AI 서포트 이미지"
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                          ) : (
+                            <Text as="div" size="xs" color="gray" style={{ textAlign: 'center', padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                              안전한 AI 정보 활용을 위해 개인정보 수집 동의가 필요합니다.
+                            </Text>
+                          )}
+                        </div>
+                      </div>
                   
                   {/* 오른쪽: 우선순위 */}
                   <div className={styles['m-archive-card__aiInfoWrapper']}>
@@ -292,10 +308,12 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
                     </div>
                   </div>
                 </div>
-                <Text as="div" size="xs" color="gray" className={styles['m-archive-card__aiCaption']}>
-                  ① AI 분석을 주요 정보를 우선적으로 정리한 내용으로, 참고용으로 활용해주시기 바랍니다.
-                </Text>
-              </div>
+                    <Text as="div" size="xs" color="gray" className={styles['m-archive-card__aiCaption']}>
+                      ① AI 분석을 주요 정보를 우선적으로 정리한 내용으로, 참고용으로 활용해주시기 바랍니다.
+                    </Text>
+                  </div>
+                );
+              })()}
             </>
           ) : null}
         </div>

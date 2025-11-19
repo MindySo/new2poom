@@ -183,7 +183,16 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose, missingId }) => 
             </div>
           ) : missingDetail ? (
             <>
-              {/* 왼쪽 줄 */}
+              {(() => {
+                const aiImageDisplayIds = [50000, 50020, 50040, 50041];
+                const hasAIImages = aiImageDisplayIds.includes(missingDetail.id) &&
+                                   missingDetail.outputImages &&
+                                   missingDetail.outputImages.length > 0;
+                const aiImageUrl = hasAIImages ? missingDetail.outputImages[0].url : null;
+
+                return (
+                  <>
+                    {/* 왼쪽 줄 */}
               <div className={styles.leftColumn}>
                 {/* 첫번째 섹션: 썸네일 */}
                 <div className={`${styles.section} ${styles.sectionXLarge}`} style={{ backgroundColor: theme.colors.white }}>
@@ -236,9 +245,17 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose, missingId }) => 
                   <div className={styles.sectionContentAI}>
                     <Text as="div" size="md" weight="bold" color="darkMain" className={styles.aiTitle}>AI 서포트 이미지</Text>
                     <div className={styles.aiImageWrapper}>
-                      <Text as="div" size="sm" color="gray" style={{ textAlign: 'center', padding: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                        안전한 AI 정보 활용을 위해 개인정보 수집 동의가 필요합니다.
-                      </Text>
+                      {aiImageUrl ? (
+                        <img
+                          src={aiImageUrl}
+                          alt="AI 서포트 이미지"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <Text as="div" size="sm" color="gray" style={{ textAlign: 'center', padding: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                          안전한 AI 정보 활용을 위해 개인정보 수집 동의가 필요합니다.
+                        </Text>
+                      )}
                     </div>
                     <Text as="div" size="xs" color="gray" className={styles.aiCaption}>
                       ① CCTV 이미지 및 실종자 데이터 기반으로 AI가 예측한 이미지입니다.
@@ -338,6 +355,9 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose, missingId }) => 
                 </div>
                 
               </div>
+                  </>
+                );
+              })()}
             </>
           ) : (
             <Text as="div" size="sm" color="gray" className={styles.emptyMessage}>
