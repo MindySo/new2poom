@@ -9,11 +9,11 @@ import styles from './SideBar.module.css';
 export interface SideBarProps {
   className?: string;
   onMissingCardClick?: (id: number) => void;
+  selectedMissingId?: number | null;
+  isDashboardOpen?: boolean;
 }
 
-const SideBar: React.FC<SideBarProps> = ({ className = '', onMissingCardClick }) => {
-  // 선택된 실종자 ID 상태 관리
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+const SideBar: React.FC<SideBarProps> = ({ className = '', onMissingCardClick, selectedMissingId, isDashboardOpen }) => {
 
   // 스크롤바 표시 상태 관리
   const [showScrollbar, setShowScrollbar] = useState(false);
@@ -116,11 +116,9 @@ const SideBar: React.FC<SideBarProps> = ({ className = '', onMissingCardClick })
               location={person.occurredLocation}
               occurredAt={person.crawledAt}
               targetType={person.targetType}
-              isSelected={selectedId === person.id}
+              isSelected={selectedMissingId === person.id && isDashboardOpen}
               theme="light"
               onClick={() => {
-                // 같은 카드를 다시 클릭하면 선택 해제
-                setSelectedId(prev => prev === person.id ? null : person.id);
                 onMissingCardClick?.(person.id);
               }}
             />
