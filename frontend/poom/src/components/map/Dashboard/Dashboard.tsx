@@ -252,7 +252,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose, missingId }) => 
                         <img
                           src={aiImageUrl}
                           alt="AI 서포트 이미지"
-                          style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }}
+                          style={{ width: '100%', height: '100%', objectFit: 'contain', cursor: 'pointer' }}
                           onClick={() => {
                             setAiImageOpen(true);
                             setAiImageZoom(1);
