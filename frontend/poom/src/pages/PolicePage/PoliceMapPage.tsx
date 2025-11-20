@@ -183,7 +183,11 @@ const PoliceMapPage: React.FC = () => {
 
   return (
     <>
-      <PoliceSideBar onMissingCardClick={handleMissingCardClick} selectedMissingId={selectedMissingId} isDashboardOpen={isDashboardOpen} />
+      <PoliceSideBar
+        onMissingCardClick={handleMissingCardClick}
+        selectedMissingId={selectedMissingId}
+        isDashboardOpen={isDashboardOpen}
+      />
       <div className={styles.mapContainer}>
         {!isLoaded && <p className={styles.loadingText}>지도를 불러오는 중...</p>}
         <div ref={mapRef} className={styles.mapElement} />
