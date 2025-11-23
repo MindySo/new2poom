@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { theme } from '../../../theme';
 import { useMissingDetail } from '../../../hooks/useMissingDetail';
 import { useShareMissingPerson } from '../../../hooks/useShareMissingPerson';
 import { useElapsedTime } from '../../../hooks/useElapsedTime';
@@ -211,7 +212,7 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
         <div className={styles['m-archive-card__expandedContent']}>
           {isDetailLoading ? (
             <div className={styles['loading-container']}>
-              <div className={styles['spinner']}></div>
+              <div className={styles['spinner']} style={{ borderTopColor: theme.colors.main }}></div>
               <Text as="div" size="xs" color="gray" style={{ marginTop: '1rem' }}>로딩 중...</Text>
             </div>
           ) : detailData ? (

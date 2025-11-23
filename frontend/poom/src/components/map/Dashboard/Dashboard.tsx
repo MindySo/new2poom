@@ -182,7 +182,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose, missingId }) => 
         >
           {isLoading ? (
             <div className={styles.loadingContainer}>
-              <div className={styles.spinner}></div>
+              <div className={styles.spinner} style={{ borderTopColor: theme.colors.main }}></div>
               <Text as="div" size="sm" color="darkMain" style={{ marginTop: '1rem' }}>로딩 중...</Text>
             </div>
           ) : missingDetail ? (

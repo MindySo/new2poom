@@ -51,7 +51,7 @@ const SideBar: React.FC<SideBarProps> = ({ className = '', onMissingCardClick, s
       className={`${styles.sideBar} ${className}`}
       style={{
         backgroundColor: theme.colors.beige,
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+        boxShadow: `0 4px 12px ${theme.colors.black}33`,
       }}
     >
       {/* 현황판 */}

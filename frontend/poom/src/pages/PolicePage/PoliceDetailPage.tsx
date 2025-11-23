@@ -41,7 +41,7 @@ const PoliceDetailPage = () => {
     }
   }, []);
 
-   const handleOpenModal = (url: string) => {
+  const handleOpenModal = (url: string) => {
     setVideoUrl(url);
     setIsModalOpen(true);
   };

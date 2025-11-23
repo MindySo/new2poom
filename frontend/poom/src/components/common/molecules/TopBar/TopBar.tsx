@@ -40,7 +40,7 @@ const TopBar: React.FC<TopBarProps> = ({ className = '' }) => {
           className={styles.logoBox}
           style={{
             backgroundColor: theme.colors.beige,
-            boxShadow: `4px 4px 12px rgba(232, 154, 89, 0.3)`,
+            boxShadow: `4px 4px 12px ${theme.colors.main}4D`,
           }}
           onClick={() => handleNavClick('/')}
         >
@@ -57,7 +57,7 @@ const TopBar: React.FC<TopBarProps> = ({ className = '' }) => {
         className={styles.rightSection}
         style={{
           backgroundColor: theme.colors.beige,
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+          boxShadow: `0 4px 12px ${theme.colors.black}33`,
         }}
       >
         {/* 네비게이션 영역 */}

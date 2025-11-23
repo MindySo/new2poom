@@ -46,20 +46,20 @@ const PoliceSideBar: React.FC<PoliceSideBarProps> = ({ className = '', onMissing
   }, []);
   
   // 경찰서 페이지용 색상
-  const policeColor = '#2B3A55'; // darkMain 색상
+  const policeColor = theme.colors.darkMain;
 
   return (
     <aside
       className={`${styles.sideBar} ${className}`}
       style={{
         backgroundColor: policeColor,
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+        boxShadow: `0 4px 12px ${theme.colors.black}33`,
       }}
     >
       {/* 현황판 */}
       <StatusBoard
         textColor="policeWhite"
-        borderColor="rgba(255, 255, 255, 0.3)"
+        borderColor={`${theme.colors.white}4D`}
         helpContent={
           <>
             <Text size="sm" weight="semiBold" color="darkMain" as="p" style={{ marginBottom: '0.5rem' }}>

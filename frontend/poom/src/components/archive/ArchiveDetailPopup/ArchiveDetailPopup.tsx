@@ -1,6 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
+import { theme } from '../../../theme';
 import { useMissingDetail } from '../../../hooks/useMissingDetail';
 import { useElapsedTime } from '../../../hooks/useElapsedTime';
 import { useShareMissingPerson } from '../../../hooks/useShareMissingPerson';
@@ -80,7 +81,7 @@ const ArchiveDetailPopup: React.FC<ArchiveDetailPopupProps> = ({ personId, initi
       <div className={`${styles['popup-overlay']} ${isClosing ? styles['closing'] : ''}`} onClick={handleCloseWithAnimation}>
         <div className={`${styles['popup-content']} ${isClosing ? styles['closing'] : ''}`} onClick={(e) => e.stopPropagation()}>
           <div className={styles['loading-container']}>
-            <div className={styles['spinner']}></div>
+            <div className={styles['spinner']} style={{ borderTopColor: theme.colors.main }}></div>
             <Text as="div" size="sm" color="gray" style={{ marginTop: '1rem' }}>로딩 중...</Text>
           </div>
         </div>
@@ -411,6 +412,10 @@ const ArchiveDetailPopup: React.FC<ArchiveDetailPopupProps> = ({ personId, initi
               variant="primary"
               size="small"
               className={styles['popup-primaryBtn']}
+              style={{
+                background: theme.colors.main,
+                color: theme.colors.white,
+              }}
               onClick={() => {
                 handleCloseWithAnimation();
                 setTimeout(() => {
@@ -455,8 +460,8 @@ const ArchiveDetailPopup: React.FC<ArchiveDetailPopupProps> = ({ personId, initi
       {aiImageOpen && (() => {
         const aiImageDisplayIds = [50000, 50020, 50040, 50041];
         const hasAIImages = aiImageDisplayIds.includes(person?.id || 0) &&
-                           person?.outputImages &&
-                           person.outputImages.length > 0;
+                          person?.outputImages &&
+                          person.outputImages.length > 0;
         const aiImageUrl = hasAIImages ? person?.outputImages?.[0]?.url : null;
 
         const viewer = aiImageUrl ? (

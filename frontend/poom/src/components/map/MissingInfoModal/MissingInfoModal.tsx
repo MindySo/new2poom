@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
+import { theme } from '../../../theme';
 import { useMissingDetail } from '../../../hooks/useMissingDetail';
 import { useElapsedTime } from '../../../hooks/useElapsedTime';
 import { useShareMissingPerson } from '../../../hooks/useShareMissingPerson';
@@ -362,8 +363,8 @@ const MissingInfoModal: React.FC<MissingInfoModalProps> = ({ personId, onGoBack,
             {aiImageOpen && (() => {
               const aiImageDisplayIds = [50000, 50020, 50040, 50041];
               const hasAIImages = aiImageDisplayIds.includes(detailData?.id || 0) &&
-                                 detailData?.outputImages &&
-                                 detailData.outputImages.length > 0;
+                                detailData?.outputImages &&
+                                detailData.outputImages.length > 0;
               const aiImageUrl = hasAIImages ? detailData?.outputImages?.[0]?.url : null;
 
               const viewer = aiImageUrl ? (

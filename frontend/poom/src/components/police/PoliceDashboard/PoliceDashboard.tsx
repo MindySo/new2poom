@@ -34,9 +34,6 @@ const PoliceDashboard: React.FC<PoliceDashboardProps> = ({ isOpen, onClose, miss
   // missingId가 있을 때만 API 호출
   const { data: missingDetail, isLoading } = useMissingDetail(missingId);
 
-  // 경찰서 페이지용 색상
-  const policeColor = '#2B3A55'; // darkMain 색상
-  const activeColor = '#0FB4DB'; // active 네비게이션 색상
 
   // 현재 나이 계산 함수
   const calculateCurrentAge = (occurredAt: string, ageAtTime: number): number => {
@@ -126,7 +123,7 @@ const PoliceDashboard: React.FC<PoliceDashboardProps> = ({ isOpen, onClose, miss
           <div
             className={`${styles.dashboard} ${isClosing ? styles.slideOut : ''}`}
             style={{
-              backgroundColor: `${policeColor}CC`, // policeColor + 투명
+              backgroundColor: `${theme.colors.darkMain}CC`, // darkMain + 투명
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
             }}
           >
@@ -173,7 +170,7 @@ const PoliceDashboard: React.FC<PoliceDashboardProps> = ({ isOpen, onClose, miss
               {/* 왼쪽 줄 */}
               <div className={styles.leftColumn}>
                 {/* 첫번째 섹션: 썸네일 */}
-                <div className={`${styles.section} ${styles.sectionXLarge}`} style={{ backgroundColor: policeColor }}>
+                <div className={`${styles.section} ${styles.sectionXLarge}`} style={{ backgroundColor: theme.colors.darkMain }}>
                   <div className={styles.imageSection}>
                     {/* 라벨 */}
                     <div className={styles.badgeContainer}>
@@ -231,7 +228,7 @@ const PoliceDashboard: React.FC<PoliceDashboardProps> = ({ isOpen, onClose, miss
                     <div
                       className={`${styles.section} ${styles.sectionLarge}`}
                       style={{
-                        background: `linear-gradient(${policeColor}, ${policeColor}) padding-box, ${theme.colors.rainbow} border-box`,
+                        background: `linear-gradient(${theme.colors.darkMain}, ${theme.colors.darkMain}) padding-box, ${theme.colors.rainbow} border-box`,
                         border: '3px solid transparent',
                       }}
                     >
@@ -266,7 +263,7 @@ const PoliceDashboard: React.FC<PoliceDashboardProps> = ({ isOpen, onClose, miss
               {/* 오른쪽 줄 */}
               <div className={styles.rightColumn}>
                 {/* 첫번째 섹션: 기본 인적사항 */}
-                <div className={`${styles.section} ${styles.sectionSmall}`} style={{ backgroundColor: policeColor }}>
+                <div className={`${styles.section} ${styles.sectionSmall}`} style={{ backgroundColor: theme.colors.darkMain }}>
                   <div className={styles.infoCard}>
                     <Text as="div" size="sm" weight="bold" color="policeWhite" className={styles.infoLabel}>이름</Text>
                     <Text as="div" size="md" color="policeWhite" className={styles.infoValue}>
@@ -295,7 +292,7 @@ const PoliceDashboard: React.FC<PoliceDashboardProps> = ({ isOpen, onClose, miss
                 </div>
 
                 {/* 두번째 섹션: 신체 정보 */}
-                <div className={`${styles.section} ${styles.sectionMedium}`} style={{ backgroundColor: policeColor }}>
+                <div className={`${styles.section} ${styles.sectionMedium}`} style={{ backgroundColor: theme.colors.darkMain }}>
                   <div className={styles.infoCard}>
                     <Text as="div" size="sm" weight="bold" color="policeWhite" className={styles.infoLabel}>신체정보</Text>
                     <Text as="div" size="md" color="policeWhite" className={styles.infoValue}>
@@ -322,7 +319,7 @@ const PoliceDashboard: React.FC<PoliceDashboardProps> = ({ isOpen, onClose, miss
                 <div
                   className={`${styles.section} ${styles.sectionLarge}`}
                   style={{
-                    background: `linear-gradient(${policeColor}, ${policeColor}) padding-box, ${theme.colors.rainbow} border-box`,
+                    background: `linear-gradient(${theme.colors.darkMain}, ${theme.colors.darkMain}) padding-box, ${theme.colors.rainbow} border-box`,
                     border: '3px solid transparent',
                   }}
                 >
@@ -369,7 +366,7 @@ const PoliceDashboard: React.FC<PoliceDashboardProps> = ({ isOpen, onClose, miss
             <button
               className={styles.reportButton}
               style={{
-                backgroundColor: activeColor,
+                backgroundColor: theme.colors.policeMain,
                 color: 'white',
               }}
               onClick={(e) => {
