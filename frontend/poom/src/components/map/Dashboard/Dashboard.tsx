@@ -5,7 +5,7 @@ import { useMissingDetail } from '../../../hooks';
 import { useShareMissingPerson } from '../../../hooks/useShareMissingPerson';
 import styles from './Dashboard.module.css';
 import close from '../../../assets/back_icon.svg';
-import logo from '../../../assets/poom_logo.png';
+import logo from '../../../assets/2poom_logo.svg';
 import anonymousProfile from '../../../assets/anonymous_profile.svg';
 import { useNavigate } from 'react-router-dom';
 import Text from '../../common/atoms/Text';
@@ -345,7 +345,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose, missingId }) => 
                   <div className={styles.sectionContentAI}>
                     <Text as="div" size="md" weight="bold" color="darkMain" className={styles.aiTitle}>AI 서포트 정보</Text>
                     <div className={styles.aiInfoWrapper}>
-                      {missingDetail.aiSupport ? (
+                      {missingDetail.aiSupport?.top1Desc || missingDetail.aiSupport?.top2Desc ? (
                         <div className={styles.aiInfoSection}>
                           <Text as="div" size="sm" weight="bold" color="darkMain" className={styles.aiSubtitle}>AI 기반 예상 인상착의 우선순위</Text>
                           <div className={styles.aiInfoItem}>
@@ -358,9 +358,9 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose, missingId }) => 
                           </div>
                         </div>
                       ) : (
-                        <div className={styles.aiInfoSection}>
-                          <Text as="div" size="sm" color="gray">안전한 AI 정보 활용을 위해 개인정보 수집 동의가 필요합니다.</Text>
-                        </div>
+                        <Text as="div" size="sm" color="gray" style={{ textAlign: 'center', padding: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                          안전한 AI 정보 활용을 위해 개인정보 수집 동의가 필요합니다.
+                        </Text>
                       )}
                     </div>
                     <Text as="div" size="xs" color="gray" className={styles.aiCaption}>

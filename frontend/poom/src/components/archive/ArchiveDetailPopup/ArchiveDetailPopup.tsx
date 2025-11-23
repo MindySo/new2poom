@@ -11,7 +11,7 @@ import Button from '../../common/atoms/Button';
 import ImageCarousel from '../../common/molecules/ImageCarousel/ImageCarousel';
 import type { ImageFile, MissingPerson } from '../../../types/missing';
 import anonymousProfile from '../../../assets/anonymous_profile.svg';
-import poomLogo from '../../../assets/poom_logo.png';
+import poomLogo from '../../../assets/2poom_logo.svg';
 
 export interface ArchiveDetailPopupProps {
   personId: number;

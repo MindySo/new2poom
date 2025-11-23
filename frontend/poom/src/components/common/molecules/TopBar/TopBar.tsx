@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { theme } from '../../../../theme';
 import styles from './TopBar.module.css';
-import logoFull from '../../../../assets/poom_logo_full.png';
+import logoFull from '../../../../assets/2poom_logo.svg';
 
 export interface TopBarProps {
   className?: string;
@@ -81,8 +81,8 @@ const TopBar: React.FC<TopBarProps> = ({ className = '' }) => {
                 <span
                   className={`${styles.activeIndicator} ${(isActive || isHovered) ? styles.show : ''}`}
                   style={{
-                    backgroundColor: 'rgba(232, 154, 89, 0.7)',
-                    boxShadow: `4px 4px 12px rgba(232, 154, 89, 0.5)`,
+                    backgroundColor: `${theme.colors.main}B3`,
+                    boxShadow: `4px 4px 12px ${theme.colors.main}80`,
                   }}
                 ></span>
                 <span

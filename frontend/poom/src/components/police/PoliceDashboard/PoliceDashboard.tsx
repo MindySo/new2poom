@@ -4,7 +4,7 @@ import { theme } from '../../../theme';
 import { useMissingDetail } from '../../../hooks';
 import styles from './PoliceDashboard.module.css';
 import close from '../../../assets/back_icon_police.svg';
-import logo from '../../../assets/logo_police.png';
+import logo from '../../../assets/2poom_police_logo.svg';
 import anonymousProfile from '../../../assets/anonymous_profile.svg';
 import { useNavigate } from 'react-router-dom';
 import Text from '../../common/atoms/Text';
@@ -329,7 +329,7 @@ const PoliceDashboard: React.FC<PoliceDashboardProps> = ({ isOpen, onClose, miss
                   <div className={styles.sectionContentAI}>
                     <Text as="div" size="md" weight="bold" color="policeWhite" className={styles.aiTitle}>AI 서포트 정보</Text>
                     <div className={styles.aiInfoWrapper}>
-                      {missingDetail.aiSupport ? (
+                      {missingDetail.aiSupport?.top1Desc || missingDetail.aiSupport?.top2Desc ? (
                         <>
                           {/* 우선순위 */}
                           <div className={styles.aiInfoSection}>
@@ -345,7 +345,9 @@ const PoliceDashboard: React.FC<PoliceDashboardProps> = ({ isOpen, onClose, miss
                           </div>
                         </>
                       ) : (
-                        <Text as="div" size="sm" color="policeGray">AI 정보가 없습니다.</Text>
+                        <Text as="div" size="sm" color="policeGray" style={{ textAlign: 'center', padding: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                          안전한 AI 정보 활용을 위해 개인정보 수집 동의가 필요합니다.
+                        </Text>
                       )}
                     </div>
                     <Text as="div" size="xs" color="policeGray" className={styles.aiCaption}>

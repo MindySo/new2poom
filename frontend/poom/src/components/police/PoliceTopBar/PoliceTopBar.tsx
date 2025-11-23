@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { theme } from '../../../theme';
 import styles from './PoliceTopBar.module.css';
-import logoFull from '../../../assets/poom_logo_full_police.svg';
+import logoFull from '../../../assets/2poom_police_logo.svg';
 
 export interface PoliceTopBarProps {
   className?: string;
