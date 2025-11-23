@@ -379,7 +379,7 @@ const PoliceDashboard: React.FC<PoliceDashboardProps> = ({ isOpen, onClose, miss
                 }
               }}
             >
-              Detection Result
+              실종자 탐지 결과
             </button>
           </div>
         )}
