@@ -27,6 +27,7 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
   const [initialImageIndex, setInitialImageIndex] = useState(0);
   const [aiImageOpen, setAiImageOpen] = useState(false);
   const [aiImageZoom, setAiImageZoom] = useState(1);
+  const [expandedAiInfo, setExpandedAiInfo] = useState<'top1' | 'top2' | null>(null);
   const { share: handleShare, isSharing } = useShareMissingPerson();
   
   // 목록 캐시에서 기본 정보 가져오기
@@ -295,22 +296,49 @@ const MArchiveCard: React.FC<MArchiveCardProps> = ({ personId }) => {
                   {/* 오른쪽: 우선순위 */}
                   <div className={styles['m-archive-card__aiInfoWrapper']}>
                     <div className={styles['m-archive-card__aiInfo']}>
-                      {aiSupport && (
+                      {aiSupport && (aiSupport.top1Keyword || aiSupport.top1Desc || aiSupport.top2Keyword || aiSupport.top2Desc) ? (
                         <div className={styles['m-archive-card__aiInfoSection']}>
                           <Text as="div" size="xs" weight="bold" color="darkMain" className={styles['m-archive-card__aiInfoLabel']}>우선순위</Text>
-                          <div className={styles['m-archive-card__aiInfoItem']}>
-                            <Text as="span" size="xs" color="gray">1순위</Text>
-                            <Text as="span" size="xs" color="darkMain">{aiSupport.top1Desc || '-'}</Text>
-                          </div>
-                          <div className={styles['m-archive-card__aiInfoItem']}>
-                            <Text as="span" size="xs" color="gray">2순위</Text>
-                            <Text as="span" size="xs" color="darkMain">{aiSupport.top2Desc || '-'}</Text>
-                          </div>
+
+                          {/* 1순위 */}
+                          {(aiSupport.top1Keyword || aiSupport.top1Desc) && (
+                            <div className={styles['m-archive-card__aiInfoItem']}>
+                              <button
+                                className={styles['m-archive-card__aiKeywordButton']}
+                                onClick={() => setExpandedAiInfo(expandedAiInfo === 'top1' ? null : 'top1')}
+                              >
+                                <Text as="span" size="xs" color="gray">1순위</Text>
+                                <Text as="span" size="xs" weight="bold" color="darkMain">{aiSupport.top1Keyword || aiSupport.top1Desc || '-'}</Text>
+                              </button>
+                              {expandedAiInfo === 'top1' && aiSupport.top1Desc && (
+                                <Text as="div" size="xs" color="darkMain" className={styles['m-archive-card__aiDescText']}>
+                                  {aiSupport.top1Desc}
+                                </Text>
+                              )}
+                            </div>
+                          )}
+
+                          {/* 2순위 */}
+                          {(aiSupport.top2Keyword || aiSupport.top2Desc) && (
+                            <div className={styles['m-archive-card__aiInfoItem']}>
+                              <button
+                                className={styles['m-archive-card__aiKeywordButton']}
+                                onClick={() => setExpandedAiInfo(expandedAiInfo === 'top2' ? null : 'top2')}
+                              >
+                                <Text as="span" size="xs" color="gray">2순위</Text>
+                                <Text as="span" size="xs" weight="bold" color="darkMain">{aiSupport.top2Keyword || aiSupport.top2Desc || '-'}</Text>
+                              </button>
+                              {expandedAiInfo === 'top2' && aiSupport.top2Desc && (
+                                <Text as="div" size="xs" color="darkMain" className={styles['m-archive-card__aiDescText']}>
+                                  {aiSupport.top2Desc}
+                                </Text>
+                              )}
+                            </div>
+                          )}
                         </div>
-                      )}
-                      {!aiSupport && (
+                      ) : (
                         <div className={styles['m-archive-card__aiInfoSection']}>
-                          <Text as="div" size="xs" color="gray">AI 정보가 없습니다.</Text>
+                          <Text as="div" size="xs" color="gray">안전한 AI 정보 활용을 위해 개인정보 수집 동의가 필요합니다.</Text>
                         </div>
                       )}
                     </div>

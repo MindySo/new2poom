@@ -28,6 +28,7 @@ const ArchiveDetailPopup: React.FC<ArchiveDetailPopupProps> = ({ personId, initi
   const [initialImageIndex, setInitialImageIndex] = React.useState(0);
   const [aiImageOpen, setAiImageOpen] = React.useState(false);
   const [aiImageZoom, setAiImageZoom] = React.useState(1);
+  const [expandedAiInfo, setExpandedAiInfo] = React.useState<'top1' | 'top2' | null>(null);
   const [showScrollbar, setShowScrollbar] = React.useState(false);
   const [isClosing, setIsClosing] = React.useState(false);
   const scrollbarTimerRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -375,22 +376,49 @@ const ArchiveDetailPopup: React.FC<ArchiveDetailPopupProps> = ({ personId, initi
                     <Text as="div" size="md" weight="bold" color="darkMain" className={styles['popup-ai-subtitle']}>AI 서포트 정보</Text>
 
                     <div className={styles['popup-ai-info']}>
-                      {aiSupport && (
+                      {aiSupport && (aiSupport.top1Keyword || aiSupport.top1Desc || aiSupport.top2Keyword || aiSupport.top2Desc) ? (
                         <div className={styles['popup-ai-info-section']}>
                           <Text as="div" size="sm" weight="bold" color="darkMain" className={styles['popup-ai-info-label']}>우선순위</Text>
-                          <div className={styles['popup-ai-info-item']}>
-                            <Text as="span" size="xs" color="gray">1순위</Text>
-                            <Text as="span" size="sm" color="darkMain">{aiSupport.top1Desc || '-'}</Text>
-                          </div>
-                          <div className={styles['popup-ai-info-item']}>
-                            <Text as="span" size="xs" color="gray">2순위</Text>
-                            <Text as="span" size="sm" color="darkMain">{aiSupport.top2Desc || '-'}</Text>
-                          </div>
+
+                          {/* 1순위 */}
+                          {(aiSupport.top1Keyword || aiSupport.top1Desc) && (
+                            <div className={styles['popup-ai-info-item']}>
+                              <button
+                                className={styles['popup-ai-keyword-button']}
+                                onClick={() => setExpandedAiInfo(expandedAiInfo === 'top1' ? null : 'top1')}
+                              >
+                                <Text as="span" size="xs" color="gray">1순위</Text>
+                                <Text as="span" size="sm" weight="bold" color="darkMain">{aiSupport.top1Keyword || aiSupport.top1Desc || '-'}</Text>
+                              </button>
+                              {expandedAiInfo === 'top1' && aiSupport.top1Desc && (
+                                <Text as="div" size="sm" color="darkMain" className={styles['popup-ai-desc-text']}>
+                                  {aiSupport.top1Desc}
+                                </Text>
+                              )}
+                            </div>
+                          )}
+
+                          {/* 2순위 */}
+                          {(aiSupport.top2Keyword || aiSupport.top2Desc) && (
+                            <div className={styles['popup-ai-info-item']}>
+                              <button
+                                className={styles['popup-ai-keyword-button']}
+                                onClick={() => setExpandedAiInfo(expandedAiInfo === 'top2' ? null : 'top2')}
+                              >
+                                <Text as="span" size="xs" color="gray">2순위</Text>
+                                <Text as="span" size="sm" weight="bold" color="darkMain">{aiSupport.top2Keyword || aiSupport.top2Desc || '-'}</Text>
+                              </button>
+                              {expandedAiInfo === 'top2' && aiSupport.top2Desc && (
+                                <Text as="div" size="sm" color="darkMain" className={styles['popup-ai-desc-text']}>
+                                  {aiSupport.top2Desc}
+                                </Text>
+                              )}
+                            </div>
+                          )}
                         </div>
-                      )}
-                      {!aiSupport && (
+                      ) : (
                         <div className={styles['popup-ai-info-section']}>
-                          <Text as="div" size="sm" color="gray">AI 정보가 없습니다.</Text>
+                          <Text as="div" size="sm" color="gray">안전한 AI 정보 활용을 위해 개인정보 수집 동의가 필요합니다.</Text>
                         </div>
                       )}
                     </div>

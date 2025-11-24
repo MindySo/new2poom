@@ -28,6 +28,7 @@ const MissingInfoModal: React.FC<MissingInfoModalProps> = ({ personId, onGoBack,
   const [initialImageIndex, setInitialImageIndex] = useState(0);
   const [aiImageOpen, setAiImageOpen] = useState(false);
   const [aiImageZoom, setAiImageZoom] = useState(1);
+  const [expandedAiInfo, setExpandedAiInfo] = useState<'top1' | 'top2' | null>(null);
 
   // 실종자 상세 정보 가져오기
   const { data: detailData, isLoading: isDetailLoading } = useMissingDetail(personId || null);
@@ -315,25 +316,51 @@ const MissingInfoModal: React.FC<MissingInfoModalProps> = ({ personId, onGoBack,
                             {/* 오른쪽: 우선순위 */}
                             <div className={cardStyles['m-archive-card__aiInfoWrapper']}>
                               <div className={cardStyles['m-archive-card__aiInfo']}>
-                                {detailData.aiSupport ? (
-                                  <>
-                                    <div className={cardStyles['m-archive-card__aiInfoSection']}>
-                                      <Text as="div" size="sm" weight="bold" color="darkMain" className={cardStyles['m-archive-card__aiInfoLabel']}>
-                                        우선순위
-                                      </Text>
+                                {detailData.aiSupport && (detailData.aiSupport.top1Keyword || detailData.aiSupport.top1Desc || detailData.aiSupport.top2Keyword || detailData.aiSupport.top2Desc) ? (
+                                  <div className={cardStyles['m-archive-card__aiInfoSection']}>
+                                    <Text as="div" size="sm" weight="bold" color="darkMain" className={cardStyles['m-archive-card__aiInfoLabel']}>
+                                      우선순위
+                                    </Text>
+
+                                    {/* 1순위 */}
+                                    {(detailData.aiSupport.top1Keyword || detailData.aiSupport.top1Desc) && (
                                       <div className={cardStyles['m-archive-card__aiInfoItem']}>
-                                        <Text as="span" size="sm" color="gray">1순위</Text>
-                                        <Text as="span" size="sm" color="darkMain">{detailData.aiSupport.top1Desc || '-'}</Text>
+                                        <button
+                                          className={cardStyles['m-archive-card__aiKeywordButton']}
+                                          onClick={() => setExpandedAiInfo(expandedAiInfo === 'top1' ? null : 'top1')}
+                                        >
+                                          <Text as="span" size="sm" color="gray">1순위</Text>
+                                          <Text as="span" size="sm" weight="bold" color="darkMain">{detailData.aiSupport.top1Keyword || detailData.aiSupport.top1Desc || '-'}</Text>
+                                        </button>
+                                        {expandedAiInfo === 'top1' && detailData.aiSupport.top1Desc && (
+                                          <Text as="div" size="sm" color="darkMain" className={cardStyles['m-archive-card__aiDescText']}>
+                                            {detailData.aiSupport.top1Desc}
+                                          </Text>
+                                        )}
                                       </div>
+                                    )}
+
+                                    {/* 2순위 */}
+                                    {(detailData.aiSupport.top2Keyword || detailData.aiSupport.top2Desc) && (
                                       <div className={cardStyles['m-archive-card__aiInfoItem']}>
-                                        <Text as="span" size="sm" color="gray">2순위</Text>
-                                        <Text as="span" size="sm" color="darkMain">{detailData.aiSupport.top2Desc || '-'}</Text>
+                                        <button
+                                          className={cardStyles['m-archive-card__aiKeywordButton']}
+                                          onClick={() => setExpandedAiInfo(expandedAiInfo === 'top2' ? null : 'top2')}
+                                        >
+                                          <Text as="span" size="sm" color="gray">2순위</Text>
+                                          <Text as="span" size="sm" weight="bold" color="darkMain">{detailData.aiSupport.top2Keyword || detailData.aiSupport.top2Desc || '-'}</Text>
+                                        </button>
+                                        {expandedAiInfo === 'top2' && detailData.aiSupport.top2Desc && (
+                                          <Text as="div" size="sm" color="darkMain" className={cardStyles['m-archive-card__aiDescText']}>
+                                            {detailData.aiSupport.top2Desc}
+                                          </Text>
+                                        )}
                                       </div>
-                                    </div>
-                                  </>
+                                    )}
+                                  </div>
                                 ) : (
                                   <div className={cardStyles['m-archive-card__aiInfoSection']}>
-                                    <Text as="div" size="sm" color="gray">AI 정보가 없습니다.</Text>
+                                    <Text as="div" size="sm" color="gray">안전한 AI 정보 활용을 위해 개인정보 수집 동의가 필요합니다.</Text>
                                   </div>
                                 )}
                               </div>

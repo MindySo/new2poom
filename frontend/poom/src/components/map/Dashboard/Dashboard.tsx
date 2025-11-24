@@ -30,6 +30,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose, missingId }) => 
   const [initialImageIndex, setInitialImageIndex] = React.useState(0);
   const [aiImageOpen, setAiImageOpen] = React.useState(false);
   const [aiImageZoom, setAiImageZoom] = React.useState(1);
+  const [expandedAiInfo, setExpandedAiInfo] = React.useState<'top1' | 'top2' | null>(null);
 
   // 스크롤바 표시 상태 관리
   const [showScrollbar, setShowScrollbar] = React.useState(false);
@@ -345,17 +346,45 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose, missingId }) => 
                   <div className={styles.sectionContentAI}>
                     <Text as="div" size="md" weight="bold" color="darkMain" className={styles.aiTitle}>AI 서포트 정보</Text>
                     <div className={styles.aiInfoWrapper}>
-                      {missingDetail.aiSupport?.top1Desc || missingDetail.aiSupport?.top2Desc ? (
+                      {missingDetail.aiSupport && (missingDetail.aiSupport.top1Keyword || missingDetail.aiSupport.top1Desc || missingDetail.aiSupport.top2Keyword || missingDetail.aiSupport.top2Desc) ? (
                         <div className={styles.aiInfoSection}>
                           <Text as="div" size="sm" weight="bold" color="darkMain" className={styles.aiSubtitle}>AI 기반 예상 인상착의 우선순위</Text>
-                          <div className={styles.aiInfoItem}>
-                            <Text as="span" size="xs" color="gray">1순위</Text>
-                            <Text as="span" size="sm" color="darkMain">{missingDetail.aiSupport.top1Desc || '-'}</Text>
-                          </div>
-                          <div className={styles.aiInfoItem}>
-                            <Text as="span" size="xs" color="gray">2순위</Text>
-                            <Text as="span" size="sm" color="darkMain">{missingDetail.aiSupport.top2Desc || '-'}</Text>
-                          </div>
+
+                          {/* 1순위 */}
+                          {(missingDetail.aiSupport.top1Keyword || missingDetail.aiSupport.top1Desc) && (
+                            <div className={styles.aiInfoItem}>
+                              <button
+                                className={styles.aiKeywordButton}
+                                onClick={() => setExpandedAiInfo(expandedAiInfo === 'top1' ? null : 'top1')}
+                              >
+                                <Text as="span" size="xs" color="gray">1순위</Text>
+                                <Text as="span" size="sm" weight="bold" color="darkMain">{missingDetail.aiSupport.top1Keyword || missingDetail.aiSupport.top1Desc || '-'}</Text>
+                              </button>
+                              {expandedAiInfo === 'top1' && missingDetail.aiSupport.top1Desc && (
+                                <Text as="div" size="sm" color="darkMain" className={styles.aiDescText}>
+                                  {missingDetail.aiSupport.top1Desc}
+                                </Text>
+                              )}
+                            </div>
+                          )}
+
+                          {/* 2순위 */}
+                          {(missingDetail.aiSupport.top2Keyword || missingDetail.aiSupport.top2Desc) && (
+                            <div className={styles.aiInfoItem}>
+                              <button
+                                className={styles.aiKeywordButton}
+                                onClick={() => setExpandedAiInfo(expandedAiInfo === 'top2' ? null : 'top2')}
+                              >
+                                <Text as="span" size="xs" color="gray">2순위</Text>
+                                <Text as="span" size="sm" weight="bold" color="darkMain">{missingDetail.aiSupport.top2Keyword || missingDetail.aiSupport.top2Desc || '-'}</Text>
+                              </button>
+                              {expandedAiInfo === 'top2' && missingDetail.aiSupport.top2Desc && (
+                                <Text as="div" size="sm" color="darkMain" className={styles.aiDescText}>
+                                  {missingDetail.aiSupport.top2Desc}
+                                </Text>
+                              )}
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <Text as="div" size="sm" color="gray" style={{ textAlign: 'center', padding: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
