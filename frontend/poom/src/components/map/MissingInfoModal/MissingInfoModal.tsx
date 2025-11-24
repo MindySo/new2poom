@@ -410,6 +410,11 @@ const MissingInfoModal: React.FC<MissingInfoModalProps> = ({ personId, onGoBack,
                     animation: 'fadeIn 0.3s ease-out',
                   }}
                   onClick={() => setAiImageOpen(false)}
+                  onTouchEnd={(e) => {
+                    if (e.target === e.currentTarget) {
+                      setAiImageOpen(false);
+                    }
+                  }}
                   onWheel={(e) => {
                     e.preventDefault();
                     const delta = e.deltaY > 0 ? 0.9 : 1.1;
@@ -467,14 +472,13 @@ const MissingInfoModal: React.FC<MissingInfoModalProps> = ({ personId, onGoBack,
                       justifyContent: 'center',
                       overflow: 'hidden',
                     }}
-                    onClick={(e) => e.stopPropagation()}
                   >
                     <img
                       src={aiImageUrl}
                       alt="AI 서포트 이미지"
                       style={{
-                        width: '100%',
-                        height: '100%',
+                        maxWidth: '100%',
+                        maxHeight: '100%',
                         objectFit: 'contain',
                         transform: `scale(${aiImageZoom})`,
                         transition: 'transform 0.1s ease-out',
@@ -482,6 +486,8 @@ const MissingInfoModal: React.FC<MissingInfoModalProps> = ({ personId, onGoBack,
                         userSelect: 'none',
                       }}
                       draggable={false}
+                      onClick={(e) => e.stopPropagation()}
+                      onTouchEnd={(e) => e.stopPropagation()}
                     />
                   </div>
 
@@ -503,7 +509,11 @@ const MissingInfoModal: React.FC<MissingInfoModalProps> = ({ personId, onGoBack,
                       transition: 'opacity 0.2s',
                       opacity: 0.8,
                     }}
-                    onClick={() => setAiImageOpen(false)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setAiImageOpen(false);
+                    }}
+                    onTouchEnd={(e) => e.stopPropagation()}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.opacity = '1';
                     }}
@@ -526,6 +536,8 @@ const MissingInfoModal: React.FC<MissingInfoModalProps> = ({ personId, onGoBack,
                       borderRadius: '4px',
                       userSelect: 'none',
                     }}
+                    onClick={(e) => e.stopPropagation()}
+                    onTouchEnd={(e) => e.stopPropagation()}
                   >
                     {(aiImageZoom * 100).toFixed(0)}% | 스크롤/핀치로 확대/축소
                   </div>

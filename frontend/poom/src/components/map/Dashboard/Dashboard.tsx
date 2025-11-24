@@ -578,14 +578,13 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose, missingId }) => 
                 justifyContent: 'center',
                 overflow: 'hidden',
               }}
-              onClick={(e) => e.stopPropagation()}
             >
               <img
                 src={aiImageUrl}
                 alt="AI 서포트 이미지"
                 style={{
-                  width: '100%',
-                  height: '100%',
+                  maxWidth: '100%',
+                  maxHeight: '100%',
                   objectFit: 'contain',
                   transform: `scale(${aiImageZoom})`,
                   transition: 'transform 0.1s ease-out',
@@ -593,6 +592,8 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose, missingId }) => 
                   userSelect: 'none',
                 }}
                 draggable={false}
+                onClick={(e) => e.stopPropagation()}
+                onTouchEnd={(e) => e.stopPropagation()}
               />
             </div>
 
@@ -614,7 +615,11 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose, missingId }) => 
                 transition: 'opacity 0.2s',
                 opacity: 0.8,
               }}
-              onClick={() => setAiImageOpen(false)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setAiImageOpen(false);
+              }}
+              onTouchEnd={(e) => e.stopPropagation()}
               onMouseEnter={(e) => {
                 e.currentTarget.style.opacity = '1';
               }}
@@ -637,6 +642,8 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose, missingId }) => 
                 borderRadius: '4px',
                 userSelect: 'none',
               }}
+              onClick={(e) => e.stopPropagation()}
+              onTouchEnd={(e) => e.stopPropagation()}
             >
               {(aiImageZoom * 100).toFixed(0)}% | 스크롤/핀치로 확대/축소
             </div>
