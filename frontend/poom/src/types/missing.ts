@@ -66,3 +66,14 @@ export type MissingPersonWithTypo = Omit<MissingPerson, 'occurredAt' | 'occurred
   occuredLocation: string;
 };
 
+export interface ReportResponseItem {
+  id: number;
+  certaintyLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+  sightedAt: string;
+  sightedLocation: string;
+  additionalInfo: string;
+  reporterName?: string;
+  reporterContact?: string;
+}
+
+
