@@ -393,7 +393,7 @@ const Dashboard: React.FC<DashboardProps> = ({ isOpen, onClose, missingId }) => 
                       )}
                     </div>
                     <Text as="div" size="xs" color="gray" className={styles.aiCaption}>
-                      ① AI 분석을 주요 정보를 우선적으로 정리한 내용으로, 참고용으로 활용해주시기 바랍니다.
+                      ① AI가 분석한 주요 정보를 우선적으로 정리한 내용이니, 참고용으로 활용해주시길 바랍니다.
                     </Text>
                   </div>
                 </div>

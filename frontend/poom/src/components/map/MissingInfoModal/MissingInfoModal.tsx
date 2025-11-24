@@ -282,8 +282,8 @@ const MissingInfoModal: React.FC<MissingInfoModalProps> = ({ personId, onGoBack,
                     {(() => {
                       const aiImageDisplayIds = [50000, 50020, 50040, 50041];
                       const hasAIImages = aiImageDisplayIds.includes(detailData?.id || 0) &&
-                                         detailData?.outputImages &&
-                                         detailData.outputImages.length > 0;
+                                        detailData?.outputImages &&
+                                        detailData.outputImages.length > 0;
                       const aiImageUrl = hasAIImages ? detailData?.outputImages?.[0]?.url : null;
 
                       return (
@@ -359,15 +359,15 @@ const MissingInfoModal: React.FC<MissingInfoModalProps> = ({ personId, onGoBack,
                                     )}
                                   </div>
                                 ) : (
-                                  <div className={cardStyles['m-archive-card__aiInfoSection']}>
-                                    <Text as="div" size="sm" color="gray">안전한 AI 정보 활용을 위해 개인정보 수집 동의가 필요합니다.</Text>
-                                  </div>
+                                  <Text as="div" size="sm" color="gray" style={{ textAlign: 'center', padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                                    안전한 AI 정보 활용을 위해 개인정보 수집 동의가 필요합니다.
+                                  </Text>
                                 )}
                               </div>
                             </div>
                           </div>
                           <Text as="div" size="sm" color="gray" className={cardStyles['m-archive-card__aiCaption']}>
-                            ① AI 분석을 주요 정보를 우선적으로 정리한 내용으로, 참고용으로 활용해주시기 바랍니다.
+                            ① AI가 분석한 주요 정보를 우선적으로 정리한 내용이니, 참고용으로 활용해주시길 바랍니다.
                           </Text>
                         </div>
                         );
