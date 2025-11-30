@@ -14,8 +14,39 @@ import base64
 from missing_person_detector_onnx import MissingPersonDetectorONNX
 
 
-def load_police_css():
+def load_police_css(logo_base64=None):
     """경찰청 스타일 CSS"""
+    logo_style = ""
+    if logo_base64:
+        logo_style = """
+    /* Header Logo */
+    [data-testid="stHeader"] {{
+        background: linear-gradient(90deg, rgba(10, 14, 26, 0.95), rgba(15, 23, 42, 0.95));
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border);
+        padding: 0.75rem 3rem;
+        padding-left: 140px;
+        position: relative;
+        min-height: 60px;
+    }}
+    
+    [data-testid="stHeader"]::before {{
+        content: '';
+        display: block;
+        width: 100px;
+        height: 40px;
+        background-image: url(data:image/png;base64,{});
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: left center;
+        position: absolute;
+        left: 5.0rem;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 1;
+    }}
+    """.format(logo_base64)
+    
     st.markdown("""
     <style>
     /* Google Fonts */
@@ -45,6 +76,33 @@ def load_police_css():
         background: radial-gradient(ellipse at top, #0f172a 0%, #000000 50%, #0a0e1a 100%);
         color: var(--text-primary);
     }
+    
+    /* 메인 콘텐츠 영역 상단 마진 줄이기 */
+    [data-testid="stAppViewContainer"] {
+        padding-top: 0.25rem !important;
+    }
+    
+    .main .block-container {
+        padding-top: 0.5rem !important;
+        max-width: 100% !important;
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+    }
+    
+    /* stMainBlockContainer 위쪽 패딩만 줄이기 */
+    .stMainBlockContainer {
+        padding-top: 0.25rem !important;
+    }
+    
+    /* 컨텐츠를 위에서부터 쌓이도록 */
+    [data-testid="stAppViewContainer"] > div {
+        width: 100% !important;
+    }
+    
+    /* 중앙 정렬 제거 */
+    .element-container {
+        text-align: left !important;
+    }
 
     /* Headers */
     h1 {
@@ -55,7 +113,10 @@ def load_police_css():
         font-size: 2.8rem !important;
         font-weight: 900 !important;
         letter-spacing: -0.02em;
+        margin-top: 0.25rem !important;
         margin-bottom: 0.5rem !important;
+        text-align: left !important;
+        line-height: 1.1 !important;
     }
 
     h2 {
@@ -280,25 +341,38 @@ def load_police_css():
     /* Hide Streamlit branding */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
+    
+    """ + logo_style + """
     </style>
     """, unsafe_allow_html=True)
 
 
 def main():
     st.set_page_config(
-        page_title="경찰청 실시간 실종자 탐지 시스템",
+        page_title="품으로\n실시간 실종자 탐지",
         page_icon="🚨",
         layout="wide",
         initial_sidebar_state="expanded"
     )
 
-    # 스타일 로드
-    load_police_css()
+    # 로고 로드 및 base64 인코딩
+    logo_base64 = None
+    logo_path = 'PoomLogo.png'
+    if not os.path.exists(logo_path):
+        # test 디렉토리에서 찾기
+        logo_path = os.path.join('test', 'PoomLogo.png')
+    if os.path.exists(logo_path):
+        logo = Image.open(logo_path)
+        # 로고를 base64로 인코딩
+        import io
+        buffer = io.BytesIO()
+        logo.save(buffer, format='PNG')
+        logo_base64 = base64.b64encode(buffer.getvalue()).decode()
 
-    # 헤더
-    st.title("🚨 경찰청 실시간 실종자 탐지 시스템")
-    st.caption("KOREA NATIONAL POLICE AGENCY | REAL-TIME MISSING PERSON DETECTION | CCTV SURVEILLANCE SYSTEM")
-    st.markdown("---")
+    # 스타일 로드 (로고 포함)
+    load_police_css(logo_base64)
+
+    # 제목은 사이드바 처리 후 조건부로 표시
 
     # 사이드바
     with st.sidebar:
@@ -467,6 +541,10 @@ def main():
 
     # 메인 영역
     if input_source == "📁 CCTV 영상 파일":
+        # 제목 표시
+        st.title("CCTV DETECTION\n실시간 실종자 탐지")
+        st.caption("REAL-TIME MISSING PERSON DETECTION | CCTV SURVEILLANCE SYSTEM")
+        st.markdown("---")
         col1, col2 = st.columns([1, 1])
 
         with col1:
@@ -602,7 +680,16 @@ def main():
 
     # 실시간 카메라 모드 (최적화)
     else:
-        st.subheader("📹 실시간 탐지 화면")
+        # 제목과 영상을 2:8 비율로 배치
+        col_title, col_video = st.columns([2, 8])
+        
+        with col_title:
+            st.title("품으로\n실시간 실종자 탐지")
+            st.caption("REAL-TIME MISSING PERSON DETECTION | CCTV SURVEILLANCE SYSTEM")
+        
+        with col_video:
+            # 영상 표시 영역
+            frame_placeholder = st.empty()
 
         if not uploaded_images:
             st.warning("⚠️ 실종자 사진을 먼저 업로드해주세요")
@@ -659,9 +746,6 @@ def main():
 
                         st.success("✅ 실시간 모니터링 시작")
                         st.markdown("---")
-
-                        # 영상 표시 영역
-                        frame_placeholder = st.empty()
 
                         # 상태 표시
                         col_m1, col_m2, col_m3, col_m4 = st.columns(4)
@@ -789,56 +873,6 @@ def main():
                     st.code(traceback.format_exc())
                     st.session_state.webcam_running = False
 
-    # 하단 정보
-    st.markdown("---")
-    with st.expander("📖 사용 가이드"):
-        st.markdown("""
-        ## 🚀 빠른 시작
-
-        1. 실종자 사진 업로드 (좌측 사이드바)
-        2. CCTV 영상 또는 실시간 카메라 선택
-        3. 탐지 설정 및 성능 옵션 조정
-        4. **탐지 시작** 버튼 클릭
-
-        ## ⚙️ 권장 설정
-
-        | 환경 | 프레임 스킵 | 해상도 | 용도 |
-        |------|-------------|--------|------|
-        | 고성능 PC | 0 | 100% | 정밀 분석 |
-        | 일반 PC | 1 | 75% | 일반 감시 |
-        | 저사양 PC | 2 | 50% | 빠른 스캔 |
-
-        ## 💡 팁
-
-        - **여러 장 등록**: 3-5장의 다양한 각도 사진 권장
-        - **GPU 사용**: 3-5배 빠른 처리
-        - **휴대폰 카메라**: IP Webcam 앱으로 연결 가능
-        - **최적화 버전**: 디스플레이 최적화로 부드러운 실시간 영상
-        """)
-
-    with st.expander("🔧 기술 사양"):
-        st.markdown("""
-        ### AI 엔진
-
-        - **YOLOv8**: 실시간 사람 탐지
-        - **OSNet**: 인물 재식별 (Re-ID)
-        - **ONNX Runtime**: 하드웨어 가속 추론
-
-        ### 성능 최적화
-
-        - **디스플레이 해상도**: 80% 축소 (처리는 원본)
-        - **JPEG 압축**: 품질 75%로 전송량 60% 감소
-        - **Base64 인코딩**: 직접 HTML 렌더링으로 오버헤드 최소화
-        - **메트릭 업데이트**: 10프레임마다 업데이트
-        - **예상 FPS**: 4-5 → 9-12 (약 2-3배 향상)
-
-        ### 시스템 요구사항
-
-        - CPU: 최신 프로세서
-        - GPU: NVIDIA CUDA 11.0+ (권장)
-        - RAM: 8GB 이상
-        - VRAM: 2GB 이상 (GPU 사용 시)
-        """)
 
 
 if __name__ == "__main__":
