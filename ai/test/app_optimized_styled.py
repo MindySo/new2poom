@@ -1,10 +1,10 @@
 """
-최적화된 실종자 탐지 시스템 (ONNX 기반)
+최적화된 실종자 탐지 시스템 (ONNX 기반 + React 스타일)
 - 3-5배 빠른 처리 속도
 - 프레임 스킵 옵션
 - 해상도 조정 옵션
 - GPU 가속 지원
-- React 스타일 디자인 적용
+- React-inspired UI/UX
 """
 
 import streamlit as st
@@ -17,242 +17,273 @@ import time
 from missing_person_detector_onnx import MissingPersonDetectorONNX
 
 
-# 커스텀 CSS (React 디자인 적용)
 def load_custom_css():
+    """React 스타일 CSS 적용"""
     st.markdown("""
     <style>
-    /* Import Fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-    /* Variables */
+    /* 전역 변수 */
     :root {
         --primary-color: #1D70D5;
-        --primary-dark: #1655a3;
-        --danger-color: #ef4444;
+        --primary-hover: #1557A8;
         --background-color: #111827;
         --card-bg: rgba(17, 24, 39, 0.7);
-        --text-color: #f9fafb;
-        --text-secondary: #9ca3af;
-        --border-color: rgba(29, 112, 213, 0.2);
+        --card-border: rgba(255, 255, 255, 0.1);
+        --text-primary: #ffffff;
+        --text-secondary: rgba(255, 255, 255, 0.7);
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --error-color: #ef4444;
     }
 
-    /* Main Background */
+    /* 전체 배경 - 다크 그라디언트 */
     .stApp {
         background: linear-gradient(135deg, #111827, #000, #0f172a);
+        color: var(--text-primary);
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        color: var(--text-color);
     }
 
-    /* Header */
-    header[data-testid="stHeader"] {
-        background-color: rgba(0, 0, 0, 0.2);
-        backdrop-filter: blur(8px);
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    /* Sidebar */
-    section[data-testid="stSidebar"] {
+    /* 사이드바 스타일 */
+    [data-testid="stSidebar"] {
         background: linear-gradient(180deg, rgba(17, 24, 39, 0.95), rgba(0, 0, 0, 0.95));
-        border-right: 1px solid var(--border-color);
+        backdrop-filter: blur(10px);
+        border-right: 1px solid var(--card-border);
     }
 
-    section[data-testid="stSidebar"] > div {
-        background-color: transparent;
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h1,
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h2,
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h3 {
+        color: var(--text-primary);
+        font-weight: 600;
     }
 
-    /* Metrics */
-    div[data-testid="stMetricValue"] {
-        color: var(--primary-color);
-        font-size: 2rem;
+    /* 메인 타이틀 */
+    h1 {
+        background: linear-gradient(135deg, #1D70D5, #60a5fa);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
         font-weight: 700;
+        font-size: 2.5rem !important;
+        margin-bottom: 0.5rem !important;
     }
 
-    div[data-testid="stMetricLabel"] {
-        color: var(--text-secondary);
-        font-weight: 500;
+    /* 서브 타이틀 */
+    h2, h3 {
+        color: var(--text-primary);
+        font-weight: 600;
     }
 
-    /* Buttons */
+    /* 카드 스타일 */
+    .element-container {
+        background: var(--card-bg);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        border: 1px solid var(--card-border);
+        padding: 1rem;
+        margin: 0.5rem 0;
+    }
+
+    /* 버튼 스타일 */
     .stButton > button {
-        background: linear-gradient(to right, #1D70D5, #1655a3) !important;
+        background: linear-gradient(135deg, var(--primary-color), #2563eb) !important;
         color: white !important;
         border: none !important;
-        border-radius: 0.75rem !important;
+        border-radius: 8px !important;
         padding: 0.75rem 2rem !important;
         font-weight: 600 !important;
         font-size: 1rem !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2) !important;
-        transition: all 0.25s ease !important;
-        width: 100%;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 12px rgba(29, 112, 213, 0.3) !important;
     }
 
     .stButton > button:hover {
-        background: linear-gradient(to right, #1655a3, #12488f) !important;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.3) !important;
+        background: linear-gradient(135deg, var(--primary-hover), #1d4ed8) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(29, 112, 213, 0.4) !important;
     }
 
-    /* File Uploader */
-    div[data-testid="stFileUploader"] {
-        background-color: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 1rem;
-        padding: 1.5rem;
-        backdrop-filter: blur(8px);
+    .stButton > button:active {
+        transform: translateY(0) !important;
     }
 
-    div[data-testid="stFileUploader"] label {
+    /* 입력 필드 */
+    .stTextInput > div > div > input,
+    .stSelectbox > div > div > select,
+    .stFileUploader > div > div {
+        background: rgba(30, 41, 59, 0.5) !important;
+        border: 1px solid var(--card-border) !important;
+        border-radius: 8px !important;
+        color: var(--text-primary) !important;
+        padding: 0.75rem !important;
+    }
+
+    .stTextInput > div > div > input:focus,
+    .stSelectbox > div > div > select:focus {
+        border-color: var(--primary-color) !important;
+        box-shadow: 0 0 0 2px rgba(29, 112, 213, 0.2) !important;
+    }
+
+    /* 슬라이더 */
+    .stSlider > div > div > div {
+        background: rgba(30, 41, 59, 0.5) !important;
+    }
+
+    .stSlider > div > div > div > div {
+        background: var(--primary-color) !important;
+    }
+
+    /* 체크박스 & 라디오 */
+    .stCheckbox, .stRadio {
+        color: var(--text-primary) !important;
+    }
+
+    /* 메트릭 카드 */
+    [data-testid="stMetricValue"] {
         color: var(--primary-color) !important;
-        font-weight: 600;
+        font-size: 2rem !important;
+        font-weight: 700 !important;
     }
 
-    /* Slider */
-    div[data-testid="stSlider"] {
-        background-color: rgba(29, 112, 213, 0.1);
-        border: 1px solid rgba(29, 112, 213, 0.3);
-        padding: 1rem;
-        border-radius: 0.5rem;
+    [data-testid="stMetricLabel"] {
+        color: var(--text-secondary) !important;
+        font-size: 0.9rem !important;
     }
 
-    div[data-testid="stSlider"] label {
-        color: var(--primary-color) !important;
-        font-weight: 600;
+    /* 성공 메시지 */
+    .stSuccess {
+        background: rgba(16, 185, 129, 0.1) !important;
+        border: 1px solid rgba(16, 185, 129, 0.3) !important;
+        border-radius: 8px !important;
+        color: var(--success-color) !important;
     }
 
-    /* Select Box */
-    div[data-testid="stSelectbox"] label {
-        color: var(--primary-color) !important;
-        font-weight: 600;
+    /* 경고 메시지 */
+    .stWarning {
+        background: rgba(245, 158, 11, 0.1) !important;
+        border: 1px solid rgba(245, 158, 11, 0.3) !important;
+        border-radius: 8px !important;
+        color: var(--warning-color) !important;
     }
 
-    /* Radio */
-    div[data-testid="stRadio"] {
-        background-color: rgba(29, 112, 213, 0.1);
-        border: 1px solid rgba(29, 112, 213, 0.3);
-        border-radius: 0.5rem;
-        padding: 1rem;
-    }
-
-    div[data-testid="stRadio"] label {
-        color: var(--primary-color) !important;
-        font-weight: 600;
-    }
-
-    /* Text Input */
-    div[data-testid="stTextInput"] input {
-        background-color: rgba(29, 112, 213, 0.1) !important;
-        border: 1px solid rgba(29, 112, 213, 0.3) !important;
-        border-radius: 0.5rem !important;
-        color: var(--text-color) !important;
-    }
-
-    /* Checkbox */
-    div[data-testid="stCheckbox"] label {
-        color: var(--text-color) !important;
-        font-weight: 500;
-    }
-
-    /* Alerts */
-    div[data-testid="stAlert"] {
-        background-color: var(--card-bg);
-        border-radius: 0.75rem;
-        border: 1px solid var(--border-color);
-        backdrop-filter: blur(8px);
-    }
-
-    /* Success */
-    div.stSuccess {
-        background-color: rgba(34, 197, 94, 0.1) !important;
-        border: 1px solid rgba(34, 197, 94, 0.3) !important;
-    }
-
-    /* Warning */
-    div.stWarning {
-        background-color: rgba(251, 191, 36, 0.1) !important;
-        border: 1px solid rgba(251, 191, 36, 0.3) !important;
-    }
-
-    /* Error */
-    div.stError {
-        background-color: rgba(239, 68, 68, 0.1) !important;
+    /* 에러 메시지 */
+    .stError {
+        background: rgba(239, 68, 68, 0.1) !important;
         border: 1px solid rgba(239, 68, 68, 0.3) !important;
+        border-radius: 8px !important;
+        color: var(--error-color) !important;
     }
 
-    /* Info */
-    div.stInfo {
-        background-color: rgba(29, 112, 213, 0.1) !important;
+    /* 정보 메시지 */
+    .stInfo {
+        background: rgba(29, 112, 213, 0.1) !important;
         border: 1px solid rgba(29, 112, 213, 0.3) !important;
+        border-radius: 8px !important;
+        color: var(--primary-color) !important;
     }
 
-    /* Progress */
-    div[data-testid="stProgress"] > div {
-        background-color: rgba(29, 112, 213, 0.2);
-        border-radius: 0.5rem;
+    /* 프로그레스 바 */
+    .stProgress > div > div > div {
+        background: var(--primary-color) !important;
+        border-radius: 8px !important;
     }
 
-    div[data-testid="stProgress"] > div > div {
-        background: linear-gradient(to right, #1D70D5, #1655a3);
+    /* 파일 업로더 */
+    [data-testid="stFileUploader"] {
+        background: rgba(30, 41, 59, 0.3) !important;
+        border: 2px dashed var(--card-border) !important;
+        border-radius: 12px !important;
+        padding: 2rem !important;
+        transition: all 0.3s ease !important;
     }
 
-    /* Image/Video */
-    div[data-testid="stImage"], div[data-testid="stVideo"] {
-        border-radius: 1rem;
-        overflow: hidden;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    [data-testid="stFileUploader"]:hover {
+        border-color: var(--primary-color) !important;
+        background: rgba(29, 112, 213, 0.05) !important;
     }
 
     /* Expander */
-    div[data-testid="stExpander"] {
-        background-color: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 1rem;
-        backdrop-filter: blur(8px);
+    .streamlit-expanderHeader {
+        background: rgba(30, 41, 59, 0.5) !important;
+        border-radius: 8px !important;
+        color: var(--text-primary) !important;
+        font-weight: 600 !important;
     }
 
-    /* Headers */
-    h1 {
-        background: linear-gradient(to right, #1D70D5, #60a5fa);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        font-weight: 700;
+    .streamlit-expanderHeader:hover {
+        background: rgba(30, 41, 59, 0.7) !important;
     }
 
-    h2, h3 {
-        color: var(--primary-color);
-        font-weight: 600;
+    /* 다운로드 버튼 */
+    .stDownloadButton > button {
+        background: linear-gradient(135deg, var(--success-color), #059669) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
     }
 
-    /* Code */
+    .stDownloadButton > button:hover {
+        background: linear-gradient(135deg, #059669, #047857) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    /* 비디오 플레이어 */
+    video {
+        border-radius: 12px !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    /* 이미지 */
+    img {
+        border-radius: 8px !important;
+    }
+
+    /* 코드 블록 */
     code {
-        background-color: rgba(29, 112, 213, 0.1);
-        color: var(--primary-color);
-        padding: 0.2rem 0.4rem;
-        border-radius: 0.25rem;
+        background: rgba(30, 41, 59, 0.5) !important;
+        border-radius: 4px !important;
+        color: #60a5fa !important;
+        padding: 0.2rem 0.4rem !important;
     }
 
-    /* Scrollbar */
+    pre {
+        background: rgba(15, 23, 42, 0.8) !important;
+        border: 1px solid var(--card-border) !important;
+        border-radius: 8px !important;
+        padding: 1rem !important;
+    }
+
+    /* 구분선 */
+    hr {
+        border: none !important;
+        border-top: 1px solid var(--card-border) !important;
+        margin: 2rem 0 !important;
+    }
+
+    /* 캡션 */
+    .caption {
+        color: var(--text-secondary) !important;
+        font-size: 0.875rem !important;
+    }
+
+    /* 스크롤바 */
     ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
+        width: 10px;
+        height: 10px;
     }
 
     ::-webkit-scrollbar-track {
-        background: rgba(17, 24, 39, 0.5);
+        background: rgba(15, 23, 42, 0.5);
+        border-radius: 10px;
     }
 
     ::-webkit-scrollbar-thumb {
-        background: var(--primary-color);
-        border-radius: 4px;
+        background: rgba(29, 112, 213, 0.5);
+        border-radius: 10px;
     }
 
     ::-webkit-scrollbar-thumb:hover {
-        background: var(--primary-dark);
+        background: rgba(29, 112, 213, 0.7);
     }
-
-    /* Hide Streamlit branding */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
     </style>
     """, unsafe_allow_html=True)
 
@@ -264,11 +295,11 @@ def main():
         layout="wide"
     )
 
-    # 커스텀 CSS 로드
+    # React 스타일 CSS 적용
     load_custom_css()
 
-    st.title("⚡ 실종자 실시간 탐지 시스템 (ONNX 최적화 - 브라우저 스트리밍)")
-    st.caption("🚀 PyTorch 대비 3-5배 빠른 처리 속도 | ONNX Runtime | 📱 브라우저에서 바로 보기")
+    st.title("⚡ 실종자 실시간 탐지 시스템 (ONNX 최적화)")
+    st.caption("🚀 PyTorch 대비 3-5배 빠른 처리 속도 | ONNX Runtime")
     st.markdown("---")
 
     # 사이드바
@@ -629,24 +660,13 @@ def main():
                         st.code(traceback.format_exc())
 
         else:
-            # 웹캠 실시간 탐지 (브라우저 스트리밍)
-            col_btn1, col_btn2 = st.columns([1, 1])
-
-            with col_btn1:
-                start_btn = st.button("📷 웹캠 탐지 시작", type="primary", use_container_width=True)
-
-            with col_btn2:
-                if 'webcam_running' in st.session_state and st.session_state.webcam_running:
-                    if st.button("⏹️ 중지", type="secondary", use_container_width=True):
-                        st.session_state.webcam_running = False
-                        st.rerun()
-
-            if start_btn:
+            # 웹캠 실시간 탐지
+            if st.button("📷 웹캠 탐지 시작 (ONNX)", type="primary", use_container_width=True):
                 if not uploaded_images:
                     st.error("❌ 실종자 이미지를 업로드해주세요!")
                 else:
-                    st.success("✅ 웹캠 탐지 시작! (브라우저에서 실시간 표시)")
-                    st.info("💡 '⏹️ 중지' 버튼을 눌러 종료하세요")
+                    st.warning("⚠️ 웹캠이 새 창에서 열립니다. 'q' 키를 눌러 종료하세요.")
+                    st.info("💡 Streamlit에서는 웹캠을 직접 표시할 수 없어 OpenCV 창이 열립니다.")
 
                     try:
                         # ONNX 탐지기 초기화
@@ -673,137 +693,34 @@ def main():
                         else:
                             detector.set_missing_persons(images)
 
-                        # 웹캠 열기
-                        cap = cv2.VideoCapture(camera_index)
+                        st.success("✅ 웹캠 탐지 시작! (OpenCV 창 확인)")
 
-                        if not cap.isOpened():
-                            st.error(f"❌ 카메라를 열 수 없습니다: {camera_index}")
-                        else:
-                            # 해상도
-                            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-                            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                        # 웹캠 처리
+                        results = detector.process_webcam(
+                            camera_index=camera_index,
+                            max_duration=max_duration
+                        )
 
-                            if resize_factor != 1.0:
-                                width = int(width * resize_factor)
-                                height = int(height * resize_factor)
+                        # 결과 표시
+                        st.success("✅ 웹캠 탐지 완료!")
 
-                            # 스트리밍 영역
-                            frame_placeholder = st.empty()
-                            status_placeholder = st.empty()
-                            metrics_placeholder = st.empty()
+                        col_r1, col_r2, col_r3 = st.columns(3)
+                        with col_r1:
+                            st.metric("처리 프레임", f"{results['frame_count']:,}")
+                        with col_r2:
+                            st.metric("탐지 횟수", f"{results['detection_count']:,}")
+                        with col_r3:
+                            st.metric("평균 FPS", f"{results['avg_fps']:.1f}")
 
-                            frame_count = 0
-                            processed_count = 0
-                            detection_count = 0
-                            start_time = time.time()
+                        st.info(f"⏱️ 실행 시간: {results['elapsed_time']:.1f}초")
 
-                            st.session_state.webcam_running = True
-
-                            # 실시간 스트리밍 루프
-                            while st.session_state.get('webcam_running', False):
-                                ret, frame = cap.read()
-                                if not ret:
-                                    st.error("웹캠에서 프레임을 읽을 수 없습니다.")
-                                    break
-
-                                frame_count += 1
-                                elapsed = time.time() - start_time
-
-                                # 프레임 스킵
-                                if frame_skip > 0 and (frame_count - 1) % (frame_skip + 1) != 0:
-                                    continue
-
-                                processed_count += 1
-
-                                # 해상도 조정
-                                if resize_factor != 1.0:
-                                    frame = cv2.resize(frame, (width, height))
-
-                                # 사람 탐지
-                                detections = detector.detect_persons(frame)
-
-                                # 탐지된 사람들 처리
-                                for det in detections:
-                                    x1, y1, x2, y2 = det['bbox']
-                                    person_img = frame[y1:y2, x1:x2]
-                                    if person_img.size == 0:
-                                        continue
-
-                                    try:
-                                        person_embedding = detector.extract_embedding(person_img)
-                                        similarity = detector.compute_similarity(person_embedding)
-
-                                        if similarity >= similarity_threshold:
-                                            detection_count += 1
-
-                                            # 빨간색 박스
-                                            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 3)
-
-                                            label = f"MISSING PERSON! ({similarity:.2f})"
-                                            label_size, _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)
-
-                                            cv2.rectangle(frame,
-                                                        (x1, y1 - label_size[1] - 10),
-                                                        (x1 + label_size[0], y1),
-                                                        (0, 0, 255), -1)
-
-                                            cv2.putText(frame, label, (x1, y1 - 5),
-                                                      cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-                                        else:
-                                            # 회색 박스
-                                            cv2.rectangle(frame, (x1, y1), (x2, y2), (128, 128, 128), 2)
-                                            cv2.putText(frame, f"{similarity:.2f}", (x1, y1 - 5),
-                                                      cv2.FONT_HERSHEY_SIMPLEX, 0.5, (128, 128, 128), 1)
-
-                                    except Exception:
-                                        continue
-
-                                # 실시간 정보 표시
-                                fps_current = processed_count / elapsed if elapsed > 0 else 0
-                                info_text = f"FPS: {fps_current:.1f} | Time: {int(elapsed)}s | Detections: {detection_count}"
-                                cv2.putText(frame, info_text, (10, 30),
-                                           cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
-
-                                # 상태 표시
-                                status = "MONITORING..." if detection_count == 0 else f"ALERT! ({detection_count} detections)"
-                                status_color = (0, 255, 0) if detection_count == 0 else (0, 0, 255)
-                                cv2.putText(frame, status, (10, height - 20),
-                                           cv2.FONT_HERSHEY_SIMPLEX, 0.7, status_color, 2)
-
-                                # 브라우저에 프레임 표시 (BGR -> RGB)
-                                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                                frame_placeholder.image(frame_rgb, channels="RGB", use_container_width=True)
-
-                                # 상태 업데이트
-                                status_placeholder.text(f"⚡ 실시간 탐지 중... {fps_current:.1f} fps | 탐지: {detection_count}회")
-
-                                # 메트릭 업데이트
-                                with metrics_placeholder.container():
-                                    col_m1, col_m2, col_m3 = st.columns(3)
-                                    with col_m1:
-                                        st.metric("처리 프레임", f"{processed_count:,}")
-                                    with col_m2:
-                                        st.metric("탐지 횟수", f"{detection_count:,}")
-                                    with col_m3:
-                                        st.metric("FPS", f"{fps_current:.1f}")
-
-                            # 종료
-                            cap.release()
-                            st.session_state.webcam_running = False
-
-                            # 최종 결과
-                            elapsed_time = time.time() - start_time
-                            st.success("✅ 웹캠 탐지 완료!")
-                            st.info(f"⏱️ 총 실행 시간: {elapsed_time:.1f}초 | 평균 FPS: {processed_count/elapsed_time:.1f}")
-
-                            if detection_count > 0:
-                                st.warning(f"⚠️ **경고**: 실종자가 {detection_count}회 탐지되었습니다!")
+                        if results['detection_count'] > 0:
+                            st.warning(f"⚠️ **경고**: 실종자가 {results['detection_count']}회 탐지되었습니다!")
 
                     except Exception as e:
                         st.error(f"❌ 오류 발생: {str(e)}")
                         import traceback
                         st.code(traceback.format_exc())
-                        st.session_state.webcam_running = False
 
     # 하단 정보
     st.markdown("---")
