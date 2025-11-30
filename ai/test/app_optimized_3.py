@@ -23,8 +23,8 @@ def main():
         layout="wide"
     )
 
-    st.title("⚡ 실종자 실시간 탐지 시스템 (ONNX 최적화)")
-    st.caption("🚀 PyTorch 대비 3-5배 빠른 처리 속도 | ONNX Runtime")
+    st.title("⚡ 실종자 실시간 탐지 시스템 (ONNX 최적화 - 브라우저 스트리밍)")
+    st.caption("🚀 PyTorch 대비 3-5배 빠른 처리 속도 | ONNX Runtime | 📱 브라우저에서 바로 보기")
     st.markdown("---")
 
     # 사이드바
@@ -385,13 +385,24 @@ def main():
                         st.code(traceback.format_exc())
 
         else:
-            # 웹캠 실시간 탐지
-            if st.button("📷 웹캠 탐지 시작 (ONNX)", type="primary", use_container_width=True):
+            # 웹캠 실시간 탐지 (브라우저 스트리밍)
+            col_btn1, col_btn2 = st.columns([1, 1])
+
+            with col_btn1:
+                start_btn = st.button("📷 웹캠 탐지 시작", type="primary", use_container_width=True)
+
+            with col_btn2:
+                if 'webcam_running' in st.session_state and st.session_state.webcam_running:
+                    if st.button("⏹️ 중지", type="secondary", use_container_width=True):
+                        st.session_state.webcam_running = False
+                        st.rerun()
+
+            if start_btn:
                 if not uploaded_images:
                     st.error("❌ 실종자 이미지를 업로드해주세요!")
                 else:
-                    st.warning("⚠️ 웹캠이 새 창에서 열립니다. 'q' 키를 눌러 종료하세요.")
-                    st.info("💡 Streamlit에서는 웹캠을 직접 표시할 수 없어 OpenCV 창이 열립니다.")
+                    st.success("✅ 웹캠 탐지 시작! (브라우저에서 실시간 표시)")
+                    st.info("💡 '⏹️ 중지' 버튼을 눌러 종료하세요")
 
                     try:
                         # ONNX 탐지기 초기화
@@ -418,34 +429,137 @@ def main():
                         else:
                             detector.set_missing_persons(images)
 
-                        st.success("✅ 웹캠 탐지 시작! (OpenCV 창 확인)")
+                        # 웹캠 열기
+                        cap = cv2.VideoCapture(camera_index)
 
-                        # 웹캠 처리
-                        results = detector.process_webcam(
-                            camera_index=camera_index,
-                            max_duration=max_duration
-                        )
+                        if not cap.isOpened():
+                            st.error(f"❌ 카메라를 열 수 없습니다: {camera_index}")
+                        else:
+                            # 해상도
+                            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-                        # 결과 표시
-                        st.success("✅ 웹캠 탐지 완료!")
+                            if resize_factor != 1.0:
+                                width = int(width * resize_factor)
+                                height = int(height * resize_factor)
 
-                        col_r1, col_r2, col_r3 = st.columns(3)
-                        with col_r1:
-                            st.metric("처리 프레임", f"{results['frame_count']:,}")
-                        with col_r2:
-                            st.metric("탐지 횟수", f"{results['detection_count']:,}")
-                        with col_r3:
-                            st.metric("평균 FPS", f"{results['avg_fps']:.1f}")
+                            # 스트리밍 영역
+                            frame_placeholder = st.empty()
+                            status_placeholder = st.empty()
+                            metrics_placeholder = st.empty()
 
-                        st.info(f"⏱️ 실행 시간: {results['elapsed_time']:.1f}초")
+                            frame_count = 0
+                            processed_count = 0
+                            detection_count = 0
+                            start_time = time.time()
 
-                        if results['detection_count'] > 0:
-                            st.warning(f"⚠️ **경고**: 실종자가 {results['detection_count']}회 탐지되었습니다!")
+                            st.session_state.webcam_running = True
+
+                            # 실시간 스트리밍 루프
+                            while st.session_state.get('webcam_running', False):
+                                ret, frame = cap.read()
+                                if not ret:
+                                    st.error("웹캠에서 프레임을 읽을 수 없습니다.")
+                                    break
+
+                                frame_count += 1
+                                elapsed = time.time() - start_time
+
+                                # 프레임 스킵
+                                if frame_skip > 0 and (frame_count - 1) % (frame_skip + 1) != 0:
+                                    continue
+
+                                processed_count += 1
+
+                                # 해상도 조정
+                                if resize_factor != 1.0:
+                                    frame = cv2.resize(frame, (width, height))
+
+                                # 사람 탐지
+                                detections = detector.detect_persons(frame)
+
+                                # 탐지된 사람들 처리
+                                for det in detections:
+                                    x1, y1, x2, y2 = det['bbox']
+                                    person_img = frame[y1:y2, x1:x2]
+                                    if person_img.size == 0:
+                                        continue
+
+                                    try:
+                                        person_embedding = detector.extract_embedding(person_img)
+                                        similarity = detector.compute_similarity(person_embedding)
+
+                                        if similarity >= similarity_threshold:
+                                            detection_count += 1
+
+                                            # 빨간색 박스
+                                            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 3)
+
+                                            label = f"MISSING PERSON! ({similarity:.2f})"
+                                            label_size, _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)
+
+                                            cv2.rectangle(frame,
+                                                        (x1, y1 - label_size[1] - 10),
+                                                        (x1 + label_size[0], y1),
+                                                        (0, 0, 255), -1)
+
+                                            cv2.putText(frame, label, (x1, y1 - 5),
+                                                      cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+                                        else:
+                                            # 회색 박스
+                                            cv2.rectangle(frame, (x1, y1), (x2, y2), (128, 128, 128), 2)
+                                            cv2.putText(frame, f"{similarity:.2f}", (x1, y1 - 5),
+                                                      cv2.FONT_HERSHEY_SIMPLEX, 0.5, (128, 128, 128), 1)
+
+                                    except Exception:
+                                        continue
+
+                                # 실시간 정보 표시
+                                fps_current = processed_count / elapsed if elapsed > 0 else 0
+                                info_text = f"FPS: {fps_current:.1f} | Time: {int(elapsed)}s | Detections: {detection_count}"
+                                cv2.putText(frame, info_text, (10, 30),
+                                           cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+
+                                # 상태 표시
+                                status = "MONITORING..." if detection_count == 0 else f"ALERT! ({detection_count} detections)"
+                                status_color = (0, 255, 0) if detection_count == 0 else (0, 0, 255)
+                                cv2.putText(frame, status, (10, height - 20),
+                                           cv2.FONT_HERSHEY_SIMPLEX, 0.7, status_color, 2)
+
+                                # 브라우저에 프레임 표시 (BGR -> RGB)
+                                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                                frame_placeholder.image(frame_rgb, channels="RGB", use_container_width=True)
+
+                                # 상태 업데이트
+                                status_placeholder.text(f"⚡ 실시간 탐지 중... {fps_current:.1f} fps | 탐지: {detection_count}회")
+
+                                # 메트릭 업데이트
+                                with metrics_placeholder.container():
+                                    col_m1, col_m2, col_m3 = st.columns(3)
+                                    with col_m1:
+                                        st.metric("처리 프레임", f"{processed_count:,}")
+                                    with col_m2:
+                                        st.metric("탐지 횟수", f"{detection_count:,}")
+                                    with col_m3:
+                                        st.metric("FPS", f"{fps_current:.1f}")
+
+                            # 종료
+                            cap.release()
+                            st.session_state.webcam_running = False
+
+                            # 최종 결과
+                            elapsed_time = time.time() - start_time
+                            st.success("✅ 웹캠 탐지 완료!")
+                            st.info(f"⏱️ 총 실행 시간: {elapsed_time:.1f}초 | 평균 FPS: {processed_count/elapsed_time:.1f}")
+
+                            if detection_count > 0:
+                                st.warning(f"⚠️ **경고**: 실종자가 {detection_count}회 탐지되었습니다!")
 
                     except Exception as e:
                         st.error(f"❌ 오류 발생: {str(e)}")
                         import traceback
                         st.code(traceback.format_exc())
+                        st.session_state.webcam_running = False
 
     # 하단 정보
     st.markdown("---")
