@@ -81,9 +81,9 @@ services:
       - .env
     depends_on:
       mysql:
-          condition: service_started
+        condition: service_started
       rabbitmq:
-          condition: service_healthy
+        condition: service_healthy
     expose:
       - "8080"
     networks:
