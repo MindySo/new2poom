@@ -27,8 +27,8 @@ pipeline {
                     $class: 'GitSCM',
                     branches: [[name: '*/dev']],
                     userRemoteConfigs: [[
-                        url: 'https://lab.ssafy.com/s13-final/S13P31A706',
-                        credentialsId: 'gitlab-jenkins-token'
+                        url: 'https://github.com/MindySo/new2poom',
+                        credentialsId: 'github_personal_access_token'
                     ]]
                 ])
             }

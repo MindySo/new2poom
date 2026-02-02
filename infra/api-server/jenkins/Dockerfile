@@ -10,10 +10,10 @@ RUN apt-get update && apt-get install -y \
     unzip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# AWS CLI v2 설치
+# AWS CLI v2 설치 (이미 있으면 업데이트)
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
     unzip awscliv2.zip && \
-    ./aws/install && \
+    (./aws/install || ./aws/install --update) && \
     rm -rf aws awscliv2.zip
 
 # 모든 디렉토리 허용
@@ -31,8 +31,8 @@ RUN mkdir -p /usr/local/lib/docker/cli-plugins && \
     -o /usr/local/lib/docker/cli-plugins/docker-compose && \
     chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
-# Symbolic link 생성
-RUN ln -s /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose
+# Symbolic link 생성 (이미 있으면 덮어쓰기)
+RUN ln -sf /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose
 
 # Java 환경변수
 ENV JAVA_HOME=/opt/java/openjdk
