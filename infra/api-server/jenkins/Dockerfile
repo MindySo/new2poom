@@ -10,10 +10,10 @@ RUN apt-get update && apt-get install -y \
     unzip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# AWS CLI v2 설치
+# AWS CLI v2 설치 (이미 있으면 업데이트)
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
     unzip awscliv2.zip && \
-    ./aws/install && \
+    (./aws/install || ./aws/install --update) && \
     rm -rf aws awscliv2.zip
 
 # 모든 디렉토리 허용
