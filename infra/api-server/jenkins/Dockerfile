@@ -31,8 +31,8 @@ RUN mkdir -p /usr/local/lib/docker/cli-plugins && \
     -o /usr/local/lib/docker/cli-plugins/docker-compose && \
     chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
-# Symbolic link 생성
-RUN ln -s /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose
+# Symbolic link 생성 (이미 있으면 덮어쓰기)
+RUN ln -sf /usr/local/lib/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose
 
 # Java 환경변수
 ENV JAVA_HOME=/opt/java/openjdk
